@@ -1,0 +1,1 @@
+"""Proposal schema placeholder."""

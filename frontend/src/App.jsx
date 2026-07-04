@@ -1,7 +1,3 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-import "./styles.css";
-
 function App() {
   return (
     <main className="min-h-screen bg-slate-50 p-8 text-slate-950">
@@ -13,8 +9,4 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
+export default App;

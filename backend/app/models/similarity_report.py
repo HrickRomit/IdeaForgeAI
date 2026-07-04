@@ -1,0 +1,1 @@
+"""Similarity report model placeholder."""

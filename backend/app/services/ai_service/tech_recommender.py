@@ -1,0 +1,1 @@
+"""Technology recommender placeholder."""

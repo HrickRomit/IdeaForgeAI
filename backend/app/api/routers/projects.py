@@ -1,0 +1,1 @@
+"""Project search router placeholder."""

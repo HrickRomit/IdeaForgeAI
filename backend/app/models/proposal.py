@@ -1,0 +1,1 @@
+"""Proposal model placeholder."""

@@ -1,0 +1,1 @@
+"""Similarity schema placeholder."""
