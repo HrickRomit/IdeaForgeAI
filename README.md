@@ -103,8 +103,44 @@ docker compose up -d
 
 This starts:
 
-- PostgreSQL on port `5432`
+- PostgreSQL on host port `5433` and container port `5432`
 - ChromaDB on port `8001`
+- pgAdmin on port `5050`
+
+pgAdmin login:
+
+```text
+URL: http://localhost:5050
+Email: admin@ideaforge.ai
+Password: admin123
+```
+
+Register this Postgres server inside pgAdmin:
+
+```text
+Host name/address: postgres
+Port: 5432
+Maintenance database: ideaforge
+Username: ideaforge
+Password: change_me
+```
+
+From tools running directly on your computer, such as a separately installed pgAdmin, use `localhost`
+instead of `postgres` as the host, and use port `5433` instead of `5432`.
+
+After the containers are running, create/update the database tables from the backend migrations:
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+alembic upgrade head
+```
+
+Verify the backend can reach Postgres:
+
+```text
+http://localhost:8000/health/db
+```
 
 Check running containers:
 

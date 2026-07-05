@@ -3,13 +3,18 @@ services:
     image: postgres:16-alpine
     container_name: ideaforge-postgres
     environment:
-      POSTGRES_DB: ideaforge
-      POSTGRES_USER: ideaforge
-      POSTGRES_PASSWORD: change_me
+      POSTGRES_DB: ${POSTGRES_DB:-ideaforge}
+      POSTGRES_USER: ${POSTGRES_USER:-ideaforge}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ideaforge} -d ${POSTGRES_DB:-ideaforge}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   chroma:
     image: chromadb/chroma:latest
@@ -19,6 +24,21 @@ services:
     volumes:
       - chroma_data:/chroma/chroma
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ideaforge-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@ideaforge.ai}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   chroma_data:
+  pgadmin_data:
