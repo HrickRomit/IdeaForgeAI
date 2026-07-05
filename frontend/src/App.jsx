@@ -23,6 +23,7 @@ import {
   Wrench,
 } from "lucide-react";
 import heroImage from "./assets/ideaforge-hero.png";
+import FacultyPortalPage from "./pages/faculty/FacultyPortalPage.jsx";
 
 const audiences = [
   {
@@ -40,9 +41,9 @@ const audiences = [
     title: "Faculty",
     copy: "Review proposals with similarity context, archive evidence, and clear decision support.",
     actions: [
-      ["Review Queue", "#faculty-actions"],
-      ["Analytics", "#faculty-actions"],
-      ["Feedback", "#faculty-actions"],
+      ["Review Queue", "/faculty"],
+      ["Analytics", "/faculty#analytics"],
+      ["Feedback", "/faculty"],
     ],
   },
   {
@@ -115,7 +116,7 @@ const primaryActions = [
   {
     icon: ClipboardCheck,
     label: "Review Proposals",
-    href: "#faculty-actions",
+    href: "/faculty",
   },
   {
     icon: UserCheck,
@@ -177,6 +178,10 @@ const actionGroups = [
 ];
 
 function App() {
+  if (window.location.pathname.startsWith("/faculty")) {
+    return <FacultyPortalPage />;
+  }
+
   return (
     <main className="min-h-screen bg-[#f6f8f7] text-[#17201d]">
       <section className="relative isolate min-h-[92svh] overflow-hidden">
@@ -380,10 +385,20 @@ function App() {
                   <p className="mt-4 text-sm leading-6 text-[#52625d]">{copy}</p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {items.map(([Icon, label, description]) => (
-                    <button
+                  {items.map(([Icon, label, description]) => {
+                    const facultyHref =
+                      id === "faculty-actions" && ["Review Queue", "AI Summary", "Similarity Report", "Approve / Reject", "Department Analytics"].includes(label)
+                        ? label === "Department Analytics"
+                          ? "/faculty#analytics"
+                          : "/faculty"
+                        : null;
+                    const ActionTag = facultyHref ? "a" : "button";
+
+                    return (
+                    <ActionTag
                       key={label}
-                      type="button"
+                      type={facultyHref ? undefined : "button"}
+                      href={facultyHref || undefined}
                       className="group min-h-32 rounded-md border border-[#dbe4df] bg-[#f9fbfa] p-4 text-left transition hover:border-[#15c7a8] hover:bg-[#f2fffb]"
                     >
                       <span className="grid size-10 place-items-center rounded-md bg-white text-[#0b6b61] shadow-sm ring-1 ring-[#dbe4df] transition group-hover:ring-[#15c7a8]">
@@ -391,8 +406,9 @@ function App() {
                       </span>
                       <span className="mt-4 block text-sm font-bold text-[#17201d]">{label}</span>
                       <span className="mt-2 block text-xs leading-5 text-[#52625d]">{description}</span>
-                    </button>
-                  ))}
+                    </ActionTag>
+                    );
+                  })}
                 </div>
               </div>
             </div>
