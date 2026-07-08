@@ -23,7 +23,10 @@ import {
   Wrench,
 } from "lucide-react";
 import heroImage from "./assets/ideaforge-hero.png";
+import LoginPage from "./pages/auth/LoginPage.jsx";
+import RegisterPage from "./pages/auth/RegisterPage.jsx";
 import FacultyPortalPage from "./pages/faculty/FacultyPortalPage.jsx";
+import StudentPortalPage from "./pages/student/StudentPortalPage.jsx";
 
 const audiences = [
   {
@@ -31,9 +34,9 @@ const audiences = [
     title: "Students",
     copy: "Discover feasible ideas, refine proposal direction, and track submission progress from one workspace.",
     actions: [
-      ["Search Projects", "#student-actions"],
-      ["Submit Proposal", "#student-actions"],
-      ["Track Status", "#student-actions"],
+      ["Search Projects", "/student"],
+      ["Submit Proposal", "/student"],
+      ["Track Status", "/student"],
     ],
   },
   {
@@ -91,27 +94,27 @@ const primaryActions = [
   {
     icon: Search,
     label: "Search Previous Projects",
-    href: "#student-actions",
+    href: "/student",
   },
   {
     icon: Lightbulb,
     label: "Get Project Ideas",
-    href: "#student-actions",
+    href: "/student",
   },
   {
     icon: UploadCloud,
     label: "Upload Proposal",
-    href: "#student-actions",
+    href: "/student",
   },
   {
     icon: FileSearch,
     label: "Check Similarity",
-    href: "#student-actions",
+    href: "/student",
   },
   {
     icon: Bot,
     label: "Ask Project Chatbot",
-    href: "#student-actions",
+    href: "/student",
   },
   {
     icon: ClipboardCheck,
@@ -121,7 +124,7 @@ const primaryActions = [
   {
     icon: UserCheck,
     label: "Recommend Supervisor",
-    href: "#student-actions",
+    href: "/student",
   },
   {
     icon: Database,
@@ -178,6 +181,18 @@ const actionGroups = [
 ];
 
 function App() {
+  if (window.location.pathname.startsWith("/login")) {
+    return <LoginPage />;
+  }
+
+  if (window.location.pathname.startsWith("/register")) {
+    return <RegisterPage />;
+  }
+
+  if (window.location.pathname.startsWith("/student")) {
+    return <StudentPortalPage />;
+  }
+
   if (window.location.pathname.startsWith("/faculty")) {
     return <FacultyPortalPage />;
   }
@@ -253,7 +268,7 @@ function App() {
                 <ArrowRight className="size-4" aria-hidden="true" />
               </a>
               <a
-                href="#student-actions"
+                href="/student"
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/24 bg-white/8 px-6 text-sm font-bold text-white backdrop-blur transition hover:bg-white/16"
               >
                 Start as Student
