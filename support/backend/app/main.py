@@ -4,6 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_database
+from app.api.routers import auth, faculty, proposals
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -17,6 +18,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth.router)
+app.include_router(proposals.router)
+app.include_router(faculty.router)
 
 
 @app.get("/health")
