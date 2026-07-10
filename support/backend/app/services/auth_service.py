@@ -21,18 +21,6 @@ def create_user(db: Session, payload: UserCreate) -> User:
             detail="Email already registered",
         )
 
-    if role == "student" and not payload.student_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="student_id is required for student registration",
-        )
-
-    if role == "faculty" and not payload.faculty_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="faculty_id is required for faculty registration",
-        )
-
     user = User(
         full_name=payload.full_name.strip(),
         email=email,

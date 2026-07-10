@@ -410,18 +410,18 @@ function App() {
                     const ActionTag = facultyHref ? "a" : "button";
 
                     return (
-                    <ActionTag
-                      key={label}
-                      type={facultyHref ? undefined : "button"}
-                      href={facultyHref || undefined}
-                      className="group min-h-32 rounded-md border border-[#dbe4df] bg-[#f9fbfa] p-4 text-left transition hover:border-[#15c7a8] hover:bg-[#f2fffb]"
-                    >
-                      <span className="grid size-10 place-items-center rounded-md bg-white text-[#0b6b61] shadow-sm ring-1 ring-[#dbe4df] transition group-hover:ring-[#15c7a8]">
-                        <Icon className="size-5" aria-hidden="true" />
-                      </span>
-                      <span className="mt-4 block text-sm font-bold text-[#17201d]">{label}</span>
-                      <span className="mt-2 block text-xs leading-5 text-[#52625d]">{description}</span>
-                    </ActionTag>
+                      <ActionTag
+                        key={label}
+                        type={facultyHref ? undefined : "button"}
+                        href={facultyHref || undefined}
+                        className="group min-h-32 rounded-md border border-[#dbe4df] bg-[#f9fbfa] p-4 text-left transition hover:border-[#15c7a8] hover:bg-[#f2fffb]"
+                      >
+                        <span className="grid size-10 place-items-center rounded-md bg-white text-[#0b6b61] shadow-sm ring-1 ring-[#dbe4df] transition group-hover:ring-[#15c7a8]">
+                          <Icon className="size-5" aria-hidden="true" />
+                        </span>
+                        <span className="mt-4 block text-sm font-bold text-[#17201d]">{label}</span>
+                        <span className="mt-2 block text-xs leading-5 text-[#52625d]">{description}</span>
+                      </ActionTag>
                     );
                   })}
                 </div>

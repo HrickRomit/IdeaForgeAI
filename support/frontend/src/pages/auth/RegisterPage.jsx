@@ -2,11 +2,35 @@ import { useState } from "react";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { registerUser } from "../../api/authApi";
 
+function getErrorMessage(error) {
+  if (!error.response) {
+    return "Could not reach the backend server. Start the FastAPI backend on http://localhost:8000, then try again.";
+  }
+
+  const detail = error.response.data?.detail;
+
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => {
+        const field = item.loc?.slice(1).join(".") || "field";
+        return `${field}: ${item.msg}`;
+      })
+      .join(" ");
+  }
+
+  if (typeof detail === "object" && detail !== null) {
+    return JSON.stringify(detail);
+  }
+
+  return detail || error.message || "Registration failed.";
+}
+
 export default function RegisterPage() {
   const [form, setForm] = useState({
     full_name: "",
     email: "",
     password: "",
+    confirm_password: "",
     role: "student",
     student_id: "",
     department_id: "",
@@ -23,20 +47,26 @@ export default function RegisterPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     setIsSubmitting(true);
     setStatus("Creating account...");
 
     const payload = {
-      ...form,
-      department_id: form.department_id ? Number(form.department_id) : null,
+      full_name: form.full_name.trim(),
+      email: form.email.trim(),
+      password: form.password,
+      role: form.role,
+      student_id: null,
+      faculty_id: null,
+      department_id: null,
+      research_interests: null,
     };
 
     try {
       await registerUser(payload);
       setStatus("Registration successful. You can now try logging in.");
     } catch (error) {
-      const message = error.response?.data?.detail || error.message || "Registration failed.";
-      setStatus(`Registration failed: ${message}`);
+      setStatus(`Registration failed: ${getErrorMessage(error)}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -56,8 +86,18 @@ export default function RegisterPage() {
           </span>
           <h1 className="mt-4 text-3xl font-bold">Register</h1>
           <p className="mt-2 text-sm leading-6 text-[#64736f]">
-            Create a student account and check whether the backend registration endpoint works.
+            Fill in the required account details. The form will send them to the backend registration endpoint.
           </p>
+        </div>
+
+        <div className="mt-6 rounded-md border border-[#cfdad5] bg-[#f6f8f7] p-4">
+          <p className="text-sm font-bold text-[#17201d]">What to enter</p>
+          <ul className="mt-2 space-y-1 text-sm leading-6 text-[#52625d]">
+            <li>Use your real full name, for example Ayesha Rahman.</li>
+            <li>Email can be any text for now while you are testing.</li>
+            <li>Password can be any text for now. The confirm field is only a visual helper.</li>
+            <li>Student ID and Department ID are shown for later, but are not submitted yet.</li>
+          </ul>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -70,31 +110,45 @@ export default function RegisterPage() {
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
               placeholder="Ayesha Rahman"
             />
+            <span className="mt-1 block text-xs leading-5 text-[#64736f]">Enter your name as it should appear in the portal.</span>
           </label>
 
           <label className="block sm:col-span-2">
-            <span className="text-sm font-semibold">Email</span>
+            <span className="text-sm font-semibold">Email or username</span>
             <input
-              type="email"
+              type="text"
               value={form.email}
               onChange={(event) => handleChange("email", event.target.value)}
               required
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
-              placeholder="student@example.com"
+              placeholder="student@example.com or student1"
             />
+            <span className="mt-1 block text-xs leading-5 text-[#64736f]">No email format restriction for now. You can type anything.</span>
           </label>
 
-          <label className="block sm:col-span-2">
+          <label className="block">
             <span className="text-sm font-semibold">Password</span>
             <input
               type="password"
               value={form.password}
               onChange={(event) => handleChange("password", event.target.value)}
               required
-              minLength={6}
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
-              placeholder="At least 6 characters"
+              placeholder="Any password"
             />
+            <span className="mt-1 block text-xs leading-5 text-[#64736f]">No length or complexity rule for now.</span>
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-semibold">Confirm password</span>
+            <input
+              type="password"
+              value={form.confirm_password}
+              onChange={(event) => handleChange("confirm_password", event.target.value)}
+              className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
+              placeholder="Optional"
+            />
+            <span className="mt-1 block text-xs leading-5 text-[#64736f]">Optional for now. It will not block registration.</span>
           </label>
 
           <label className="block">
@@ -108,6 +162,7 @@ export default function RegisterPage() {
               <option value="faculty">Faculty</option>
               <option value="admin">Admin</option>
             </select>
+            <span className="mt-1 block text-xs leading-5 text-[#64736f]">Choose student for normal student portal accounts.</span>
           </label>
 
           <label className="block">
@@ -118,6 +173,7 @@ export default function RegisterPage() {
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
               placeholder="CSE-2026-001"
             />
+            <span className="mt-1 block text-xs leading-5 text-[#64736f]">Optional visual field for now. It is not submitted yet.</span>
           </label>
 
           <label className="block sm:col-span-2">
@@ -129,6 +185,7 @@ export default function RegisterPage() {
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
               placeholder="Optional, for example 1"
             />
+            <span className="mt-1 block text-xs leading-5 text-[#64736f]">Optional visual field for now. It is not submitted yet.</span>
           </label>
 
           <button

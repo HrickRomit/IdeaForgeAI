@@ -2,6 +2,29 @@ import { useState } from "react";
 import { ArrowLeft, LogIn } from "lucide-react";
 import { loginUser } from "../../api/authApi";
 
+function getErrorMessage(error) {
+  if (!error.response) {
+    return "Could not reach the backend server. Start the FastAPI backend on http://localhost:8000, then try again.";
+  }
+
+  const detail = error.response.data?.detail;
+
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => {
+        const field = item.loc?.slice(1).join(".") || "field";
+        return `${field}: ${item.msg}`;
+      })
+      .join(" ");
+  }
+
+  if (typeof detail === "object" && detail !== null) {
+    return JSON.stringify(detail);
+  }
+
+  return detail || error.message || "Login failed.";
+}
+
 export default function LoginPage() {
   const [form, setForm] = useState({
     email: "",
@@ -25,15 +48,30 @@ export default function LoginPage() {
     try {
       const response = await loginUser(form);
       const token = response.data?.access_token;
+      const user = response.data?.user;
 
       if (token) {
         localStorage.setItem("ideaforge_access_token", token);
       }
 
-      setStatus("Login successful. Backend returned a valid response.");
+      if (user) {
+        localStorage.setItem("ideaforge_user_role", user.role);
+        localStorage.setItem("ideaforge_user_name", user.full_name);
+      }
+
+      setStatus("Login successful. Redirecting...");
+
+      // Redirect depending on user 
+      if (user?.role === "student") {
+        window.location.pathname = "/student";
+      } else if (user?.role === "faculty") {
+        window.location.pathname = "/faculty";
+      } else {
+        // Fallback for admin or other roles
+        window.location.pathname = "/";
+      }
     } catch (error) {
-      const message = error.response?.data?.detail || error.message || "Login failed.";
-      setStatus(`Login failed: ${message}`);
+      setStatus(`Login failed: ${getErrorMessage(error)}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -59,14 +97,14 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <label className="block">
-            <span className="text-sm font-semibold">Email</span>
+            <span className="text-sm font-semibold">Email or username</span>
             <input
-              type="email"
+              type="text"
               value={form.email}
               onChange={(event) => handleChange("email", event.target.value)}
               required
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
-              placeholder="student@example.com"
+              placeholder="student@example.com or student1"
             />
           </label>
 
@@ -78,7 +116,7 @@ export default function LoginPage() {
               onChange={(event) => handleChange("password", event.target.value)}
               required
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
-              placeholder="Your password"
+              placeholder="Any password"
             />
           </label>
 
