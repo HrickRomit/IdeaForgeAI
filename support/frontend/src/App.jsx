@@ -212,7 +212,7 @@ function App() {
             <span className="grid size-10 place-items-center rounded-md bg-white/12 ring-1 ring-white/20 backdrop-blur">
               <Sparkles className="size-5" aria-hidden="true" />
             </span>
-            <span className="text-lg font-semibold tracking-normal">CSE299AI</span>
+            <span className="text-lg font-semibold tracking-normal">IdeaForge AI</span>
           </a>
           <nav className="hidden items-center gap-7 text-sm font-medium text-white/78 md:flex">
             <a href="#platform" className="transition hover:text-white">
