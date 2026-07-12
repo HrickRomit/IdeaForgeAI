@@ -1,32 +1,122 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Bell, BookOpenCheck, ClipboardList, FileSearch, PieChart as PieChartIcon, Stamp, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bell,
+  BookOpenCheck,
+  ClipboardList,
+  FileSearch,
+  PieChart as PieChartIcon,
+  Stamp,
+  X,
+} from "lucide-react";
 import AnalyticsCharts from "../../components/faculty/AnalyticsCharts";
 import ProposalReviewPanel from "../../components/faculty/ProposalReviewPanel";
 import ReviewQueue from "../../components/faculty/ReviewQueue";
 import SimilarityDetailView from "../../components/faculty/SimilarityDetailView";
 import { facultyMember, getAssignedProposals, initialProposals, statusStyles } from "../../components/faculty/facultyMockData";
 
+function ProjectOverview({ proposals, onReviewProject }) {
+  const statusOrder = ["Pending", "Approved", "Rejected", "Changes"];
+  const visibleStatuses = statusOrder.filter((status) => proposals.some((proposal) => proposal.status === status));
+
+  return (
+    <section className="space-y-5">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {visibleStatuses.map((status) => (
+          <div key={status} className="rounded-md border border-[#d9e1dc] bg-white px-4 py-3 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64736f]">{status}</p>
+            <p className="mt-1 text-2xl font-bold" style={{ color: statusStyles[status].color }}>
+              {proposals.filter((proposal) => proposal.status === status).length}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {proposals.map((proposal) => (
+          <article key={proposal.id} className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">{proposal.id}</p>
+                <h3 className="mt-2 text-xl font-bold leading-tight text-[#17201d]">{proposal.title}</h3>
+                <p className="mt-2 text-sm text-[#64736f]">
+                  {proposal.student} / {proposal.dept} / {proposal.date}
+                </p>
+              </div>
+              <span
+                className="rounded-md border px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em]"
+                style={{
+                  borderColor: statusStyles[proposal.status].color,
+                  backgroundColor: statusStyles[proposal.status].bg,
+                  color: statusStyles[proposal.status].color,
+                }}
+              >
+                {statusStyles[proposal.status].ink}
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-md bg-[#f6f8f7] px-3 py-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64736f]">Similarity</p>
+                <p className="mt-1 text-lg font-bold text-[#0b6b61]">{proposal.similarity}%</p>
+              </div>
+              <div className="rounded-md bg-[#f6f8f7] px-3 py-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64736f]">Notifications</p>
+                <p className="mt-1 text-lg font-bold text-[#0b6b61]">{proposal.notifications?.length || 0}</p>
+              </div>
+            </div>
+
+            <p className="mt-4 line-clamp-2 text-sm leading-6 text-[#394842]">{proposal.summary}</p>
+
+            {proposal.status === "Pending" && (
+              <button
+                type="button"
+                onClick={() => onReviewProject(proposal.id)}
+                className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[#15c7a8] px-4 text-sm font-bold text-[#071817] transition hover:bg-[#74ead7]"
+              >
+                Open Review
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </button>
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function FacultyPortalPage() {
   const [proposals, setProposals] = useState(initialProposals);
   const [selectedId, setSelectedId] = useState("CSE-26-014");
-  const [statusFilter, setStatusFilter] = useState("Pending");
   const [query, setQuery] = useState("");
   const [toast, setToast] = useState("");
+  const [activeView, setActiveView] = useState("projects");
 
   const assignedProposals = useMemo(
     () => getAssignedProposals(proposals, facultyMember.id),
     [proposals],
   );
 
+  const pendingProposals = useMemo(
+    () => assignedProposals.filter((proposal) => proposal.status === "Pending"),
+    [assignedProposals],
+  );
+
   const selected =
-    assignedProposals.find((proposal) => proposal.id === selectedId) ||
-    assignedProposals.find((proposal) => proposal.status === "Pending") ||
-    assignedProposals[0];
+    pendingProposals.find((proposal) => proposal.id === selectedId) ||
+    pendingProposals[0];
 
   const pendingCount = assignedProposals.filter((proposal) => proposal.status === "Pending").length;
   const averageSimilarity = Math.round(
     assignedProposals.reduce((sum, proposal) => sum + proposal.similarity, 0) / Math.max(assignedProposals.length, 1),
   );
+
+  const viewTitle = {
+    projects: "Projects",
+    queue: "Review Queue",
+    analytics: "Analytics",
+  }[activeView];
 
   const handleSelectProposal = (proposalId) => {
     setSelectedId(proposalId);
@@ -63,6 +153,12 @@ export default function FacultyPortalPage() {
     setToast(`${statusStyles[nextStatus].ink} stamped on ${selected.id}. Student notification saved.`);
   };
 
+  const openReviewQueue = (proposalId) => {
+    setSelectedId(proposalId);
+    setQuery("");
+    setActiveView("queue");
+  };
+
   return (
     <main className="min-h-screen bg-[#f6f8f7] text-[#17201d]">
       <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
@@ -84,14 +180,21 @@ export default function FacultyPortalPage() {
           </div>
           <nav className="mt-10 space-y-2 text-sm font-semibold">
             {[
-              [ClipboardList, "Review Queue", "#queue"],
-              [FileSearch, "Similarity", "#similarity"],
-              [PieChartIcon, "Analytics", "#analytics"],
-            ].map(([Icon, label, href]) => (
-              <a key={label} href={href} className="flex items-center gap-3 rounded-md px-3 py-3 text-white/84 transition hover:bg-white/10 hover:text-white">
+              [FileSearch, "Projects", "projects"],
+              [ClipboardList, "Review Queue", "queue"],
+              [PieChartIcon, "Analytics", "analytics"],
+            ].map(([Icon, label, view]) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setActiveView(view)}
+                className={`flex w-full items-center gap-3 rounded-md px-3 py-3 text-left transition ${
+                  activeView === view ? "bg-white/12 text-white" : "text-white/84 hover:bg-white/10 hover:text-white"
+                }`}
+              >
                 <Icon className="size-4 text-[#15c7a8]" aria-hidden="true" />
                 {label}
-              </a>
+              </button>
             ))}
           </nav>
         </aside>
@@ -113,7 +216,7 @@ export default function FacultyPortalPage() {
                 Spring 2026 Review Board
               </p>
               <h2 className="mt-2 text-4xl font-bold tracking-normal text-[#17201d]">
-                Faculty Portal
+                {viewTitle}
               </h2>
             </div>
             <div className="grid grid-cols-3 gap-3">
@@ -130,61 +233,75 @@ export default function FacultyPortalPage() {
             </div>
           </header>
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-[420px_1fr]">
-            <ReviewQueue
-              proposals={assignedProposals}
-              selectedId={selected?.id}
-              onSelectProposal={handleSelectProposal}
-              statusFilter={statusFilter}
-              onStatusFilterChange={setStatusFilter}
-              query={query}
-              onQueryChange={setQuery}
-            />
-
-            {selected && (
-              <section className="space-y-6">
-                <article className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
-                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">
-                        {selected.id}
-                      </p>
-                      <h3 className="mt-2 text-3xl font-bold tracking-normal">{selected.title}</h3>
-                      <p className="mt-2 text-sm text-[#64736f]">
-                        {selected.student} / {selected.dept} / {selected.date}
-                      </p>
-                    </div>
-                    <div
-                      className="inline-flex items-center gap-2 rounded-md border px-4 py-3 text-sm font-bold uppercase tracking-[0.08em]"
-                      style={{
-                        borderColor: statusStyles[selected.status].color,
-                        backgroundColor: statusStyles[selected.status].bg,
-                        color: statusStyles[selected.status].color,
-                      }}
-                    >
-                      <Stamp className="size-4" aria-hidden="true" />
-                      {statusStyles[selected.status].ink}
-                    </div>
-                  </div>
-
-                  <div className="mt-5 rounded-md border border-[#d9e1dc] bg-[#f6f8f7] p-4">
-                    <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0b6b61]">
-                      <BookOpenCheck className="size-4" aria-hidden="true" />
-                      AI Summary Annotation
-                    </p>
-                    <p className="mt-3 text-base leading-7 text-[#394842]">
-                      {selected.summary}
-                    </p>
-                  </div>
-                </article>
-
-                <SimilarityDetailView proposal={selected} />
-                <ProposalReviewPanel proposal={selected} onDecision={handleDecision} />
-              </section>
+          <div className="mt-6">
+            {activeView === "projects" && (
+              <ProjectOverview proposals={assignedProposals} onReviewProject={openReviewQueue} />
             )}
-          </div>
 
-          <AnalyticsCharts proposals={assignedProposals} />
+            {activeView === "queue" && (
+              <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
+                <ReviewQueue
+                  proposals={pendingProposals}
+                  selectedId={selected?.id}
+                  onSelectProposal={handleSelectProposal}
+                  query={query}
+                  onQueryChange={setQuery}
+                  showFilters={false}
+                  eyebrow="Pending Review Queue"
+                  title="Projects Awaiting Decision"
+                  emptyMessage="No pending projects are waiting for review."
+                />
+
+                {selected ? (
+                  <section className="space-y-6">
+                    <article className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
+                      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">
+                            {selected.id}
+                          </p>
+                          <h3 className="mt-2 text-3xl font-bold tracking-normal">{selected.title}</h3>
+                          <p className="mt-2 text-sm text-[#64736f]">
+                            {selected.student} / {selected.dept} / {selected.date}
+                          </p>
+                        </div>
+                        <div
+                          className="inline-flex items-center gap-2 rounded-md border px-4 py-3 text-sm font-bold uppercase tracking-[0.08em]"
+                          style={{
+                            borderColor: statusStyles[selected.status].color,
+                            backgroundColor: statusStyles[selected.status].bg,
+                            color: statusStyles[selected.status].color,
+                          }}
+                        >
+                          <Stamp className="size-4" aria-hidden="true" />
+                          {statusStyles[selected.status].ink}
+                        </div>
+                      </div>
+
+                      <div className="mt-5 rounded-md border border-[#d9e1dc] bg-[#f6f8f7] p-4">
+                        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0b6b61]">
+                          <BookOpenCheck className="size-4" aria-hidden="true" />
+                          AI Summary Annotation
+                        </p>
+                        <p className="mt-3 text-base leading-7 text-[#394842]">
+                          {selected.summary}
+                        </p>
+                      </div>
+                    </article>
+
+                    <SimilarityDetailView proposal={selected} />
+                    <ProposalReviewPanel proposal={selected} onDecision={handleDecision} />
+                  </section>
+                ) : (
+                  <article className="rounded-md border border-[#d9e1dc] bg-white p-6 text-sm text-[#64736f] shadow-sm">
+                    All assigned projects have already been reviewed.
+                  </article>
+                )}
+              </div>
+            )}
+
+            {activeView === "analytics" && <AnalyticsCharts proposals={assignedProposals} />}
+          </div>
         </section>
       </div>
     </main>

@@ -5,10 +5,14 @@ export default function ReviewQueue({
   proposals,
   selectedId,
   onSelectProposal,
-  statusFilter,
+  statusFilter = "All",
   onStatusFilterChange,
   query,
   onQueryChange,
+  showFilters = true,
+  eyebrow = "Proposal Review Queue",
+  title = "Assigned Proposals",
+  emptyMessage = "No assigned proposals match the current filters.",
 }) {
   const filtered = proposals.filter((proposal) => {
     const matchesStatus = statusFilter === "All" || proposal.status === statusFilter;
@@ -24,9 +28,9 @@ export default function ReviewQueue({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">
-              Proposal Review Queue
+              {eyebrow}
             </p>
-            <h3 className="mt-1 text-2xl font-bold tracking-normal">Assigned Proposals</h3>
+            <h3 className="mt-1 text-2xl font-bold tracking-normal">{title}</h3>
           </div>
           <div className="text-right text-xs font-semibold uppercase tracking-[0.08em] text-[#64736f]">
             <p>{proposals.length} assigned</p>
@@ -44,21 +48,23 @@ export default function ReviewQueue({
           />
         </div>
 
-        <div className="mt-3 flex items-center gap-2 overflow-x-auto">
-          <Filter className="size-4 shrink-0 text-[#0b6b61]" aria-hidden="true" />
-          {["All", "Pending", "Approved", "Changes", "Rejected"].map((status) => (
-            <button
-              key={status}
-              type="button"
-              onClick={() => onStatusFilterChange(status)}
-              className={`h-8 rounded-md border px-3 text-xs font-bold transition ${
-                statusFilter === status ? "border-[#0b6b61] bg-[#0b6b61] text-white" : "border-[#d9e1dc] bg-white text-[#394842] hover:border-[#15c7a8]"
-              }`}
-            >
-              {status}
-            </button>
-          ))}
-        </div>
+        {showFilters && (
+          <div className="mt-3 flex items-center gap-2 overflow-x-auto">
+            <Filter className="size-4 shrink-0 text-[#0b6b61]" aria-hidden="true" />
+            {["All", "Pending", "Approved", "Changes", "Rejected"].map((status) => (
+              <button
+                key={status}
+                type="button"
+                onClick={() => onStatusFilterChange(status)}
+                className={`h-8 rounded-md border px-3 text-xs font-bold transition ${
+                  statusFilter === status ? "border-[#0b6b61] bg-[#0b6b61] text-white" : "border-[#d9e1dc] bg-white text-[#394842] hover:border-[#15c7a8]"
+                }`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="max-h-[690px] overflow-y-auto">
@@ -101,7 +107,7 @@ export default function ReviewQueue({
         ))}
 
         {filtered.length === 0 && (
-          <div className="p-6 text-sm text-[#64736f]">No assigned proposals match the current filters.</div>
+          <div className="p-6 text-sm text-[#64736f]">{emptyMessage}</div>
         )}
       </div>
     </section>
