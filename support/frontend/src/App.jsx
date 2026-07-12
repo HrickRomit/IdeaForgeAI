@@ -26,6 +26,7 @@ import heroImage from "./assets/ideaforge-hero.png";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
 import FacultyPortalPage from "./pages/faculty/FacultyPortalPage.jsx";
+import SearchPage from "./pages/student/SearchPage.jsx";
 import StudentPortalPage from "./pages/student/StudentPortalPage.jsx";
 
 const audiences = [
@@ -94,7 +95,7 @@ const primaryActions = [
   {
     icon: Search,
     label: "Search Previous Projects",
-    href: "/student",
+    href: "/student/search",
   },
   {
     icon: Lightbulb,
@@ -187,6 +188,10 @@ function App() {
 
   if (window.location.pathname.startsWith("/register")) {
     return <RegisterPage />;
+  }
+
+  if (window.location.pathname.startsWith("/student/search")) {
+    return <SearchPage />;
   }
 
   if (window.location.pathname.startsWith("/student")) {
