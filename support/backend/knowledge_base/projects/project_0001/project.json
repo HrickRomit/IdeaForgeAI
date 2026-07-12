@@ -1,0 +1,435 @@
+{
+  "project_id": "project_0001",
+  "basic_information": {
+    "title": "Smart Campus Complaint and Maintenance Tracking System",
+    "short_title": "Smart Campus Maintenance",
+    "slug": "smart-campus-complaint-maintenance-tracking-system",
+    "project_type": "capstone",
+    "status": "archived",
+    "summary": "A web-based platform that helps university students and staff report campus facility issues, route them to the correct maintenance unit, and monitor resolution progress through structured status tracking.",
+    "repository_url": null,
+    "demo_url": null
+  },
+  "academic_information": {
+    "institution": "Metropolitan University of Technology",
+    "faculty": "Faculty of Science and Engineering",
+    "department": "Computer Science and Engineering",
+    "program": "BSc in Computer Science and Engineering",
+    "course_code": "CSE499",
+    "course_title": "Final Year Design Project",
+    "academic_level": "undergraduate",
+    "academic_year": "2025-2026",
+    "semester": "fall",
+    "submission_date": "2026-01-18",
+    "authors": [
+      {
+        "name": "Nadia Rahman",
+        "student_id": "CSE-2021-014",
+        "email": "nadia.rahman@example.edu",
+        "department": "Computer Science and Engineering",
+        "role": "Frontend and UX Lead"
+      },
+      {
+        "name": "Tariq Hasan",
+        "student_id": "CSE-2021-027",
+        "email": "tariq.hasan@example.edu",
+        "department": "Computer Science and Engineering",
+        "role": "Backend and Database Lead"
+      },
+      {
+        "name": "Maliha Chowdhury",
+        "student_id": "CSE-2021-041",
+        "email": "maliha.chowdhury@example.edu",
+        "department": "Computer Science and Engineering",
+        "role": "QA and Documentation Lead"
+      }
+    ],
+    "supervisor": {
+      "name": "Dr. Farhana Karim",
+      "email": "farhana.karim@example.edu",
+      "department": "Computer Science and Engineering",
+      "role": "Project Supervisor"
+    },
+    "co_supervisor": null,
+    "evaluation": {
+      "grade": "A",
+      "score": 88,
+      "award_or_recognition": "Selected for departmental project showcase"
+    }
+  },
+  "abstract": "University facility maintenance is often handled through informal phone calls, paper registers, or scattered messaging channels, which makes issue tracking slow and difficult to audit. This project presents a Smart Campus Complaint and Maintenance Tracking System designed for students, faculty members, administrators, and maintenance staff. The platform allows users to submit complaints with category, location, priority, and optional image evidence. Administrators can assign issues to responsible teams, maintenance staff can update progress, and users can observe the status of each complaint. The system also provides dashboards for unresolved issues, frequent problem locations, response time trends, and category-wise complaint distribution. The project focuses on improving transparency, accountability, and operational efficiency in university campus maintenance workflows.",
+  "problem_statement": "Many universities lack a centralized digital process for reporting and resolving campus facility issues such as classroom equipment failure, electrical problems, sanitation concerns, or network outages. As a result, complaints are frequently lost, duplicated, delayed, or resolved without notifying the requester. Administrative staff also have limited visibility into recurring maintenance patterns, team workload, and response time performance. A structured complaint tracking system is needed to organize issue submission, assignment, resolution, and reporting in a transparent way.",
+  "objectives": {
+    "primary": [
+      "Develop a centralized web platform for submitting, assigning, tracking, and resolving campus maintenance complaints.",
+      "Provide role-based access for students, faculty, administrators, and maintenance staff.",
+      "Generate operational dashboards that summarize complaint volume, resolution status, priority, category, and location trends."
+    ],
+    "secondary": [
+      "Reduce duplicate complaint reporting by showing active issues in common campus locations.",
+      "Improve requester communication through status updates and resolution notes.",
+      "Create a searchable archive of completed maintenance requests for administrative review."
+    ]
+  },
+  "scope": {
+    "included": [
+      "Complaint submission with category, description, priority, building, room, and image reference fields.",
+      "Administrative assignment of complaints to maintenance teams.",
+      "Status workflow covering submitted, assigned, in progress, resolved, rejected, and reopened complaints.",
+      "Role-specific dashboards for requesters, administrators, and maintenance staff.",
+      "Basic analytics for category frequency, location frequency, average resolution time, and overdue complaints."
+    ],
+    "excluded": [
+      "Real-time IoT sensor integration for automatic fault detection.",
+      "Payment, procurement, or inventory management for replacement parts.",
+      "Native mobile applications for Android or iOS.",
+      "Automated staff scheduling or route optimization."
+    ],
+    "target_users": [
+      "Students",
+      "Faculty members",
+      "Administrative officers",
+      "Maintenance supervisors",
+      "Maintenance technicians"
+    ],
+    "deployment_context": "Designed for deployment on a university intranet or cloud-hosted departmental server with authenticated access."
+  },
+  "features": [
+    {
+      "name": "Complaint Submission",
+      "description": "Allows authenticated users to report facility issues with structured metadata and optional image evidence.",
+      "priority": "core",
+      "user_roles": ["Student", "Faculty"]
+    },
+    {
+      "name": "Role-Based Dashboard",
+      "description": "Displays pending complaints, assigned work, resolved issues, and summary indicators based on the logged-in user role.",
+      "priority": "core",
+      "user_roles": ["Student", "Faculty", "Admin", "Maintenance Staff"]
+    },
+    {
+      "name": "Assignment Workflow",
+      "description": "Enables administrators to assign validated complaints to the appropriate maintenance team or technician.",
+      "priority": "core",
+      "user_roles": ["Admin"]
+    },
+    {
+      "name": "Status Tracking",
+      "description": "Tracks each complaint through a defined lifecycle and records staff comments for transparency.",
+      "priority": "core",
+      "user_roles": ["Student", "Faculty", "Admin", "Maintenance Staff"]
+    },
+    {
+      "name": "Maintenance Analytics",
+      "description": "Summarizes complaint frequency, overdue cases, average resolution time, and recurring campus problem areas.",
+      "priority": "important",
+      "user_roles": ["Admin"]
+    },
+    {
+      "name": "Searchable Complaint Archive",
+      "description": "Provides filters for historical complaints by category, building, priority, status, and date range.",
+      "priority": "important",
+      "user_roles": ["Admin", "Maintenance Staff"]
+    }
+  ],
+  "modules": [
+    {
+      "name": "Authentication and Authorization Module",
+      "purpose": "Manage secure login and role-based access across all system workflows.",
+      "responsibilities": [
+        "Authenticate users with email and password credentials.",
+        "Restrict routes and actions based on assigned user role.",
+        "Maintain session state for frontend clients."
+      ],
+      "inputs": ["Email", "Password", "Role"],
+      "outputs": ["Authenticated user profile", "Access token", "Permission context"]
+    },
+    {
+      "name": "Complaint Management Module",
+      "purpose": "Handle complaint creation, update, validation, and status transitions.",
+      "responsibilities": [
+        "Store complaint descriptions, locations, categories, and priorities.",
+        "Apply status changes according to the complaint lifecycle.",
+        "Record requester and staff activity history."
+      ],
+      "inputs": ["Complaint form data", "Status updates", "Resolution notes"],
+      "outputs": ["Complaint records", "Status history", "Requester notifications"]
+    },
+    {
+      "name": "Assignment Module",
+      "purpose": "Route maintenance issues to suitable teams or technicians.",
+      "responsibilities": [
+        "List unassigned complaints for administrative review.",
+        "Assign complaints by category and campus location.",
+        "Track technician workload and assigned tasks."
+      ],
+      "inputs": ["Complaint category", "Location", "Maintenance team"],
+      "outputs": ["Assignment records", "Technician task lists"]
+    },
+    {
+      "name": "Analytics Module",
+      "purpose": "Generate administrative insights from complaint and resolution data.",
+      "responsibilities": [
+        "Calculate complaint counts by category, location, and status.",
+        "Compute average resolution time and overdue issue counts.",
+        "Prepare data for dashboard charts and reports."
+      ],
+      "inputs": ["Complaint records", "Status timestamps", "Location metadata"],
+      "outputs": ["Dashboard metrics", "Filtered analytics summaries"]
+    }
+  ],
+  "technologies": {
+    "programming_languages": [
+      {
+        "name": "Python",
+        "version": "3.11",
+        "purpose": "Backend API development and server-side business logic.",
+        "category": "backend"
+      },
+      {
+        "name": "JavaScript",
+        "version": "ES2022",
+        "purpose": "Frontend application development and client-side interactions.",
+        "category": "frontend"
+      },
+      {
+        "name": "SQL",
+        "purpose": "Relational data modeling, querying, and reporting.",
+        "category": "database"
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "FastAPI",
+        "version": "0.115",
+        "purpose": "Build REST API endpoints for complaints, users, assignments, and analytics.",
+        "category": "backend"
+      },
+      {
+        "name": "React",
+        "version": "18",
+        "purpose": "Build role-based dashboards and interactive complaint management screens.",
+        "category": "frontend"
+      },
+      {
+        "name": "Tailwind CSS",
+        "version": "3",
+        "purpose": "Implement responsive user interface styling.",
+        "category": "frontend"
+      }
+    ],
+    "libraries": [
+      {
+        "name": "SQLAlchemy",
+        "version": "2.0",
+        "purpose": "Object-relational mapping for complaint, user, and assignment entities.",
+        "category": "backend"
+      },
+      {
+        "name": "Alembic",
+        "version": "1.14",
+        "purpose": "Database migration management.",
+        "category": "backend"
+      },
+      {
+        "name": "Axios",
+        "purpose": "HTTP communication between frontend and backend APIs.",
+        "category": "frontend"
+      }
+    ],
+    "database": [
+      {
+        "name": "PostgreSQL",
+        "version": "15",
+        "purpose": "Store users, complaints, assignments, status history, and analytics source data.",
+        "category": "relational"
+      }
+    ],
+    "apis": [
+      {
+        "name": "Complaint REST API",
+        "purpose": "Expose complaint creation, update, listing, filtering, and status transition operations.",
+        "provider": "Internal backend service",
+        "integration_type": "internal"
+      },
+      {
+        "name": "Analytics REST API",
+        "purpose": "Expose dashboard metrics and filtered maintenance reports.",
+        "provider": "Internal backend service",
+        "integration_type": "internal"
+      }
+    ],
+    "tools": [
+      {
+        "name": "Docker",
+        "purpose": "Containerize backend, frontend, and database services for development deployment.",
+        "category": "devops"
+      },
+      {
+        "name": "Git",
+        "purpose": "Version control and collaborative development workflow.",
+        "category": "development"
+      },
+      {
+        "name": "Postman",
+        "purpose": "Manual API testing and endpoint documentation.",
+        "category": "testing"
+      }
+    ],
+    "platforms": [
+      {
+        "name": "Web Browser",
+        "purpose": "Primary client platform for all user roles.",
+        "category": "client"
+      },
+      {
+        "name": "Linux Server",
+        "purpose": "Target deployment environment for the backend and database services.",
+        "category": "deployment"
+      }
+    ]
+  },
+  "ai_usage": {
+    "uses_ai": false,
+    "description": "The archived project does not implement AI or machine learning features. Its analytics are rule-based and generated from structured complaint records.",
+    "techniques": [],
+    "models": [],
+    "training_data": "No training dataset was used because the project does not include model training.",
+    "evaluation_metrics": []
+  },
+  "algorithms": [
+    {
+      "name": "Role-Based Access Control",
+      "purpose": "Determine which complaint actions and dashboard views are available to each user role.",
+      "category": "security",
+      "complexity": "Low"
+    },
+    {
+      "name": "Priority-Based Sorting",
+      "purpose": "Order active complaints by priority, submission date, and overdue status for administrative review.",
+      "category": "ranking",
+      "complexity": "Low"
+    },
+    {
+      "name": "Resolution Time Aggregation",
+      "purpose": "Calculate average and category-wise resolution times from status history timestamps.",
+      "category": "data_processing",
+      "complexity": "Medium"
+    }
+  ],
+  "difficulty": {
+    "level": "intermediate",
+    "score": 6,
+    "reasons": [
+      "Requires multiple user roles with different permissions and workflows.",
+      "Needs careful relational database modeling for complaints, assignments, and status history.",
+      "Includes dashboard analytics that depend on accurate timestamp and status data."
+    ],
+    "prerequisites": [
+      "REST API development",
+      "Relational database design",
+      "Frontend state management",
+      "Authentication and authorization basics"
+    ]
+  },
+  "estimated_duration": {
+    "value": 4,
+    "unit": "months",
+    "phase_breakdown": [
+      {
+        "phase": "Requirement analysis and workflow design",
+        "duration": "3 weeks"
+      },
+      {
+        "phase": "Database and API implementation",
+        "duration": "5 weeks"
+      },
+      {
+        "phase": "Frontend dashboard development",
+        "duration": "5 weeks"
+      },
+      {
+        "phase": "Testing, documentation, and deployment preparation",
+        "duration": "3 weeks"
+      }
+    ]
+  },
+  "team_size": {
+    "minimum": 2,
+    "recommended": 3,
+    "maximum": 4,
+    "roles": [
+      "Backend developer",
+      "Frontend developer",
+      "Database designer",
+      "QA and documentation coordinator"
+    ]
+  },
+  "keywords": [
+    "campus maintenance",
+    "complaint management",
+    "facility management",
+    "role-based access control",
+    "dashboard analytics",
+    "issue tracking",
+    "PostgreSQL",
+    "FastAPI",
+    "React"
+  ],
+  "research_area": {
+    "primary": "Information Systems",
+    "secondary": [
+      "Campus Management Systems",
+      "Workflow Automation",
+      "Administrative Decision Support",
+      "Web Application Development"
+    ],
+    "application_domain": "University facility maintenance and administrative operations"
+  },
+  "supervisor_specialization": [
+    "Software Engineering",
+    "Database Systems",
+    "Information Systems",
+    "Human-Computer Interaction"
+  ],
+  "expected_outcomes": [
+    "A functional web platform for reporting and tracking campus maintenance complaints.",
+    "A normalized PostgreSQL database storing complaint, assignment, user, and status history records.",
+    "Administrative dashboards that support visibility into unresolved issues and recurring maintenance patterns.",
+    "Improved communication between requesters, administrators, and maintenance staff through transparent status updates."
+  ],
+  "limitations": [
+    "The system depends on manual complaint submission and does not detect issues automatically.",
+    "The prototype does not include a native mobile application or push notifications.",
+    "Analytics are descriptive and do not predict maintenance demand or recommend staff allocation.",
+    "The project assumes a single-campus deployment and does not fully model multi-campus organizations."
+  ],
+  "future_scope": [
+    "Add a mobile application with camera capture and push notifications for faster complaint reporting.",
+    "Integrate IoT sensors for automatic detection of power, temperature, and equipment faults.",
+    "Introduce AI-based duplicate complaint detection and priority recommendation.",
+    "Add predictive analytics for identifying recurring maintenance hotspots and seasonal demand.",
+    "Extend the system to support inventory tracking for maintenance parts and procurement requests."
+  ],
+  "search_metadata": {
+    "search_boost_terms": [
+      "maintenance tracking",
+      "complaint portal",
+      "campus issue reporting",
+      "facility dashboard",
+      "admin workflow"
+    ],
+    "related_project_types": [
+      "helpdesk management system",
+      "ticketing system",
+      "facility management platform",
+      "administrative workflow system"
+    ],
+    "suitable_for_students_with": [
+      "basic FastAPI experience",
+      "React dashboard development interest",
+      "database design knowledge",
+      "interest in university operations"
+    ]
+  }
+}
