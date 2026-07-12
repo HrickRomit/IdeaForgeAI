@@ -6,8 +6,10 @@ import {
   BookOpenCheck,
   ClipboardList,
   FileSearch,
+  LayoutDashboard,
   PieChart as PieChartIcon,
   Stamp,
+  UserCircle,
   X,
 } from "lucide-react";
 import AnalyticsCharts from "../../components/faculty/AnalyticsCharts";
@@ -15,6 +17,154 @@ import ProposalReviewPanel from "../../components/faculty/ProposalReviewPanel";
 import ReviewQueue from "../../components/faculty/ReviewQueue";
 import SimilarityDetailView from "../../components/faculty/SimilarityDetailView";
 import { facultyMember, getAssignedProposals, initialProposals, statusStyles } from "../../components/faculty/facultyMockData";
+
+function FacultyOverview({ proposals, pendingCount, averageSimilarity, onNavigate }) {
+  const [showProfile, setShowProfile] = useState(false);
+  const approvedCount = proposals.filter((proposal) => proposal.status === "Approved").length;
+  const rejectedCount = proposals.filter((proposal) => proposal.status === "Rejected").length;
+  const latestPending = proposals.find((proposal) => proposal.status === "Pending");
+
+  const actions = [
+    {
+      icon: FileSearch,
+      title: "View Projects",
+      copy: "See every assigned project grouped by review status.",
+      view: "projects",
+    },
+    {
+      icon: ClipboardList,
+      title: "Open Review Queue",
+      copy: "Review pending projects and send decisions to students.",
+      view: "queue",
+    },
+    {
+      icon: PieChartIcon,
+      title: "Check Analytics",
+      copy: "Track approval rate, rejection rate, departments, and submission trends.",
+      view: "analytics",
+    },
+  ];
+
+  return (
+    <section className="space-y-6">
+      <article className="rounded-md border border-[#d9e1dc] bg-[#17201d] p-6 text-white shadow-sm">
+        <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#74ead7]">Welcome Back</p>
+            <h3 className="mt-3 text-3xl font-bold tracking-normal sm:text-4xl">
+              Hello, {facultyMember.name}
+            </h3>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-white/72">
+              Your faculty workspace is ready for project monitoring, pending reviews, and review analytics.
+            </p>
+            {latestPending && (
+              <button
+                type="button"
+                onClick={() => onNavigate("queue", latestPending.id)}
+                className="mt-6 inline-flex h-11 items-center gap-2 rounded-md bg-[#15c7a8] px-4 text-sm font-bold text-[#071817] transition hover:bg-[#74ead7]"
+              >
+                Continue Latest Review
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </button>
+            )}
+          </div>
+
+          <div className="rounded-md border border-white/12 bg-white/7 p-5">
+            <div className="flex items-center gap-3">
+              <span className="grid size-12 place-items-center rounded-md bg-[#15c7a8] text-[#071817]">
+                <UserCircle className="size-6" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="text-sm font-bold">{facultyMember.name}</p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-white/62">
+                  {facultyMember.department} / {facultyMember.id}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowProfile((current) => !current)}
+              className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-white/16 bg-white/8 px-4 text-sm font-bold text-white transition hover:bg-white/14"
+            >
+              <UserCircle className="size-4" aria-hidden="true" />
+              View Profile
+            </button>
+          </div>
+        </div>
+      </article>
+
+      {showProfile && (
+        <article className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="grid size-11 place-items-center rounded-md bg-[#e5f8f4] text-[#0b6b61]">
+              <UserCircle className="size-5" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">Faculty Profile</p>
+              <h3 className="mt-1 text-xl font-bold text-[#17201d]">{facultyMember.name}</h3>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            {[
+              ["Faculty ID", facultyMember.id],
+              ["Department", facultyMember.department],
+              ["Assigned Projects", proposals.length],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-md bg-[#f6f8f7] px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64736f]">{label}</p>
+                <p className="mt-1 text-sm font-bold text-[#17201d]">{value}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+      )}
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          ["Assigned", proposals.length],
+          ["Pending", pendingCount],
+          ["Approved", approvedCount],
+          ["Rejected", rejectedCount],
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-md border border-[#d9e1dc] bg-white px-4 py-3 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64736f]">{label}</p>
+            <p className="mt-1 text-2xl font-bold text-[#0b6b61]">{value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        {actions.map(({ icon: Icon, title, copy, view }) => (
+          <button
+            key={title}
+            type="button"
+            onClick={() => onNavigate(view)}
+            className="group rounded-md border border-[#d9e1dc] bg-white p-5 text-left shadow-sm transition hover:border-[#15c7a8] hover:bg-[#f2fffb]"
+          >
+            <span className="grid size-11 place-items-center rounded-md bg-[#e5f8f4] text-[#0b6b61] transition group-hover:bg-[#15c7a8] group-hover:text-[#071817]">
+              <Icon className="size-5" aria-hidden="true" />
+            </span>
+            <span className="mt-5 block text-lg font-bold text-[#17201d]">{title}</span>
+            <span className="mt-2 block text-sm leading-6 text-[#52625d]">{copy}</span>
+          </button>
+        ))}
+      </div>
+
+      <article className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">Workspace Snapshot</p>
+            <h3 className="mt-1 text-2xl font-bold tracking-normal">Current review load</h3>
+          </div>
+          <div className="rounded-md bg-[#f6f8f7] px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64736f]">Average Similarity</p>
+            <p className="mt-1 text-2xl font-bold text-[#0b6b61]">{averageSimilarity}%</p>
+          </div>
+        </div>
+      </article>
+    </section>
+  );
+}
 
 function ProjectOverview({ proposals, onReviewProject }) {
   const statusOrder = ["Pending", "Approved", "Rejected", "Changes"];
@@ -91,7 +241,7 @@ export default function FacultyPortalPage() {
   const [selectedId, setSelectedId] = useState("CSE-26-014");
   const [query, setQuery] = useState("");
   const [toast, setToast] = useState("");
-  const [activeView, setActiveView] = useState("projects");
+  const [activeView, setActiveView] = useState("overview");
 
   const assignedProposals = useMemo(
     () => getAssignedProposals(proposals, facultyMember.id),
@@ -113,6 +263,7 @@ export default function FacultyPortalPage() {
   );
 
   const viewTitle = {
+    overview: "Overview",
     projects: "Projects",
     queue: "Review Queue",
     analytics: "Analytics",
@@ -159,6 +310,14 @@ export default function FacultyPortalPage() {
     setActiveView("queue");
   };
 
+  const handleNavigate = (view, proposalId) => {
+    if (proposalId) {
+      setSelectedId(proposalId);
+    }
+    setQuery("");
+    setActiveView(view);
+  };
+
   return (
     <main className="min-h-screen bg-[#f6f8f7] text-[#17201d]">
       <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
@@ -180,6 +339,7 @@ export default function FacultyPortalPage() {
           </div>
           <nav className="mt-10 space-y-2 text-sm font-semibold">
             {[
+              [LayoutDashboard, "Overview", "overview"],
               [FileSearch, "Projects", "projects"],
               [ClipboardList, "Review Queue", "queue"],
               [PieChartIcon, "Analytics", "analytics"],
@@ -234,6 +394,15 @@ export default function FacultyPortalPage() {
           </header>
 
           <div className="mt-6">
+            {activeView === "overview" && (
+              <FacultyOverview
+                proposals={assignedProposals}
+                pendingCount={pendingCount}
+                averageSimilarity={averageSimilarity}
+                onNavigate={handleNavigate}
+              />
+            )}
+
             {activeView === "projects" && (
               <ProjectOverview proposals={assignedProposals} onReviewProject={openReviewQueue} />
             )}
