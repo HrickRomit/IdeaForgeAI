@@ -5,10 +5,10 @@ export const facultyMember = {
 };
 
 export const statusStyles = {
-  Pending: { color: "#b8862f", bg: "#fff4cf", ink: "PENDING REVIEW" },
-  Approved: { color: "#6f8655", bg: "#eef5df", ink: "APPROVED" },
-  Rejected: { color: "#9b3f31", bg: "#f8ded7", ink: "REJECTED" },
-  Changes: { color: "#c06f2f", bg: "#fde8c9", ink: "REVISE" },
+  Pending: { color: "#0b6b61", bg: "#e5f8f4", ink: "PENDING REVIEW" },
+  Approved: { color: "#12805c", bg: "#e7f7ef", ink: "APPROVED" },
+  Rejected: { color: "#b42318", bg: "#fee4e2", ink: "REJECTED" },
+  Changes: { color: "#b76e00", bg: "#fff3d6", ink: "REVISE" },
 };
 
 export const initialProposals = [
