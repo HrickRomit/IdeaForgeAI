@@ -48,13 +48,13 @@ export default function AnalyticsCharts({ proposals }) {
   }, [proposals]);
 
   return (
-    <section id="analytics" className="mt-6 rounded-md border border-[#d8ceb8] bg-[#fffaf0] p-5">
+    <section id="analytics" className="mt-6 rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="font-['IBM_Plex_Mono'] text-xs uppercase tracking-[0.14em] text-[#8c4d3f]">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">
             Analytics Dashboard
           </p>
-          <h3 className="mt-1 font-['Source_Serif_4'] text-2xl font-semibold">Live Review Measures</h3>
+          <h3 className="mt-1 text-2xl font-bold tracking-normal">Live Review Measures</h3>
         </div>
         <div className="grid grid-cols-3 gap-3">
           {[
@@ -62,30 +62,30 @@ export default function AnalyticsCharts({ proposals }) {
             ["Approval", `${analytics.approvalRate}%`],
             ["Rejection", `${analytics.rejectionRate}%`],
           ].map(([label, value]) => (
-            <div key={label} className="border-l-4 border-[#b8862f] bg-white px-4 py-3 shadow-sm">
-              <p className="font-['IBM_Plex_Mono'] text-[11px] uppercase text-[#6f6a5d]">{label}</p>
-              <p className="mt-1 font-['Source_Serif_4'] text-2xl font-semibold">{value}</p>
+            <div key={label} className="rounded-md border border-[#d9e1dc] bg-[#f6f8f7] px-4 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#64736f]">{label}</p>
+              <p className="mt-1 text-2xl font-bold text-[#0b6b61]">{value}</p>
             </div>
           ))}
         </div>
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-3">
-        <div className="h-72 rounded-md border border-[#eadfc7] bg-white p-4">
-          <p className="font-['IBM_Plex_Mono'] text-xs font-bold uppercase text-[#6f6a5d]">Submission Trend</p>
+        <div className="h-72 rounded-md border border-[#d9e1dc] bg-[#fbfdfc] p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#64736f]">Submission Trend</p>
           <ResponsiveContainer width="100%" height="88%">
             <LineChart data={analytics.trend}>
-              <CartesianGrid stroke="#eee4cd" />
+              <CartesianGrid stroke="#e7eeeb" />
               <XAxis dataKey="date" />
               <YAxis allowDecimals={false} />
               <Tooltip />
-              <Line type="monotone" dataKey="submissions" stroke="#b8862f" strokeWidth={3} />
+              <Line type="monotone" dataKey="submissions" stroke="#15c7a8" strokeWidth={3} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="h-72 rounded-md border border-[#eadfc7] bg-white p-4">
-          <p className="font-['IBM_Plex_Mono'] text-xs font-bold uppercase text-[#6f6a5d]">Status Breakdown</p>
+        <div className="h-72 rounded-md border border-[#d9e1dc] bg-[#fbfdfc] p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#64736f]">Status Breakdown</p>
           <ResponsiveContainer width="100%" height="88%">
             <PieChart>
               <Pie data={analytics.byStatus} dataKey="value" nameKey="name" innerRadius={48} outerRadius={82} label>
@@ -98,15 +98,15 @@ export default function AnalyticsCharts({ proposals }) {
           </ResponsiveContainer>
         </div>
 
-        <div className="h-72 rounded-md border border-[#eadfc7] bg-white p-4">
-          <p className="font-['IBM_Plex_Mono'] text-xs font-bold uppercase text-[#6f6a5d]">By Department</p>
+        <div className="h-72 rounded-md border border-[#d9e1dc] bg-[#fbfdfc] p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#64736f]">By Department</p>
           <ResponsiveContainer width="100%" height="88%">
             <BarChart data={analytics.byDept}>
-              <CartesianGrid stroke="#eee4cd" />
+              <CartesianGrid stroke="#e7eeeb" />
               <XAxis dataKey="dept" />
               <YAxis allowDecimals={false} />
               <Tooltip />
-              <Bar dataKey="proposals" fill="#6f8655" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="proposals" fill="#0b6b61" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

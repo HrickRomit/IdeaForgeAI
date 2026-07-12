@@ -64,21 +64,21 @@ export default function FacultyPortalPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f4efe2] text-[#1c2b45]">
+    <main className="min-h-screen bg-[#f6f8f7] text-[#17201d]">
       <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
-        <aside className="bg-[#12213a] px-5 py-6 text-[#f8efd9]">
-          <a href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#f3c96b]">
+        <aside className="border-r border-[#d9e1dc] bg-[#17201d] px-5 py-6 text-white">
+          <a href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#74ead7]">
             <ArrowLeft className="size-4" aria-hidden="true" />
             Home
           </a>
           <div className="mt-10">
-            <p className="font-['IBM_Plex_Mono'] text-xs uppercase tracking-[0.18em] text-[#b8c0aa]">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#74ead7]">
               Faculty Desk
             </p>
-            <h1 className="mt-3 font-['Source_Serif_4'] text-4xl font-semibold leading-tight">
-              Academic Review Dossiers
+            <h1 className="mt-3 text-4xl font-bold leading-tight tracking-normal">
+              Academic Review
             </h1>
-            <p className="mt-4 text-sm leading-6 text-[#cdd6c0]">
+            <p className="mt-4 text-sm leading-6 text-white/72">
               {facultyMember.name} / {facultyMember.department} / {facultyMember.id}
             </p>
           </div>
@@ -88,8 +88,8 @@ export default function FacultyPortalPage() {
               [FileSearch, "Similarity", "#similarity"],
               [PieChartIcon, "Analytics", "#analytics"],
             ].map(([Icon, label, href]) => (
-              <a key={label} href={href} className="flex items-center gap-3 rounded-md px-3 py-3 text-[#f8efd9] hover:bg-white/10">
-                <Icon className="size-4 text-[#f3c96b]" aria-hidden="true" />
+              <a key={label} href={href} className="flex items-center gap-3 rounded-md px-3 py-3 text-white/84 transition hover:bg-white/10 hover:text-white">
+                <Icon className="size-4 text-[#15c7a8]" aria-hidden="true" />
                 {label}
               </a>
             ))}
@@ -98,21 +98,21 @@ export default function FacultyPortalPage() {
 
         <section className="px-4 py-5 sm:px-6 lg:px-8">
           {toast && (
-            <div className="fixed right-4 top-4 z-20 flex max-w-sm items-start gap-3 rounded-md border border-[#d2ae67] bg-[#fff8e6] p-4 text-sm font-semibold shadow-lg">
-              <Bell className="mt-0.5 size-4 text-[#b8862f]" aria-hidden="true" />
+            <div className="fixed right-4 top-4 z-20 flex max-w-sm items-start gap-3 rounded-md border border-[#d9e1dc] bg-white p-4 text-sm font-semibold text-[#17201d] shadow-lg">
+              <Bell className="mt-0.5 size-4 text-[#0b6b61]" aria-hidden="true" />
               <span>{toast}</span>
-              <button type="button" onClick={() => setToast("")} className="ml-auto text-[#6c5a36]">
+              <button type="button" onClick={() => setToast("")} className="ml-auto text-[#52625d] transition hover:text-[#17201d]">
                 <X className="size-4" aria-hidden="true" />
               </button>
             </div>
           )}
 
-          <header className="flex flex-col gap-4 border-b border-[#d8ceb8] pb-5 md:flex-row md:items-end md:justify-between">
+          <header className="flex flex-col gap-4 border-b border-[#d9e1dc] pb-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-['IBM_Plex_Mono'] text-xs uppercase tracking-[0.18em] text-[#8c4d3f]">
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#0b6b61]">
                 Spring 2026 Review Board
               </p>
-              <h2 className="mt-2 font-['Source_Serif_4'] text-4xl font-semibold text-[#17223a]">
+              <h2 className="mt-2 text-4xl font-bold tracking-normal text-[#17201d]">
                 Faculty Portal
               </h2>
             </div>
@@ -122,9 +122,9 @@ export default function FacultyPortalPage() {
                 ["Pending", pendingCount],
                 ["Avg Sim.", `${averageSimilarity}%`],
               ].map(([label, value]) => (
-                <div key={label} className="border-l-4 border-[#b8862f] bg-[#fffaf0] px-4 py-3 shadow-sm">
-                  <p className="font-['IBM_Plex_Mono'] text-[11px] uppercase text-[#6f6a5d]">{label}</p>
-                  <p className="mt-1 font-['Source_Serif_4'] text-2xl font-semibold">{value}</p>
+                <div key={label} className="rounded-md border border-[#d9e1dc] bg-white px-4 py-3 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64736f]">{label}</p>
+                  <p className="mt-1 text-2xl font-bold text-[#0b6b61]">{value}</p>
                 </div>
               ))}
             </div>
@@ -143,21 +143,22 @@ export default function FacultyPortalPage() {
 
             {selected && (
               <section className="space-y-6">
-                <article className="rounded-md border border-[#d8ceb8] bg-[#fffaf0] p-5">
+                <article className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
-                      <p className="font-['IBM_Plex_Mono'] text-xs uppercase tracking-[0.14em] text-[#6f6a5d]">
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">
                         {selected.id}
                       </p>
-                      <h3 className="mt-2 font-['Source_Serif_4'] text-3xl font-semibold">{selected.title}</h3>
-                      <p className="mt-2 text-sm text-[#5d5a4f]">
+                      <h3 className="mt-2 text-3xl font-bold tracking-normal">{selected.title}</h3>
+                      <p className="mt-2 text-sm text-[#64736f]">
                         {selected.student} / {selected.dept} / {selected.date}
                       </p>
                     </div>
                     <div
-                      className="inline-flex rotate-[-7deg] items-center gap-2 border-4 px-4 py-3 font-['IBM_Plex_Mono'] text-sm font-bold uppercase"
+                      className="inline-flex items-center gap-2 rounded-md border px-4 py-3 text-sm font-bold uppercase tracking-[0.08em]"
                       style={{
                         borderColor: statusStyles[selected.status].color,
+                        backgroundColor: statusStyles[selected.status].bg,
                         color: statusStyles[selected.status].color,
                       }}
                     >
@@ -166,12 +167,12 @@ export default function FacultyPortalPage() {
                     </div>
                   </div>
 
-                  <div className="mt-5 border-l-4 border-[#b8862f] bg-[#fff4cf] p-4">
-                    <p className="flex items-center gap-2 font-['IBM_Plex_Mono'] text-xs font-bold uppercase text-[#745421]">
+                  <div className="mt-5 rounded-md border border-[#d9e1dc] bg-[#f6f8f7] p-4">
+                    <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0b6b61]">
                       <BookOpenCheck className="size-4" aria-hidden="true" />
                       AI Summary Annotation
                     </p>
-                    <p className="mt-3 font-['Source_Serif_4'] text-lg leading-7 text-[#2c2b25]">
+                    <p className="mt-3 text-base leading-7 text-[#394842]">
                       {selected.summary}
                     </p>
                   </div>
