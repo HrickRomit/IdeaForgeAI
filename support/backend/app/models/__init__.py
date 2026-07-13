@@ -1,6 +1,7 @@
 from app.models.archived_project import ArchivedProject
 from app.models.chat import ChatMessage, ChatSession
 from app.models.department import Department
+from app.models.notification import Notification
 from app.models.proposal import Proposal
 from app.models.recommendation import Recommendation
 from app.models.review import Review
@@ -12,6 +13,7 @@ __all__ = [
     "ChatMessage",
     "ChatSession",
     "Department",
+    "Notification",
     "Proposal",
     "Recommendation",
     "Review",
