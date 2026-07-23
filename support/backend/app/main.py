@@ -4,8 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_database
-from app.api.routers import auth, chat, faculty, projects, proposals
-from app.core.config import get_settings
+from app.api.routers import admin, auth, chat, faculty, projects, proposalsfrom app.core.config import get_settings
 
 settings = get_settings()
 
@@ -23,6 +22,7 @@ app.include_router(proposals.router)
 app.include_router(faculty.router)
 app.include_router(projects.router)
 app.include_router(chat.router)
+app.include_router(admin.router)
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
