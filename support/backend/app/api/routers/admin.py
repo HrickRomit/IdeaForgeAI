@@ -1,3 +1,5 @@
+import json
+from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -8,12 +10,20 @@ from app.core.security import get_password_hash
 from app.models.archived_project import ArchivedProject
 from app.models.department import Department
 from app.models.proposal import Proposal
+from app.models.similarity_report import SimilarityReport
 from app.models.user import User
 from app.schemas.department import (
     DepartmentCreate,
     DepartmentRead,
     DepartmentUpdate,
 )
+from app.schemas.archived_project import (
+    ArchivedProjectCreate,
+    ArchivedProjectRead,
+    ArchivedProjectUpdate,
+)
+from app.services.ai_service.chroma_client import get_archived_projects_collection
+from app.services.ai_service.embeddings import get_embedding
 from app.schemas.user import UserCreate, UserRead, UserUpdate
 
 router = APIRouter(
@@ -400,3 +410,308 @@ def delete_department(
 
     db.delete(department)
     db.commit()
+    # ---------------------------------------
+# Archive Management: /admin/archive
+# ---------------------------------------
+
+def _json_value(value: str | None, default):
+    """Safely read JSON stored in PostgreSQL text fields."""
+    if value is None:
+        return default
+
+    try:
+        return json.loads(value)
+    except (TypeError, json.JSONDecodeError):
+        return default
+
+
+def _to_json_text(value) -> str | None:
+    """Converts list/dict values to JSON text for PostgreSQL."""
+    if value is None:
+        return None
+
+    if isinstance(value, str):
+        return value
+
+    return json.dumps(value, ensure_ascii=False)
+
+
+def _archive_to_read(archive: ArchivedProject) -> ArchivedProjectRead:
+    """Converts database text/JSON fields into clean API response fields."""
+    raw_technology_stack = archive.technology_stack
+
+    try:
+        technology_stack = (
+            json.loads(raw_technology_stack)
+            if raw_technology_stack is not None
+            else None
+        )
+    except (TypeError, json.JSONDecodeError):
+        technology_stack = raw_technology_stack
+
+    return ArchivedProjectRead(
+        id=archive.id,
+        title=archive.title,
+        abstract=archive.abstract,
+        authors=_json_value(archive.authors, None),
+        supervisor_name=archive.supervisor_name,
+        academic_year=archive.academic_year,
+        keywords=_json_value(archive.keywords, None),
+        technology_stack=technology_stack,
+        document_path=archive.document_path,
+        chroma_document_id=archive.chroma_document_id or "",
+        department_id=archive.department_id,
+    )
+
+
+def _archive_search_document(archive: ArchivedProject) -> str:
+    """Builds the text that semantic/vector search uses."""
+    department_name = (
+        archive.department.name
+        if archive.department is not None
+        else "Not specified"
+    )
+
+    authors = _json_value(archive.authors, [])
+    keywords = _json_value(archive.keywords, [])
+    technology_stack = _json_value(archive.technology_stack, archive.technology_stack)
+
+    return "\n\n".join(
+        [
+            f"Title: {archive.title}",
+            f"Abstract: {archive.abstract}",
+            f"Department: {department_name}",
+            f"Academic Year: {archive.academic_year or 'Not specified'}",
+            f"Supervisor: {archive.supervisor_name or 'Not specified'}",
+            f"Authors: {json.dumps(authors, ensure_ascii=False)}",
+            f"Keywords: {json.dumps(keywords, ensure_ascii=False)}",
+            f"Technology Stack: {json.dumps(technology_stack, ensure_ascii=False)}",
+        ]
+    )
+
+
+def _sync_archive_to_chroma(archive: ArchivedProject) -> None:
+    """
+    Inserts or updates the archive record in ChromaDB.
+    This makes the project immediately available to /projects/search.
+    """
+    if not archive.chroma_document_id:
+        raise ValueError("Archive project is missing its Chroma document ID.")
+
+    department_name = (
+        archive.department.name
+        if archive.department is not None
+        else ""
+    )
+
+    collection = get_archived_projects_collection()
+    document = _archive_search_document(archive)
+
+    collection.upsert(
+        ids=[archive.chroma_document_id],
+        embeddings=[get_embedding(document)],
+        documents=[document],
+        metadatas=[
+            {
+                "title": archive.title,
+                "department": department_name,
+                "academic_year": archive.academic_year or "",
+                "keywords": archive.keywords or "[]",
+            }
+        ],
+    )
+
+
+def _remove_archive_from_chroma(chroma_document_id: str) -> None:
+    """Removes the archive project's vector entry from ChromaDB."""
+    collection = get_archived_projects_collection()
+    collection.delete(ids=[chroma_document_id])
+
+
+@router.get("/archive", response_model=list[ArchivedProjectRead])
+def list_archived_projects(
+    department_id: int | None = Query(default=None),
+    academic_year: str | None = Query(default=None, max_length=20),
+    db: Session = Depends(get_database),
+) -> list[ArchivedProjectRead]:
+    statement = select(ArchivedProject).order_by(ArchivedProject.created_at.desc())
+
+    if department_id is not None:
+        statement = statement.where(
+            ArchivedProject.department_id == department_id
+        )
+
+    if academic_year is not None:
+        statement = statement.where(
+            ArchivedProject.academic_year == academic_year.strip()
+        )
+
+    archives = db.scalars(statement).all()
+    return [_archive_to_read(archive) for archive in archives]
+
+
+@router.post(
+    "/archive",
+    response_model=ArchivedProjectRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_archived_project(
+    payload: ArchivedProjectCreate,
+    db: Session = Depends(get_database),
+) -> ArchivedProjectRead:
+    _validate_department_id(db, payload.department_id)
+
+    archive = ArchivedProject(
+        title=payload.title,
+        abstract=payload.abstract,
+        authors=_to_json_text(payload.authors),
+        supervisor_name=payload.supervisor_name,
+        academic_year=payload.academic_year,
+        keywords=_to_json_text(payload.keywords),
+        technology_stack=_to_json_text(payload.technology_stack),
+        document_path=payload.document_path,
+        department_id=payload.department_id,
+        chroma_document_id=f"archive_{uuid4().hex}",
+    )
+
+    db.add(archive)
+    db.flush()
+    db.refresh(archive)
+
+    try:
+        _sync_archive_to_chroma(archive)
+        db.commit()
+    except Exception as error:
+        db.rollback()
+
+        try:
+            _remove_archive_from_chroma(archive.chroma_document_id)
+        except Exception:
+            pass
+
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "Archive project could not be saved because the vector "
+                "search service is unavailable."
+            ),
+        ) from error
+
+    db.refresh(archive)
+    return _archive_to_read(archive)
+
+
+@router.get("/archive/{archive_id}", response_model=ArchivedProjectRead)
+def get_archived_project(
+    archive_id: int,
+    db: Session = Depends(get_database),
+) -> ArchivedProjectRead:
+    archive = db.get(ArchivedProject, archive_id)
+
+    if archive is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Archived project not found.",
+        )
+
+    return _archive_to_read(archive)
+
+
+@router.patch("/archive/{archive_id}", response_model=ArchivedProjectRead)
+def update_archived_project(
+    archive_id: int,
+    payload: ArchivedProjectUpdate,
+    db: Session = Depends(get_database),
+) -> ArchivedProjectRead:
+    archive = db.get(ArchivedProject, archive_id)
+
+    if archive is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Archived project not found.",
+        )
+
+    updates = payload.model_dump(exclude_unset=True)
+
+    if not updates:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Provide at least one field to update.",
+        )
+
+    if "department_id" in updates:
+        _validate_department_id(db, updates["department_id"])
+
+    for json_field in ("authors", "keywords", "technology_stack"):
+        if json_field in updates:
+            updates[json_field] = _to_json_text(updates[json_field])
+
+    for field, value in updates.items():
+        setattr(archive, field, value)
+
+    db.flush()
+    db.refresh(archive)
+
+    try:
+        _sync_archive_to_chroma(archive)
+        db.commit()
+    except Exception as error:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "Archive project could not be updated because the vector "
+                "search service is unavailable."
+            ),
+        ) from error
+
+    db.refresh(archive)
+    return _archive_to_read(archive)
+
+
+@router.delete(
+    "/archive/{archive_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_archived_project(
+    archive_id: int,
+    db: Session = Depends(get_database),
+) -> None:
+    archive = db.get(ArchivedProject, archive_id)
+
+    if archive is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Archived project not found.",
+        )
+
+    has_similarity_reports = db.scalar(
+        select(SimilarityReport.id)
+        .where(SimilarityReport.archived_project_id == archive.id)
+        .limit(1)
+    )
+
+    if has_similarity_reports:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "This archived project cannot be deleted because it is linked "
+                "to existing similarity reports."
+            ),
+        )
+
+    try:
+        if archive.chroma_document_id:
+            _remove_archive_from_chroma(archive.chroma_document_id)
+
+        db.delete(archive)
+        db.commit()
+    except Exception as error:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "Archive project could not be deleted because the vector "
+                "search service is unavailable."
+            ),
+        ) from error

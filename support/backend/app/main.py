@@ -4,7 +4,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_database
-from app.api.routers import admin, auth, chat, faculty, projects, proposalsfrom app.core.config import get_settings
+from app.api.routers import admin, auth, chat, faculty, projects, proposals
+from app.core.config import get_settings
 
 settings = get_settings()
 
