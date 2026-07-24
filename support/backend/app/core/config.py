@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     gemini_api_key: str | None = None
     chroma_host: str = "localhost"
     chroma_port: int = 8001
+    upload_directory: str = "uploads"
+    max_upload_size_mb: int = 10
 
     backend_cors_origins: list[AnyHttpUrl | str] = Field(
         default_factory=lambda: [
