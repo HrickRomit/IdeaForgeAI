@@ -1,13 +1,13 @@
-"""Proposal router placeholder."""
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_database, require_role
 from app.models.proposal import Proposal
 from app.models.user import User
+from app.services.file_service import delete_stored_file, save_proposal_pdf
 
 router = APIRouter(prefix="/proposals", tags=["Student Proposals"])
 
@@ -32,6 +32,7 @@ class ProposalRead(BaseModel):
     objectives: str | None = None
     methodology: str | None = None
     technology_stack: str | None = None
+    document_path: str | None = None
     status: str
     student_id: int
     supervisor_id: int | None = None
@@ -61,6 +62,49 @@ def submit_proposal(
     db.add(proposal)
     db.commit()
     db.refresh(proposal)
+    return proposal
+
+
+@router.post(
+    "/{proposal_id}/document",
+    response_model=ProposalRead,
+    status_code=status.HTTP_201_CREATED,
+)
+async def upload_proposal_document(
+    proposal_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_database),
+    current_user: User = Depends(require_role("student")),
+) -> Proposal:
+    """
+    Uploads or replaces the logged-in student's proposal PDF document.
+    """
+    proposal = db.get(Proposal, proposal_id)
+
+    if proposal is None or proposal.student_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Proposal not found.",
+        )
+
+    old_document_path = proposal.document_path
+    new_document_path = await save_proposal_pdf(proposal.id, file)
+
+    proposal.document_path = new_document_path
+
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        delete_stored_file(new_document_path)
+        raise
+
+    db.refresh(proposal)
+
+    # Delete the old PDF only after the database successfully uses the new path.
+    if old_document_path and old_document_path != new_document_path:
+        delete_stored_file(old_document_path)
+
     return proposal
 
 

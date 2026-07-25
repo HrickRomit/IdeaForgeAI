@@ -2,13 +2,25 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_database
-from app.core.security import create_access_token
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    decode_refresh_token,
+)
 from app.models.user import User
-from app.schemas.auth import LoginRequest, TokenResponse
+from app.schemas.auth import LoginRequest, RefreshTokenRequest, TokenResponse
 from app.schemas.user import UserCreate, UserRead
 from app.services.auth_service import authenticate_user, create_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+def _create_token_response(user: User) -> TokenResponse:
+    return TokenResponse(
+        access_token=create_access_token(subject=str(user.id)),
+        refresh_token=create_refresh_token(subject=str(user.id)),
+        user=user,
+    )
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
@@ -32,12 +44,41 @@ def login_user(
             detail="Invalid email or password",
         )
 
-    access_token = create_access_token(subject=str(user.id))
+    return _create_token_response(user)
 
-    return TokenResponse(
-        access_token=access_token,
-        user=user,
-    )
+
+@router.post("/refresh", response_model=TokenResponse)
+def refresh_access_token(
+    payload: RefreshTokenRequest,
+    db: Session = Depends(get_database),
+) -> TokenResponse:
+    token_payload = decode_refresh_token(payload.refresh_token)
+
+    if not token_payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token",
+        )
+
+    subject = token_payload.get("sub")
+
+    try:
+        user_id = int(subject)
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+        )
+
+    user = db.get(User, user_id)
+
+    if user is None or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive",
+        )
+
+    return _create_token_response(user)
 
 
 @router.get("/me", response_model=UserRead)
