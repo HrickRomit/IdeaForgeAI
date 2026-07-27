@@ -26,6 +26,7 @@ import heroImage from "./assets/ideaforge-hero.png";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
 import FacultyPortalPage from "./pages/faculty/FacultyPortalPage.jsx";
+import ChatbotPage from "./pages/student/ChatbotPage.jsx";
 import SearchPage from "./pages/student/SearchPage.jsx";
 import StudentPortalPage from "./pages/student/StudentPortalPage.jsx";
 
@@ -115,7 +116,7 @@ const primaryActions = [
   {
     icon: Bot,
     label: "Ask Project Chatbot",
-    href: "/student",
+    href: "/student/chatbot",
   },
   {
     icon: ClipboardCheck,
@@ -192,6 +193,10 @@ function App() {
 
   if (window.location.pathname.startsWith("/student/search")) {
     return <SearchPage />;
+  }
+
+  if (window.location.pathname.startsWith("/student/chatbot")) {
+    return <ChatbotPage />;
   }
 
   if (window.location.pathname.startsWith("/student")) {
