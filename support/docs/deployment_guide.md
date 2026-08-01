@@ -1,3 +1,16 @@
-# Deployment Guide
+# IdeaForge AI Deployment Guide
 
-Placeholder.
+## Requirements
+
+Install:
+
+- Docker Desktop
+- Docker Compose
+- Git
+
+## Configure environment values
+
+From the project root:
+
+```powershell
+Copy-Item .env.example .env

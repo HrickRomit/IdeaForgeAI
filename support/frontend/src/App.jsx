@@ -29,6 +29,7 @@ import FacultyPortalPage from "./pages/faculty/FacultyPortalPage.jsx";
 import ChatbotPage from "./pages/student/ChatbotPage.jsx";
 import SearchPage from "./pages/student/SearchPage.jsx";
 import StudentPortalPage from "./pages/student/StudentPortalPage.jsx";
+import ChatbotPage from "./pages/student/ChatbotPage.jsx";
 
 const audiences = [
   {
@@ -193,6 +194,9 @@ function App() {
 
   if (window.location.pathname.startsWith("/student/search")) {
     return <SearchPage />;
+  }
+  if (window.location.pathname.startsWith("/student/chatbot")) {
+  return <ChatbotPage />;
   }
 
   if (window.location.pathname.startsWith("/student/chatbot")) {

@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     environment: str = "local"
 
     database_url: str = "postgresql+psycopg://ideaforge:change_me@localhost:5433/ideaforge"
+    database_pool_size: int = 5
+    database_max_overflow: int = 10
+    database_pool_timeout_seconds: int = 30
 
     jwt_secret_key: str = "replace_with_a_long_random_secret"
     jwt_algorithm: str = "HS256"
