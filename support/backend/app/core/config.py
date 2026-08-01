@@ -21,6 +21,8 @@ class Settings(BaseSettings):
 
     jwt_secret_key: str = "replace_with_a_long_random_secret"
     jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 7
 
     gemini_api_key: str | None = None
     chroma_host: str = "localhost"
