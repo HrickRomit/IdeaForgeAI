@@ -1,0 +1,302 @@
+{
+  "project_id": "project_0006",
+  "basic_information": {
+    "title": "Multi-Vendor E-Commerce Marketplace with Dynamic Pricing and Recommendation Engine",
+    "short_title": "AI E-Commerce Marketplace",
+    "slug": "multi-vendor-ecommerce-dynamic-pricing",
+    "project_type": "industry_project",
+    "status": "completed",
+    "summary": "A robust e-commerce platform allowing multiple vendors to sell products, featuring an AI-driven recommendation engine for buyers and dynamic pricing tools for sellers.",
+    "repository_url": null,
+    "demo_url": null
+  },
+  "academic_information": {
+    "institution": "Institute of Business and Technology",
+    "faculty": "Faculty of Commerce and IT",
+    "department": "E-Commerce",
+    "program": "MSc in E-Commerce Technology",
+    "course_code": "ECT605",
+    "course_title": "Advanced E-Commerce Systems",
+    "academic_level": "graduate",
+    "academic_year": "2024-2025",
+    "semester": "fall",
+    "submission_date": "2024-12-20",
+    "authors": [
+      {
+        "name": "Alex Mercer",
+        "student_id": "ECT-24-012",
+        "email": "alex.mercer@example.edu",
+        "department": "E-Commerce",
+        "role": "Backend Architect"
+      }
+    ],
+    "supervisor": {
+      "name": "Dr. Emily Chen",
+      "email": "emily.chen@example.edu",
+      "department": "Information Systems",
+      "role": "Project Supervisor"
+    },
+    "co_supervisor": null,
+    "evaluation": {
+      "grade": "A",
+      "score": 89,
+      "award_or_recognition": null
+    }
+  },
+  "abstract": "The transition from single-seller online stores to multi-vendor marketplaces introduces significant complexities in inventory management, pricing strategies, and user personalization. This project presents a scalable multi-vendor e-commerce platform. For buyers, the system includes a personalized recommendation engine that analyzes browsing history and purchase behavior to suggest relevant products. For sellers, it offers a dynamic pricing module that adjusts product prices automatically based on competitor pricing, stock levels, and historical demand. The platform ensures secure payment processing and provides comprehensive dashboards for both vendors and platform administrators to track sales, commissions, and logistics.",
+  "problem_statement": "In a crowded e-commerce landscape, small vendors struggle to optimize their pricing competitively, and buyers are often overwhelmed by choice, leading to low conversion rates and poor vendor retention.",
+  "objectives": {
+    "primary": [
+      "Develop a multi-tenant backend architecture supporting independent vendor storefronts.",
+      "Implement a collaborative filtering recommendation engine for personalized product discovery.",
+      "Create a dynamic pricing algorithm for vendors to automatically adjust prices."
+    ],
+    "secondary": [
+      "Integrate a secure payment gateway with split-payment capabilities for vendor commissions.",
+      "Provide analytical dashboards for vendors to monitor sales performance."
+    ]
+  },
+  "scope": {
+    "included": [
+      "Vendor registration and product catalog management.",
+      "User cart, checkout, and order tracking.",
+      "Recommendation algorithms based on user behavior.",
+      "Automated pricing rules engine."
+    ],
+    "excluded": [
+      "Physical warehousing and fulfillment logistics.",
+      "Native mobile applications.",
+      "Cross-border currency conversion."
+    ],
+    "target_users": [
+      "Online Shoppers",
+      "Independent Vendors",
+      "Platform Administrators"
+    ],
+    "deployment_context": "Cloud-based deployment utilizing microservices architecture."
+  },
+  "features": [
+    {
+      "name": "Vendor Dashboard",
+      "description": "Allows vendors to manage inventory, view sales metrics, and configure dynamic pricing rules.",
+      "priority": "core",
+      "user_roles": ["Vendor"]
+    },
+    {
+      "name": "Personalized Product Feed",
+      "description": "Displays product suggestions tailored to individual shopper preferences and history.",
+      "priority": "core",
+      "user_roles": ["Shopper"]
+    },
+    {
+      "name": "Dynamic Pricing Engine",
+      "description": "Automatically modifies prices within vendor-set limits based on market demand signals.",
+      "priority": "important",
+      "user_roles": ["Vendor"]
+    },
+    {
+      "name": "Admin Control Panel",
+      "description": "Enables platform owners to manage vendor approvals, commission rates, and global site metrics.",
+      "priority": "core",
+      "user_roles": ["Admin"]
+    }
+  ],
+  "modules": [
+    {
+      "name": "Catalog Management Module",
+      "purpose": "Handles product listings, categories, and inventory tracking.",
+      "responsibilities": [
+        "Store product metadata and images.",
+        "Manage stock levels and backorder status."
+      ],
+      "inputs": ["Product details", "Inventory updates"],
+      "outputs": ["Product catalog API"]
+    },
+    {
+      "name": "Recommendation Engine",
+      "purpose": "Generates personalized product suggestions.",
+      "responsibilities": [
+        "Process user interaction logs (clicks, purchases).",
+        "Compute product similarities using collaborative filtering."
+      ],
+      "inputs": ["User behavior data"],
+      "outputs": ["Ranked product lists"]
+    },
+    {
+      "name": "Order and Payment Module",
+      "purpose": "Processes transactions and manages commission splits.",
+      "responsibilities": [
+        "Handle checkout cart validation.",
+        "Communicate with payment gateways.",
+        "Calculate and distribute platform fees."
+      ],
+      "inputs": ["Cart data", "Payment details"],
+      "outputs": ["Order confirmation", "Vendor payouts"]
+    }
+  ],
+  "technologies": {
+    "programming_languages": [
+      {
+        "name": "Python",
+        "version": "3.10",
+        "purpose": "Recommendation and pricing algorithms.",
+        "category": "backend"
+      },
+      {
+        "name": "TypeScript",
+        "version": "5.0",
+        "purpose": "Core platform API and frontend.",
+        "category": "fullstack"
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "NestJS",
+        "version": "9.0",
+        "purpose": "Scalable backend framework for core services.",
+        "category": "backend"
+      },
+      {
+        "name": "Next.js",
+        "version": "14",
+        "purpose": "Server-side rendered frontend for SEO and performance.",
+        "category": "frontend"
+      }
+    ],
+    "database": [
+      {
+        "name": "PostgreSQL",
+        "purpose": "Relational data for users, orders, and products.",
+        "category": "relational"
+      },
+      {
+        "name": "Redis",
+        "purpose": "Caching product data and managing user sessions.",
+        "category": "in_memory"
+      }
+    ],
+    "apis": [
+      {
+        "name": "Stripe Connect API",
+        "purpose": "Handles split payments between the platform and vendors.",
+        "provider": "Stripe",
+        "integration_type": "third_party"
+      }
+    ],
+    "tools": [
+      {
+        "name": "Apache Kafka",
+        "purpose": "Event streaming for processing user behavior logs asynchronously.",
+        "category": "infrastructure"
+      }
+    ],
+    "platforms": [
+      {
+        "name": "AWS",
+        "purpose": "Cloud hosting for microservices and databases.",
+        "category": "deployment"
+      }
+    ]
+  },
+  "ai_usage": {
+    "uses_ai": true,
+    "description": "Utilizes machine learning for generating product recommendations.",
+    "techniques": [
+      "Collaborative Filtering",
+      "Matrix Factorization"
+    ],
+    "models": [
+      "Custom Alternating Least Squares (ALS) model"
+    ],
+    "training_data": "Simulated user interaction logs based on the Amazon Review dataset.",
+    "evaluation_metrics": [
+      "Root Mean Square Error (RMSE)",
+      "Precision@K"
+    ]
+  },
+  "algorithms": [
+    {
+      "name": "Rule-based Pricing Algorithm",
+      "purpose": "Adjust prices based on inventory levels and competitor scraping data.",
+      "category": "optimization",
+      "complexity": "Medium"
+    }
+  ],
+  "difficulty": {
+    "level": "advanced",
+    "score": 8,
+    "reasons": [
+      "Requires handling complex relational data with multi-tenancy.",
+      "Integration of asynchronous event streaming (Kafka).",
+      "Financial transaction management and split routing."
+    ],
+    "prerequisites": [
+      "Microservices architecture",
+      "Machine learning basics",
+      "Advanced database design"
+    ]
+  },
+  "estimated_duration": {
+    "value": 5,
+    "unit": "months",
+    "phase_breakdown": [
+      {
+        "phase": "System architecture and core API development",
+        "duration": "2 months"
+      },
+      {
+        "phase": "Recommendation and pricing engine integration",
+        "duration": "1.5 months"
+      },
+      {
+        "phase": "Frontend, payment integration, and testing",
+        "duration": "1.5 months"
+      }
+    ]
+  },
+  "team_size": {
+    "minimum": 2,
+    "recommended": 3,
+    "maximum": 5,
+    "roles": [
+      "Backend Engineer",
+      "Data Scientist",
+      "Frontend Developer"
+    ]
+  },
+  "keywords": [
+    "e-commerce",
+    "multi-vendor",
+    "recommendation engine",
+    "dynamic pricing",
+    "microservices",
+    "Stripe"
+  ],
+  "research_area": {
+    "primary": "E-Commerce Systems",
+    "secondary": [
+      "Recommender Systems",
+      "Web Engineering"
+    ],
+    "application_domain": "Online retail and digital marketplaces"
+  },
+  "supervisor_specialization": [
+    "E-Business Models",
+    "Data Science",
+    "Scalable Architectures"
+  ],
+  "expected_outcomes": [
+    "A scalable multi-tenant e-commerce platform.",
+    "A functional recommendation engine improving simulated conversion rates.",
+    "A dynamic pricing tool that successfully maximizes simulated vendor revenue."
+  ],
+  "limitations": [
+    "Recommendation engine suffers from the cold-start problem for new products/users.",
+    "Dynamic pricing requires reliable external data sources which may be brittle."
+  ],
+  "future_scope": [
+    "Incorporate NLP for semantic product search and chatbots.",
+    "Add augmented reality (AR) features for product previewing.",
+    "Implement a robust fraud detection system for transactions."
+  ]
+}

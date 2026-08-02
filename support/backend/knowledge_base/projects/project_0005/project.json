@@ -1,0 +1,286 @@
+{
+  "project_id": "project_0005",
+  "basic_information": {
+    "title": "Intelligent Mental Health Companion and Mood Analytics Tracker",
+    "short_title": "AI Mental Health Companion",
+    "slug": "intelligent-mental-health-companion",
+    "project_type": "course_project",
+    "status": "published",
+    "summary": "A mobile-first web application that acts as a conversational companion, tracking users' moods through natural language processing and providing personalized coping strategies.",
+    "repository_url": null,
+    "demo_url": null
+  },
+  "academic_information": {
+    "institution": "University of Modern Sciences",
+    "faculty": "Faculty of Arts and Sciences",
+    "department": "Cognitive Science",
+    "program": "BSc in Cognitive Computing",
+    "course_code": "COG350",
+    "course_title": "Applied Artificial Intelligence",
+    "academic_level": "undergraduate",
+    "academic_year": "2025-2026",
+    "semester": "fall",
+    "submission_date": "2025-12-10",
+    "authors": [
+      {
+        "name": "Leo Martinez",
+        "student_id": "CC-22-094",
+        "email": "leo.martinez@example.edu",
+        "department": "Cognitive Science",
+        "role": "NLP and Data Developer"
+      }
+    ],
+    "supervisor": {
+      "name": "Dr. Sarah Jenkins",
+      "email": "sarah.jenkins@example.edu",
+      "department": "Cognitive Science",
+      "role": "Course Instructor"
+    },
+    "co_supervisor": null,
+    "evaluation": {
+      "grade": "A",
+      "score": 93,
+      "award_or_recognition": null
+    }
+  },
+  "abstract": "Mental well-being is increasingly recognized as a critical component of overall health, yet access to psychological support remains limited for many. This project developed an 'Intelligent Mental Health Companion,' a conversational agent designed to interact with users, track their emotional states, and offer evidence-based coping mechanisms. Utilizing Natural Language Processing (NLP) techniques, particularly sentiment analysis and emotion classification, the system processes daily journal entries and chat interactions to quantify the user's mood over time. The application provides visual analytics of mood trends, helping users identify emotional triggers. While not a replacement for professional therapy, the companion serves as an accessible tool for self-reflection and emotional regulation.",
+  "problem_statement": "Many individuals struggle with daily stress and mild anxiety but lack accessible tools for tracking their emotional well-being and practicing self-care techniques between professional therapy sessions or on their own.",
+  "objectives": {
+    "primary": [
+      "Develop a conversational AI interface capable of empathetic interactions.",
+      "Implement NLP models to extract sentiment and specific emotions from user text.",
+      "Create a dashboard visualizing mood trends over days, weeks, and months."
+    ],
+    "secondary": [
+      "Curate a database of mindfulness exercises and coping strategies to recommend based on detected moods.",
+      "Ensure high standards of data privacy and anonymity for user entries."
+    ]
+  },
+  "scope": {
+    "included": [
+      "Text-based conversational interface.",
+      "Emotion classification (e.g., joy, sadness, anger, anxiety).",
+      "Mood trend visualizations.",
+      "Automated recommendation of breathing exercises and articles."
+    ],
+    "excluded": [
+      "Clinical diagnosis of mental health disorders.",
+      "Direct communication with healthcare providers.",
+      "Voice or speech-to-text input processing."
+    ],
+    "target_users": [
+      "General public seeking mental wellness tools",
+      "Students experiencing academic stress"
+    ],
+    "deployment_context": "Progressive Web Application (PWA) accessible on mobile and desktop devices."
+  },
+  "features": [
+    {
+      "name": "Conversational Journaling",
+      "description": "Users interact with a chatbot to log their daily experiences and feelings.",
+      "priority": "core",
+      "user_roles": ["User"]
+    },
+    {
+      "name": "Emotion Analytics Dashboard",
+      "description": "Displays charts and graphs representing the user's emotional journey over time.",
+      "priority": "core",
+      "user_roles": ["User"]
+    },
+    {
+      "name": "Personalized Coping Strategies",
+      "description": "Suggests specific exercises (e.g., 4-7-8 breathing) when high stress or anxiety is detected.",
+      "priority": "important",
+      "user_roles": ["User"]
+    }
+  ],
+  "modules": [
+    {
+      "name": "NLP Processing Module",
+      "purpose": "Analyzes text input to determine sentiment and emotion categories.",
+      "responsibilities": [
+        "Preprocess user text (tokenization, stop-word removal).",
+        "Run text through classification models.",
+        "Output confidence scores for various emotions."
+      ],
+      "inputs": ["Raw text input"],
+      "outputs": ["Emotion labels", "Sentiment scores"]
+    },
+    {
+      "name": "Recommendation Engine",
+      "purpose": "Maps detected emotional states to appropriate interventions.",
+      "responsibilities": [
+        "Analyze recent mood trends.",
+        "Query the intervention database for matching strategies."
+      ],
+      "inputs": ["Current emotion", "Historical mood context"],
+      "outputs": ["List of recommended activities"]
+    }
+  ],
+  "technologies": {
+    "programming_languages": [
+      {
+        "name": "Python",
+        "version": "3.9",
+        "purpose": "NLP model serving and API development.",
+        "category": "backend"
+      },
+      {
+        "name": "JavaScript",
+        "version": "ES2021",
+        "purpose": "Frontend PWA development.",
+        "category": "frontend"
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "Flask",
+        "version": "2.2",
+        "purpose": "Lightweight backend API for handling text analysis requests.",
+        "category": "backend"
+      },
+      {
+        "name": "Vue.js",
+        "version": "3",
+        "purpose": "Reactive frontend framework for the chat interface.",
+        "category": "frontend"
+      },
+      {
+        "name": "Hugging Face Transformers",
+        "purpose": "Library for utilizing pre-trained NLP models.",
+        "category": "ai"
+      }
+    ],
+    "database": [
+      {
+        "name": "SQLite",
+        "purpose": "Local database for development and storing anonymized journal entries.",
+        "category": "relational"
+      }
+    ],
+    "apis": [
+      {
+        "name": "OpenAI API",
+        "purpose": "Generates empathetic conversational responses.",
+        "provider": "OpenAI",
+        "integration_type": "third_party"
+      }
+    ],
+    "tools": [
+      {
+        "name": "Chart.js",
+        "purpose": "Render interactive mood graphs on the frontend.",
+        "category": "visualization"
+      }
+    ],
+    "platforms": [
+      {
+        "name": "Web Browser",
+        "purpose": "Cross-platform access via PWA capabilities.",
+        "category": "client"
+      }
+    ]
+  },
+  "ai_usage": {
+    "uses_ai": true,
+    "description": "Utilizes AI for both understanding user emotions (classification) and generating empathetic responses (generation).",
+    "techniques": [
+      "Natural Language Processing",
+      "Sentiment Analysis",
+      "Large Language Models (LLMs)"
+    ],
+    "models": [
+      "DistilRoBERTa (Emotion classification)",
+      "GPT-3.5-turbo (Conversational generation)"
+    ],
+    "training_data": "Pre-trained models fine-tuned on public emotion datasets (e.g., GoEmotions).",
+    "evaluation_metrics": [
+      "F1-Score for emotion classification"
+    ]
+  },
+  "algorithms": [
+    {
+      "name": "Transformer Attention Mechanism",
+      "purpose": "Underlies the NLP models used for understanding text context.",
+      "category": "classification",
+      "complexity": "High"
+    }
+  ],
+  "difficulty": {
+    "level": "intermediate",
+    "score": 5,
+    "reasons": [
+      "Integration of multiple AI models via APIs.",
+      "Designing a safe and empathetic conversational flow.",
+      "Handling sensitive user data appropriately."
+    ],
+    "prerequisites": [
+      "Basic understanding of NLP",
+      "Web API development",
+      "Frontend UI/UX design"
+    ]
+  },
+  "estimated_duration": {
+    "value": 14,
+    "unit": "weeks",
+    "phase_breakdown": [
+      {
+        "phase": "Model selection and API integration",
+        "duration": "4 weeks"
+      },
+      {
+        "phase": "Frontend chat interface and dashboard development",
+        "duration": "6 weeks"
+      },
+      {
+        "phase": "User testing and prompt engineering refinement",
+        "duration": "4 weeks"
+      }
+    ]
+  },
+  "team_size": {
+    "minimum": 1,
+    "recommended": 2,
+    "maximum": 2,
+    "roles": [
+      "AI/Backend Developer",
+      "Frontend Developer"
+    ]
+  },
+  "keywords": [
+    "mental health",
+    "NLP",
+    "chatbot",
+    "sentiment analysis",
+    "well-being",
+    "emotion tracking"
+  ],
+  "research_area": {
+    "primary": "Affective Computing",
+    "secondary": [
+      "Human-Computer Interaction",
+      "Natural Language Processing"
+    ],
+    "application_domain": "Mental health and personal wellness"
+  },
+  "supervisor_specialization": [
+    "Cognitive Science",
+    "Affective Computing",
+    "Human-AI Interaction"
+  ],
+  "expected_outcomes": [
+    "A functional PWA capable of conversational journaling and emotion tracking.",
+    "A structured database of coping strategies mapped to emotional states.",
+    "A project report evaluating the accuracy of the emotion classification against human labeling."
+  ],
+  "limitations": [
+    "The AI lacks true clinical understanding and may misinterpret complex or sarcastic inputs.",
+    "Conversational models can sometimes generate generic or repetitive responses.",
+    "User engagement may drop if the companion does not provide continuous perceived value."
+  ],
+  "future_scope": [
+    "Integrate voice recognition for spoken journal entries.",
+    "Develop a feature to export mood reports for sharing with real human therapists.",
+    "Improve personalized recommendations using reinforcement learning based on user feedback."
+  ]
+}

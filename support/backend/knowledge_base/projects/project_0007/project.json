@@ -1,0 +1,265 @@
+{
+  "project_id": "project_0007",
+  "basic_information": {
+    "title": "Decentralized Peer-to-Peer Micro-Lending and Escrow Platform",
+    "short_title": "P2P Micro-Lending Platform",
+    "slug": "p2p-micro-lending-escrow",
+    "project_type": "capstone",
+    "status": "archived",
+    "summary": "A financial technology platform connecting individual borrowers with lenders directly, utilizing smart contracts for escrow services and automated repayment enforcement.",
+    "repository_url": null,
+    "demo_url": null
+  },
+  "academic_information": {
+    "institution": "FinTech Institute of Innovation",
+    "faculty": "School of Computing",
+    "department": "Financial Technology",
+    "program": "BSc in FinTech",
+    "course_code": "FT401",
+    "course_title": "FinTech Capstone",
+    "academic_level": "undergraduate",
+    "academic_year": "2025-2026",
+    "semester": "fall",
+    "submission_date": "2025-11-30",
+    "authors": [
+      {
+        "name": "Samir Gupta",
+        "student_id": "FT-22-040",
+        "email": "samir.gupta@example.edu",
+        "department": "Financial Technology",
+        "role": "Blockchain Developer"
+      },
+      {
+        "name": "Chloe Adams",
+        "student_id": "FT-22-055",
+        "email": "chloe.adams@example.edu",
+        "department": "Financial Technology",
+        "role": "Risk Modeling Analyst"
+      }
+    ],
+    "supervisor": {
+      "name": "Dr. Richard Hendricks",
+      "email": "r.hendricks@example.edu",
+      "department": "Finance",
+      "role": "Advisor"
+    },
+    "co_supervisor": null,
+    "evaluation": {
+      "grade": "B+",
+      "score": 84,
+      "award_or_recognition": null
+    }
+  },
+  "abstract": "Traditional micro-lending often involves high intermediary fees and strict geographic limitations. This project presents a decentralized Peer-to-Peer (P2P) lending platform designed to eliminate middlemen. The platform matches lenders seeking yield with borrowers needing small-scale loans. By leveraging blockchain-based smart contracts, the system creates transparent escrow accounts that hold collateral and automate the disbursement and repayment processes. To mitigate default risk, the platform incorporates a basic credit scoring algorithm based on past transaction history on the network. The solution demonstrates the viability of decentralized finance (DeFi) principles for inclusive micro-lending.",
+  "problem_statement": "Unbanked or underbanked individuals face significant hurdles in accessing small loans due to lack of traditional credit histories, while potential retail lenders lack secure platforms to offer micro-loans directly to peers.",
+  "objectives": {
+    "primary": [
+      "Design a decentralized platform for requesting and funding micro-loans.",
+      "Implement smart contracts to handle escrow, fund disbursement, and automated repayments.",
+      "Develop a reputation-based credit scoring system."
+    ],
+    "secondary": [
+      "Ensure an intuitive user interface that abstracts blockchain complexity for average users."
+    ]
+  },
+  "scope": {
+    "included": [
+      "User authentication and wallet integration.",
+      "Loan request creation and marketplace browsing.",
+      "Smart contract escrow for collateral and loan principal.",
+      "Reputation scoring based on repayment history."
+    ],
+    "excluded": [
+      "Fiat currency on-ramps and off-ramps.",
+      "Legal debt collection procedures for defaults.",
+      "Cross-chain interoperability."
+    ],
+    "target_users": [
+      "Individual Borrowers",
+      "Retail Lenders"
+    ],
+    "deployment_context": "Web application interacting with smart contracts deployed on a layer-2 blockchain testnet (e.g., Polygon Mumbai)."
+  },
+  "features": [
+    {
+      "name": "Loan Marketplace",
+      "description": "Lenders can browse open loan requests, filtering by interest rate, duration, and borrower reputation.",
+      "priority": "core",
+      "user_roles": ["Lender"]
+    },
+    {
+      "name": "Smart Contract Escrow",
+      "description": "Secures collateral and automates the release of funds based on predefined loan terms.",
+      "priority": "core",
+      "user_roles": ["Borrower", "Lender"]
+    },
+    {
+      "name": "Reputation Dashboard",
+      "description": "Displays a user's borrowing history and calculated credit score.",
+      "priority": "important",
+      "user_roles": ["Borrower", "Lender"]
+    }
+  ],
+  "modules": [
+    {
+      "name": "Smart Contract Module",
+      "purpose": "Executes trustless financial agreements between peers.",
+      "responsibilities": [
+        "Lock collateral in escrow.",
+        "Transfer loan principal to the borrower.",
+        "Handle repayments and liquidate collateral upon default."
+      ],
+      "inputs": ["Transaction requests", "Fund transfers"],
+      "outputs": ["State changes", "Blockchain events"]
+    },
+    {
+      "name": "Scoring and Analytics Module",
+      "purpose": "Calculates trust scores based on network activity.",
+      "responsibilities": [
+        "Index blockchain events related to repayments.",
+        "Apply the scoring algorithm to determine reputation."
+      ],
+      "inputs": ["Historical loan data"],
+      "outputs": ["Credit scores"]
+    }
+  ],
+  "technologies": {
+    "programming_languages": [
+      {
+        "name": "Solidity",
+        "version": "0.8.19",
+        "purpose": "Smart contract logic.",
+        "category": "blockchain"
+      },
+      {
+        "name": "TypeScript",
+        "version": "5",
+        "purpose": "Frontend and indexing services.",
+        "category": "frontend"
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "React",
+        "version": "18",
+        "purpose": "Web user interface.",
+        "category": "frontend"
+      },
+      {
+        "name": "Ethers.js",
+        "purpose": "Library for interacting with the Ethereum blockchain.",
+        "category": "blockchain"
+      }
+    ],
+    "database": [
+      {
+        "name": "The Graph",
+        "purpose": "Decentralized protocol for indexing and querying blockchain data.",
+        "category": "distributed"
+      }
+    ],
+    "apis": [],
+    "tools": [
+      {
+        "name": "Hardhat",
+        "purpose": "Smart contract development and testing.",
+        "category": "development"
+      }
+    ],
+    "platforms": [
+      {
+        "name": "Polygon Testnet",
+        "purpose": "Target blockchain for low-cost, fast transactions.",
+        "category": "deployment"
+      }
+    ]
+  },
+  "ai_usage": {
+    "uses_ai": false,
+    "description": "Credit scoring is currently rule-based and does not utilize machine learning models.",
+    "techniques": [],
+    "models": []
+  },
+  "algorithms": [
+    {
+      "name": "Reputation Scoring Algorithm",
+      "purpose": "Calculates a score based on successful repayments, loan sizes, and defaults.",
+      "category": "ranking",
+      "complexity": "Low"
+    }
+  ],
+  "difficulty": {
+    "level": "intermediate",
+    "score": 6,
+    "reasons": [
+      "Requires careful smart contract design to prevent financial exploits.",
+      "Complexity in handling edge cases like partial repayments and liquidations."
+    ],
+    "prerequisites": [
+      "Decentralized Finance (DeFi) concepts",
+      "Smart contract development",
+      "Web3 frontend integration"
+    ]
+  },
+  "estimated_duration": {
+    "value": 4,
+    "unit": "months",
+    "phase_breakdown": [
+      {
+        "phase": "Smart contract design and security auditing",
+        "duration": "2 months"
+      },
+      {
+        "phase": "Frontend development and wallet integration",
+        "duration": "1.5 months"
+      },
+      {
+        "phase": "Testnet deployment and user testing",
+        "duration": "0.5 months"
+      }
+    ]
+  },
+  "team_size": {
+    "minimum": 2,
+    "recommended": 2,
+    "maximum": 3,
+    "roles": [
+      "Smart Contract Developer",
+      "Web3 UI Developer"
+    ]
+  },
+  "keywords": [
+    "DeFi",
+    "P2P lending",
+    "smart contracts",
+    "blockchain",
+    "micro-finance",
+    "escrow"
+  ],
+  "research_area": {
+    "primary": "Financial Technology (FinTech)",
+    "secondary": [
+      "Blockchain and Distributed Ledgers"
+    ],
+    "application_domain": "Alternative finance and decentralized lending"
+  },
+  "supervisor_specialization": [
+    "Blockchain Technologies",
+    "Financial Engineering"
+  ],
+  "expected_outcomes": [
+    "A fully functional set of lending smart contracts deployed on a testnet.",
+    "A web interface allowing users to create and fund loans.",
+    "A working demonstration of the automated collateral liquidation process."
+  ],
+  "limitations": [
+    "Over-collateralization is required, which may exclude the poorest borrowers.",
+    "Susceptible to extreme cryptocurrency price volatility.",
+    "Regulatory uncertainty regarding peer-to-peer crypto lending."
+  ],
+  "future_scope": [
+    "Implement under-collateralized loans utilizing decentralized identity (DID) solutions.",
+    "Integrate machine learning for advanced risk assessment and credit scoring.",
+    "Establish liquidity pools to automate the matching of lenders and borrowers."
+  ]
+}

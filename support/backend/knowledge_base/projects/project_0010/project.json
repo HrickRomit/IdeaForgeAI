@@ -1,0 +1,299 @@
+{
+  "project_id": "project_0010",
+  "basic_information": {
+    "title": "Intelligent Property Marketplace and Automated Valuation System",
+    "short_title": "PropTech Valuation Platform",
+    "slug": "intelligent-property-marketplace-valuation",
+    "project_type": "prototype",
+    "status": "published",
+    "summary": "A modern real estate marketplace that allows users to list and search properties while providing instant, AI-driven property price estimates based on location and features.",
+    "repository_url": null,
+    "demo_url": null
+  },
+  "academic_information": {
+    "institution": "City University of Technology",
+    "faculty": "Faculty of Built Environment and IT",
+    "department": "Software Engineering",
+    "program": "BSc in Software Engineering",
+    "course_code": "SE490",
+    "course_title": "Software Engineering Capstone",
+    "academic_level": "undergraduate",
+    "academic_year": "2025-2026",
+    "semester": "spring",
+    "submission_date": "2026-05-15",
+    "authors": [
+      {
+        "name": "Liam O'Connor",
+        "student_id": "SE-22-105",
+        "email": "liam.oconnor@example.edu",
+        "department": "Software Engineering",
+        "role": "Full Stack Developer"
+      },
+      {
+        "name": "Emma Wright",
+        "student_id": "SE-22-112",
+        "email": "emma.wright@example.edu",
+        "department": "Data Science",
+        "role": "Machine Learning Engineer"
+      }
+    ],
+    "supervisor": {
+      "name": "Dr. Thomas Miller",
+      "email": "thomas.miller@example.edu",
+      "department": "Computer Science",
+      "role": "Project Supervisor"
+    },
+    "co_supervisor": null,
+    "evaluation": {
+      "grade": "A-",
+      "score": 87,
+      "award_or_recognition": null
+    }
+  },
+  "abstract": "The real estate market suffers from information asymmetry, where buyers and sellers often rely on biased or outdated information to determine property values. This project addresses this by developing an Intelligent Property Marketplace combined with an Automated Valuation Model (AVM). The platform functions as a robust listing service where users can browse properties via an interactive map interface. Concurrently, the integrated AVM utilizes a Random Forest regression model trained on historical sales data, geospatial features, and macroeconomic indicators to generate instant price estimates for any residential property. This empowers users with data-driven insights, facilitating fairer negotiations and more efficient market transactions.",
+  "problem_statement": "Buyers and sellers struggle to determine the fair market value of residential properties due to the lack of transparent, instant, and data-driven valuation tools, relying heavily on expensive manual appraisals.",
+  "objectives": {
+    "primary": [
+      "Develop a user-friendly real estate listing marketplace.",
+      "Implement an Automated Valuation Model (AVM) to estimate property prices.",
+      "Integrate geospatial mapping to visualize property locations and neighborhood data."
+    ],
+    "secondary": [
+      "Provide a comparison tool for similar properties in the area.",
+      "Ensure the platform is responsive and mobile-friendly."
+    ]
+  },
+  "scope": {
+    "included": [
+      "Property listing creation and management.",
+      "Interactive map search using Mapbox or Google Maps.",
+      "Instant property valuation estimates.",
+      "User authentication and saved searches."
+    ],
+    "excluded": [
+      "Handling legal real estate transactions or escrows.",
+      "Commercial real estate valuation.",
+      "Integration with Multiple Listing Services (MLS)."
+    ],
+    "target_users": [
+      "Home Buyers",
+      "Home Sellers",
+      "Real Estate Agents"
+    ],
+    "deployment_context": "Web application deployed on a standard cloud provider (e.g., AWS or Vercel)."
+  },
+  "features": [
+    {
+      "name": "Interactive Map Search",
+      "description": "Users can browse properties on a map, filtering by price, size, and amenities.",
+      "priority": "core",
+      "user_roles": ["Home Buyer", "Agent"]
+    },
+    {
+      "name": "Instant Valuation Estimator",
+      "description": "Input property details to receive an AI-generated price estimate and confidence interval.",
+      "priority": "core",
+      "user_roles": ["Home Seller", "Home Buyer", "Agent"]
+    },
+    {
+      "name": "Property Listing Management",
+      "description": "Allows users to upload photos, descriptions, and details to list their property.",
+      "priority": "core",
+      "user_roles": ["Home Seller", "Agent"]
+    },
+    {
+      "name": "Neighborhood Insights",
+      "description": "Displays data on local schools, crime rates, and transit options.",
+      "priority": "important",
+      "user_roles": ["Home Buyer"]
+    }
+  ],
+  "modules": [
+    {
+      "name": "Marketplace Module",
+      "purpose": "Handles the core CRUD operations for property listings and user profiles.",
+      "responsibilities": [
+        "Store property metadata and images.",
+        "Process search queries and filters.",
+        "Manage user authentication and saved properties."
+      ],
+      "inputs": ["Search parameters", "Listing details"],
+      "outputs": ["Filtered property lists", "Listing pages"]
+    },
+    {
+      "name": "Valuation Engine",
+      "purpose": "Executes the machine learning model to estimate property values.",
+      "responsibilities": [
+        "Preprocess input features (e.g., square footage, bedrooms, zip code).",
+        "Run regression inference.",
+        "Return price estimate and comparable properties."
+      ],
+      "inputs": ["Property attributes", "Location data"],
+      "outputs": ["Estimated price", "Valuation report"]
+    }
+  ],
+  "technologies": {
+    "programming_languages": [
+      {
+        "name": "Python",
+        "version": "3.9",
+        "purpose": "Data processing and ML model API.",
+        "category": "backend"
+      },
+      {
+        "name": "JavaScript",
+        "version": "ES2021",
+        "purpose": "Frontend development and map integration.",
+        "category": "frontend"
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "FastAPI",
+        "version": "0.95",
+        "purpose": "Serves the ML model and core marketplace endpoints.",
+        "category": "backend"
+      },
+      {
+        "name": "React",
+        "version": "18",
+        "purpose": "Builds the dynamic user interface.",
+        "category": "frontend"
+      },
+      {
+        "name": "Scikit-Learn",
+        "purpose": "Training the Random Forest regression model.",
+        "category": "ai"
+      }
+    ],
+    "database": [
+      {
+        "name": "MongoDB",
+        "purpose": "Flexible document storage for varied property features and images.",
+        "category": "nosql"
+      }
+    ],
+    "apis": [
+      {
+        "name": "Mapbox API",
+        "purpose": "Provides interactive map rendering and geocoding.",
+        "provider": "Mapbox",
+        "integration_type": "third_party"
+      }
+    ],
+    "tools": [
+      {
+        "name": "Pandas",
+        "purpose": "Data manipulation and cleaning during model training.",
+        "category": "data"
+      }
+    ],
+    "platforms": [
+      {
+        "name": "Web Browser",
+        "purpose": "Primary client platform.",
+        "category": "client"
+      }
+    ]
+  },
+  "ai_usage": {
+    "uses_ai": true,
+    "description": "Utilizes machine learning to predict property prices based on historical data.",
+    "techniques": [
+      "Regression Analysis"
+    ],
+    "models": [
+      "Random Forest Regressor",
+      "Gradient Boosting"
+    ],
+    "training_data": "Publicly available historical real estate transaction datasets (e.g., King County Housing Data).",
+    "evaluation_metrics": [
+      "R-Squared",
+      "Mean Absolute Error (MAE)"
+    ]
+  },
+  "algorithms": [
+    {
+      "name": "K-Nearest Neighbors (KNN)",
+      "purpose": "Find and recommend comparable properties (comps) based on features and distance.",
+      "category": "search",
+      "complexity": "Medium"
+    }
+  ],
+  "difficulty": {
+    "level": "intermediate",
+    "score": 6,
+    "reasons": [
+      "Requires integration of complex mapping libraries (Mapbox).",
+      "Handling and cleaning messy real estate data for ML training.",
+      "Building a responsive and media-heavy frontend."
+    ],
+    "prerequisites": [
+      "Web development (React/FastAPI)",
+      "Basic Machine Learning (Regression)",
+      "Geospatial data handling"
+    ]
+  },
+  "estimated_duration": {
+    "value": 4,
+    "unit": "months",
+    "phase_breakdown": [
+      {
+        "phase": "Data collection, cleaning, and model training",
+        "duration": "1.5 months"
+      },
+      {
+        "phase": "Marketplace backend and API development",
+        "duration": "1 month"
+      },
+      {
+        "phase": "Frontend UI, map integration, and testing",
+        "duration": "1.5 months"
+      }
+    ]
+  },
+  "team_size": {
+    "minimum": 2,
+    "recommended": 2,
+    "maximum": 3,
+    "roles": [
+      "Full Stack Developer",
+      "Machine Learning Engineer"
+    ]
+  },
+  "keywords": [
+    "PropTech",
+    "real estate",
+    "automated valuation",
+    "marketplace",
+    "machine learning",
+    "Mapbox"
+  ],
+  "research_area": {
+    "primary": "Property Technology (PropTech)",
+    "secondary": [
+      "Applied Machine Learning",
+      "Web Applications"
+    ],
+    "application_domain": "Real estate transactions and property valuation"
+  },
+  "supervisor_specialization": [
+    "Applied Data Science",
+    "Web Systems"
+  ],
+  "expected_outcomes": [
+    "A functional real estate marketplace with map-based search.",
+    "An integrated AVM that provides immediate price estimates for user inputs.",
+    "A model evaluation report detailing the accuracy of the pricing predictions."
+  ],
+  "limitations": [
+    "Model accuracy decreases in rural areas with fewer historical sales (lack of comps).",
+    "Cannot account for unrecorded property improvements or interior conditions.",
+    "Relies on historical data, which may not capture sudden market shifts."
+  ],
+  "future_scope": [
+    "Implement computer vision to assess interior condition from uploaded photos and adjust valuations.",
+    "Integrate live MLS data feeds for real-time market updates.",
+    "Add augmented reality (AR) virtual tours for premium listings."
+  ]
+}

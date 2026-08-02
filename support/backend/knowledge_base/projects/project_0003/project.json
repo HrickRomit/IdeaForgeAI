@@ -1,0 +1,271 @@
+{
+  "project_id": "project_0003",
+  "basic_information": {
+    "title": "Telemedicine and Remote Patient Vital Monitoring Platform",
+    "short_title": "Remote Patient Monitoring",
+    "slug": "telemedicine-remote-patient-monitoring",
+    "project_type": "capstone",
+    "status": "completed",
+    "summary": "An integrated platform enabling doctors to conduct virtual consultations while monitoring patients' real-time vital signs collected via IoT wearable devices.",
+    "repository_url": null,
+    "demo_url": null
+  },
+  "academic_information": {
+    "institution": "Tech Valley University",
+    "faculty": "Faculty of Engineering",
+    "department": "Software Engineering",
+    "program": "BSc in Software Engineering",
+    "course_code": "SE400",
+    "course_title": "Senior Capstone Project",
+    "academic_level": "undergraduate",
+    "academic_year": "2023-2024",
+    "semester": "year_long",
+    "submission_date": "2024-04-10",
+    "authors": [
+      {
+        "name": "David Chen",
+        "student_id": "SE-20-001",
+        "email": "david.chen@example.edu",
+        "department": "Software Engineering",
+        "role": "Full Stack Developer"
+      },
+      {
+        "name": "Amina Yusuf",
+        "student_id": "SE-20-045",
+        "email": "amina.yusuf@example.edu",
+        "department": "Software Engineering",
+        "role": "IoT Integration Specialist"
+      }
+    ],
+    "supervisor": {
+      "name": "Prof. Lisa Ray",
+      "email": "lisa.ray@example.edu",
+      "department": "Software Engineering",
+      "role": "Project Advisor"
+    },
+    "co_supervisor": null,
+    "evaluation": {
+      "grade": "A",
+      "score": 91,
+      "award_or_recognition": "Innovation in Healthcare Technology Award"
+    }
+  },
+  "abstract": "Access to continuous healthcare is a significant challenge for elderly and remote patients. This project introduces a comprehensive telemedicine system integrated with IoT-based remote vital monitoring. Wearable sensors collect continuous data on heart rate, blood oxygen levels (SpO2), and body temperature, transmitting it securely to a cloud database. Healthcare providers can access this data through a web portal, facilitating informed virtual consultations via integrated video conferencing. The system includes an automated alert mechanism that notifies medical staff if a patient's vitals cross predefined critical thresholds, ensuring timely interventions. The solution bridges the gap between clinical visits and continuous patient care.",
+  "problem_statement": "Continuous monitoring of chronic and post-operative patients is often restricted to hospital environments. Once discharged, lack of real-time health tracking can lead to undetected deteriorations and delayed emergency responses.",
+  "objectives": {
+    "primary": [
+      "Design an IoT gateway to aggregate and transmit vital signs from wearable sensors.",
+      "Develop a secure web portal for doctors to review patient history and real-time data.",
+      "Integrate a WebRTC-based video consultation module."
+    ],
+    "secondary": [
+      "Implement a real-time alerting system for abnormal vital readings.",
+      "Ensure data transmission adheres to basic security and privacy standards."
+    ]
+  },
+  "scope": {
+    "included": [
+      "IoT sensor data ingestion via MQTT.",
+      "Patient and doctor dashboards.",
+      "Live video calling with text chat.",
+      "Threshold-based SMS and email alerts."
+    ],
+    "excluded": [
+      "Manufacturing of custom hardware sensors.",
+      "Full HIPAA compliance certification.",
+      "Integration with external pharmacy systems."
+    ],
+    "target_users": [
+      "Patients",
+      "Doctors",
+      "Caregivers"
+    ],
+    "deployment_context": "Cloud-based web application with edge IoT devices for data collection."
+  },
+  "features": [
+    {
+      "name": "Live Vital Dashboard",
+      "description": "Displays real-time and historical graphs of patient heart rate, SpO2, and temperature.",
+      "priority": "core",
+      "user_roles": ["Doctor", "Patient"]
+    },
+    {
+      "name": "Virtual Consultation",
+      "description": "Secure, browser-based video calls between patients and healthcare providers.",
+      "priority": "core",
+      "user_roles": ["Doctor", "Patient"]
+    },
+    {
+      "name": "Automated Alerts",
+      "description": "Triggers notifications when vital signs fall outside healthy parameters.",
+      "priority": "important",
+      "user_roles": ["Doctor", "Caregiver"]
+    }
+  ],
+  "modules": [
+    {
+      "name": "IoT Data Ingestion Module",
+      "purpose": "Receives and validates continuous data streams from hardware sensors.",
+      "responsibilities": [
+        "Listen for MQTT messages from devices.",
+        "Sanitize and format sensor data.",
+        "Store time-series data efficiently."
+      ],
+      "inputs": ["Sensor telemetry payloads"],
+      "outputs": ["Normalized time-series records"]
+    },
+    {
+      "name": "Communication Module",
+      "purpose": "Manages WebRTC signaling and real-time messaging.",
+      "responsibilities": [
+        "Handle peer-to-peer connection negotiation.",
+        "Manage video and audio streams securely."
+      ],
+      "inputs": ["Signaling messages", "Media streams"],
+      "outputs": ["Connected video session"]
+    }
+  ],
+  "technologies": {
+    "programming_languages": [
+      {
+        "name": "JavaScript",
+        "version": "ES2021",
+        "purpose": "Backend services (Node.js) and frontend application (React).",
+        "category": "fullstack"
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "Express.js",
+        "version": "4.18",
+        "purpose": "REST API for user management and historical data retrieval.",
+        "category": "backend"
+      },
+      {
+        "name": "React",
+        "version": "18",
+        "purpose": "User interface for the medical dashboard.",
+        "category": "frontend"
+      }
+    ],
+    "database": [
+      {
+        "name": "MongoDB",
+        "version": "6",
+        "purpose": "Store user profiles, consultation notes, and time-series vital data.",
+        "category": "nosql"
+      }
+    ],
+    "apis": [
+      {
+        "name": "Twilio Video API",
+        "purpose": "Provides WebRTC infrastructure for video consultations.",
+        "provider": "Twilio",
+        "integration_type": "third_party"
+      }
+    ],
+    "tools": [
+      {
+        "name": "MQTT Broker (Mosquitto)",
+        "purpose": "Handles lightweight messaging for IoT devices.",
+        "category": "infrastructure"
+      }
+    ],
+    "platforms": [
+      {
+        "name": "Web Browser",
+        "purpose": "Client access for doctors and patients.",
+        "category": "client"
+      }
+    ]
+  },
+  "ai_usage": {
+    "uses_ai": false,
+    "description": "System relies on rule-based thresholds for alerts rather than AI prediction.",
+    "techniques": [],
+    "models": []
+  },
+  "algorithms": [
+    {
+      "name": "Moving Average Filter",
+      "purpose": "Smooth out noisy sensor data before displaying or triggering alerts.",
+      "category": "data_processing",
+      "complexity": "Low"
+    }
+  ],
+  "difficulty": {
+    "level": "intermediate",
+    "score": 6,
+    "reasons": [
+      "Requires integration of hardware (IoT) with web software.",
+      "Handling real-time data streams and video signaling."
+    ],
+    "prerequisites": [
+      "Web development",
+      "IoT protocols (MQTT)",
+      "Basic networking concepts"
+    ]
+  },
+  "estimated_duration": {
+    "value": 8,
+    "unit": "months",
+    "phase_breakdown": [
+      {
+        "phase": "Hardware setup and IoT integration",
+        "duration": "2 months"
+      },
+      {
+        "phase": "Web platform development",
+        "duration": "4 months"
+      },
+      {
+        "phase": "Testing and refinement",
+        "duration": "2 months"
+      }
+    ]
+  },
+  "team_size": {
+    "minimum": 2,
+    "recommended": 3,
+    "maximum": 4,
+    "roles": [
+      "IoT Engineer",
+      "Web Developer",
+      "UI/UX Designer"
+    ]
+  },
+  "keywords": [
+    "telemedicine",
+    "remote monitoring",
+    "IoT",
+    "healthcare",
+    "wearables",
+    "WebRTC"
+  ],
+  "research_area": {
+    "primary": "Internet of Things (IoT)",
+    "secondary": [
+      "Telehealth",
+      "Web Applications"
+    ],
+    "application_domain": "Healthcare delivery and patient monitoring"
+  },
+  "supervisor_specialization": [
+    "IoT Systems",
+    "Software Architecture"
+  ],
+  "expected_outcomes": [
+    "A working prototype of the IoT gateway and sensor setup.",
+    "A fully functional web platform for patient monitoring and video calls.",
+    "Demonstration of real-time alerts based on simulated critical vital signs."
+  ],
+  "limitations": [
+    "Accuracy depends on the quality of off-the-shelf sensors used.",
+    "Requires stable internet connection for real-time video and data streaming."
+  ],
+  "future_scope": [
+    "Implement machine learning for early detection of health deterioration.",
+    "Develop native mobile applications for patients.",
+    "Expand sensor integrations to include ECG and blood pressure cuffs."
+  ]
+}

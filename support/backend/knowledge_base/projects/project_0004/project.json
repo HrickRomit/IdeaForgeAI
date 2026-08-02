@@ -1,0 +1,276 @@
+{
+  "project_id": "project_0004",
+  "basic_information": {
+    "title": "Electronic Health Records (EHR) & Blockchain Prescription Verification",
+    "short_title": "Blockchain EHR System",
+    "slug": "ehr-blockchain-prescription",
+    "project_type": "prototype",
+    "status": "completed",
+    "summary": "A secure electronic health record system utilizing blockchain technology to ensure the immutability and verification of medical prescriptions, preventing fraud.",
+    "repository_url": null,
+    "demo_url": null
+  },
+  "academic_information": {
+    "institution": "National Cyber Security Institute",
+    "faculty": "School of Computer Science",
+    "department": "Cybersecurity",
+    "program": "BSc in Cybersecurity",
+    "course_code": "CYB499",
+    "course_title": "Final Year Project",
+    "academic_level": "undergraduate",
+    "academic_year": "2024-2025",
+    "semester": "spring",
+    "submission_date": "2025-06-01",
+    "authors": [
+      {
+        "name": "Marcus Lee",
+        "student_id": "CYB-21-002",
+        "email": "marcus.lee@example.edu",
+        "department": "Cybersecurity",
+        "role": "Smart Contract Developer"
+      }
+    ],
+    "supervisor": {
+      "name": "Dr. Elena Rostova",
+      "email": "elena.rostova@example.edu",
+      "department": "Cybersecurity",
+      "role": "Project Supervisor"
+    },
+    "co_supervisor": null,
+    "evaluation": {
+      "grade": "A-",
+      "score": 86,
+      "award_or_recognition": null
+    }
+  },
+  "abstract": "Prescription fraud and medical record tampering are critical issues in modern healthcare systems. This project proposes a decentralized Electronic Health Record (EHR) system where patient data is securely managed, and medical prescriptions are tokenized on a blockchain network. When a doctor issues a prescription, a smart contract records its cryptographic hash on the blockchain. Pharmacies can verify the authenticity and status (e.g., dispensed, active) of the prescription by querying the smart contract, effectively eliminating the possibility of forged or double-filled prescriptions. The system employs InterPlanetary File System (IPFS) for off-chain storage of encrypted health records, ensuring patient privacy while leveraging blockchain for integrity and auditability.",
+  "problem_statement": "Traditional paper-based and centralized electronic prescriptions are vulnerable to forgery, alteration, and unauthorized multiple dispensations, contributing to prescription drug abuse and medical errors.",
+  "objectives": {
+    "primary": [
+      "Develop a blockchain-based mechanism for issuing and verifying medical prescriptions.",
+      "Implement a decentralized storage solution for encrypted patient health records.",
+      "Create user interfaces for doctors, patients, and pharmacists."
+    ],
+    "secondary": [
+      "Ensure adherence to data privacy principles by separating on-chain hashes from off-chain sensitive data."
+    ]
+  },
+  "scope": {
+    "included": [
+      "Smart contracts for prescription lifecycle management.",
+      "IPFS integration for storing encrypted EHR documents.",
+      "Role-based web portal for interactions.",
+      "Cryptographic key management for users."
+    ],
+    "excluded": [
+      "Integration with national identity systems.",
+      "Fiat or cryptocurrency payment gateways for medication.",
+      "Complex medical imaging storage."
+    ],
+    "target_users": [
+      "Doctors",
+      "Patients",
+      "Pharmacists"
+    ],
+    "deployment_context": "Local Ethereum testnet (Ganache) for blockchain logic and a standard web server for the application frontend."
+  },
+  "features": [
+    {
+      "name": "Immutable Prescription Issuance",
+      "description": "Doctors create digital prescriptions that are recorded immutably via smart contracts.",
+      "priority": "core",
+      "user_roles": ["Doctor"]
+    },
+    {
+      "name": "Prescription Verification and Dispensation",
+      "description": "Pharmacists verify prescription authenticity and mark them as dispensed on the blockchain.",
+      "priority": "core",
+      "user_roles": ["Pharmacist"]
+    },
+    {
+      "name": "Decentralized Record Storage",
+      "description": "Patient records are encrypted and stored on IPFS, with only access hashes stored on-chain.",
+      "priority": "important",
+      "user_roles": ["Patient", "Doctor"]
+    }
+  ],
+  "modules": [
+    {
+      "name": "Smart Contract Module",
+      "purpose": "Manages the logic and state of prescriptions on the blockchain.",
+      "responsibilities": [
+        "Issue new prescriptions.",
+        "Update prescription status (e.g., dispensed).",
+        "Manage authorized entities (doctors, pharmacies)."
+      ],
+      "inputs": ["Transaction requests"],
+      "outputs": ["Blockchain events", "State confirmations"]
+    },
+    {
+      "name": "Off-chain Storage Module",
+      "purpose": "Handles the secure storage of large medical documents.",
+      "responsibilities": [
+        "Encrypt files before upload.",
+        "Store files on IPFS and return content identifiers (CIDs).",
+        "Retrieve and decrypt files for authorized users."
+      ],
+      "inputs": ["Medical documents", "Encryption keys"],
+      "outputs": ["IPFS CIDs", "Decrypted documents"]
+    }
+  ],
+  "technologies": {
+    "programming_languages": [
+      {
+        "name": "Solidity",
+        "version": "0.8",
+        "purpose": "Smart contract development.",
+        "category": "blockchain"
+      },
+      {
+        "name": "TypeScript",
+        "version": "4.9",
+        "purpose": "Frontend and backend service logic.",
+        "category": "fullstack"
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "Next.js",
+        "version": "13",
+        "purpose": "React framework for building the user interface.",
+        "category": "frontend"
+      },
+      {
+        "name": "Hardhat",
+        "purpose": "Ethereum development environment for compiling and testing smart contracts.",
+        "category": "blockchain"
+      }
+    ],
+    "database": [
+      {
+        "name": "IPFS",
+        "purpose": "Decentralized storage network for off-chain health records.",
+        "category": "distributed"
+      }
+    ],
+    "apis": [
+      {
+        "name": "Web3.js",
+        "purpose": "Interact with the Ethereum blockchain from the frontend.",
+        "provider": "Open Source",
+        "integration_type": "third_party"
+      }
+    ],
+    "tools": [
+      {
+        "name": "MetaMask",
+        "purpose": "Browser extension for managing user identities and signing transactions.",
+        "category": "security"
+      }
+    ],
+    "platforms": [
+      {
+        "name": "Ethereum Testnet",
+        "purpose": "Blockchain network for deploying smart contracts.",
+        "category": "deployment"
+      }
+    ]
+  },
+  "ai_usage": {
+    "uses_ai": false,
+    "description": "This project is focused on cryptography and decentralized ledgers, not artificial intelligence.",
+    "techniques": [],
+    "models": []
+  },
+  "algorithms": [
+    {
+      "name": "SHA-256 Hashing",
+      "purpose": "Generate unique cryptographic hashes for prescriptions before storing them on-chain.",
+      "category": "security",
+      "complexity": "Low"
+    },
+    {
+      "name": "AES-256 Encryption",
+      "purpose": "Encrypt patient records symmetrically before IPFS upload.",
+      "category": "security",
+      "complexity": "Low"
+    }
+  ],
+  "difficulty": {
+    "level": "intermediate",
+    "score": 7,
+    "reasons": [
+      "Requires understanding of decentralized architectures.",
+      "Smart contract security is critical and unforgiving of errors.",
+      "Integration of Web3 technologies with traditional web stacks."
+    ],
+    "prerequisites": [
+      "Blockchain fundamentals",
+      "Smart contract development",
+      "Applied cryptography"
+    ]
+  },
+  "estimated_duration": {
+    "value": 5,
+    "unit": "months",
+    "phase_breakdown": [
+      {
+        "phase": "Smart contract development and security testing",
+        "duration": "2 months"
+      },
+      {
+        "phase": "Web interface and Web3 integration",
+        "duration": "2 months"
+      },
+      {
+        "phase": "System testing and deployment on testnet",
+        "duration": "1 month"
+      }
+    ]
+  },
+  "team_size": {
+    "minimum": 1,
+    "recommended": 2,
+    "maximum": 3,
+    "roles": [
+      "Blockchain Developer",
+      "Frontend Developer"
+    ]
+  },
+  "keywords": [
+    "blockchain",
+    "EHR",
+    "prescription fraud",
+    "smart contracts",
+    "IPFS",
+    "healthcare security"
+  ],
+  "research_area": {
+    "primary": "Cybersecurity and Blockchain",
+    "secondary": [
+      "Health Informatics",
+      "Decentralized Applications (dApps)"
+    ],
+    "application_domain": "Healthcare data security and prescription management"
+  },
+  "supervisor_specialization": [
+    "Cryptography",
+    "Blockchain Technology",
+    "Information Security"
+  ],
+  "expected_outcomes": [
+    "Secure smart contracts deployed on a test network.",
+    "A working web portal demonstrating the issuance, verification, and dispensation workflow.",
+    "A technical report analyzing the security and scalability of the proposed solution."
+  ],
+  "limitations": [
+    "Scalability constraints typical of public blockchain networks.",
+    "Relies on users safeguarding their private keys securely.",
+    "Transaction costs (gas fees) may be a barrier to adoption in real-world public networks."
+  ],
+  "future_scope": [
+    "Migrate to a permissioned blockchain (e.g., Hyperledger Fabric) for enterprise deployment.",
+    "Implement multi-signature wallets for hospital administrations.",
+    "Develop a zero-knowledge proof mechanism for verifying prescriptions without revealing patient identity."
+  ]
+}

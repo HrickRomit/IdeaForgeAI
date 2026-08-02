@@ -1,0 +1,272 @@
+{
+  "project_id": "project_0002",
+  "basic_information": {
+    "title": "AI-Powered Diagnostic Assistance and Medical Imaging Classification",
+    "short_title": "AI Medical Imaging",
+    "slug": "ai-medical-imaging-classification",
+    "project_type": "research",
+    "status": "archived",
+    "summary": "A deep learning framework for classifying medical images (X-rays and MRIs) to assist radiologists in early anomaly detection.",
+    "repository_url": null,
+    "demo_url": null
+  },
+  "academic_information": {
+    "institution": "Global Institute of Technology",
+    "faculty": "Faculty of Biomedical Engineering",
+    "department": "Bioinformatics",
+    "program": "MSc in Bioinformatics",
+    "course_code": "BIF601",
+    "course_title": "Master's Thesis",
+    "academic_level": "graduate",
+    "academic_year": "2024-2025",
+    "semester": "spring",
+    "submission_date": "2025-05-15",
+    "authors": [
+      {
+        "name": "Sarah O'Connor",
+        "student_id": "M-2023-089",
+        "email": "sarah.oconnor@example.edu",
+        "department": "Bioinformatics",
+        "role": "Lead Researcher"
+      }
+    ],
+    "supervisor": {
+      "name": "Dr. Alan Turing",
+      "email": "alan.turing@example.edu",
+      "department": "Computer Science",
+      "role": "Primary Supervisor"
+    },
+    "co_supervisor": null,
+    "evaluation": {
+      "grade": "A+",
+      "score": 95,
+      "award_or_recognition": "Best Graduate Thesis 2025"
+    }
+  },
+  "abstract": "Medical imaging is a crucial diagnostic tool, but the manual review process by radiologists is time-consuming and prone to human error, particularly under heavy workloads. This research presents an AI-powered diagnostic assistant that leverages Convolutional Neural Networks (CNNs) to classify X-ray and MRI scans for abnormalities such as tumors, fractures, and pneumonia. The system provides a secondary review mechanism, highlighting regions of interest using Class Activation Mapping (CAM) to ensure interpretability. Evaluated on large public datasets, the model achieved over 92% accuracy. This tool aims to enhance diagnostic throughput and improve patient outcomes by accelerating the detection of critical conditions.",
+  "problem_statement": "Radiologists often face overwhelming caseloads, leading to diagnostic delays and potential errors in identifying subtle anomalies in medical scans. A reliable, automated secondary review system is necessary to prioritize critical cases and reduce the cognitive load on medical professionals.",
+  "objectives": {
+    "primary": [
+      "Develop a CNN-based model for classifying abnormalities in medical images.",
+      "Create a web interface for radiologists to upload scans and receive AI-generated insights.",
+      "Implement interpretability features to explain the model's predictions."
+    ],
+    "secondary": [
+      "Optimize the model for fast inference on standard clinical hardware.",
+      "Compare the performance of different neural network architectures."
+    ]
+  },
+  "scope": {
+    "included": [
+      "Binary and multi-class classification of X-rays.",
+      "Heatmap generation for explainability.",
+      "Web-based diagnostic dashboard.",
+      "DICOM image format support."
+    ],
+    "excluded": [
+      "Direct integration with hospital PACS systems.",
+      "Real-time video stream processing.",
+      "Final medical diagnosis without human oversight."
+    ],
+    "target_users": [
+      "Radiologists",
+      "Clinical Researchers",
+      "Medical Students"
+    ],
+    "deployment_context": "Cloud-hosted web application with GPU-accelerated inference backend."
+  },
+  "features": [
+    {
+      "name": "Scan Upload and Preprocessing",
+      "description": "Allows users to upload DICOM and standard image files with automatic normalization.",
+      "priority": "core",
+      "user_roles": ["Radiologist", "Researcher"]
+    },
+    {
+      "name": "AI Diagnostic Prediction",
+      "description": "Provides classification results indicating the probability of various anomalies.",
+      "priority": "core",
+      "user_roles": ["Radiologist"]
+    },
+    {
+      "name": "Interpretability Heatmaps",
+      "description": "Overlays heatmaps on the original scan to show areas influencing the model's decision.",
+      "priority": "core",
+      "user_roles": ["Radiologist"]
+    }
+  ],
+  "modules": [
+    {
+      "name": "Image Processing Module",
+      "purpose": "Handles parsing, normalization, and resizing of medical scans.",
+      "responsibilities": [
+        "Read DICOM metadata and extract pixel arrays.",
+        "Normalize image intensity and resize for model input."
+      ],
+      "inputs": ["Raw image files"],
+      "outputs": ["Preprocessed tensors"]
+    },
+    {
+      "name": "Inference Engine",
+      "purpose": "Executes trained CNN models on preprocessed images.",
+      "responsibilities": [
+        "Load model weights into GPU memory.",
+        "Perform forward pass and generate CAM heatmaps."
+      ],
+      "inputs": ["Preprocessed tensors"],
+      "outputs": ["Predictions", "Heatmap arrays"]
+    }
+  ],
+  "technologies": {
+    "programming_languages": [
+      {
+        "name": "Python",
+        "version": "3.10",
+        "purpose": "Model training and inference logic.",
+        "category": "backend"
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "PyTorch",
+        "version": "2.0",
+        "purpose": "Deep learning framework for building and training CNNs.",
+        "category": "ai"
+      }
+    ],
+    "database": [
+      {
+        "name": "PostgreSQL",
+        "version": "14",
+        "purpose": "Store patient metadata and prediction logs.",
+        "category": "relational"
+      }
+    ],
+    "apis": [
+      {
+        "name": "Inference API",
+        "purpose": "Provides prediction results to the frontend.",
+        "provider": "Internal",
+        "integration_type": "internal"
+      }
+    ],
+    "tools": [
+      {
+        "name": "Docker",
+        "purpose": "Containerize the application for consistent deployment.",
+        "category": "devops"
+      }
+    ],
+    "platforms": [
+      {
+        "name": "Linux Server",
+        "purpose": "Deployment environment with GPU support.",
+        "category": "deployment"
+      }
+    ]
+  },
+  "ai_usage": {
+    "uses_ai": true,
+    "description": "The project relies on deep learning for computer vision tasks.",
+    "techniques": [
+      "Convolutional Neural Networks",
+      "Transfer Learning",
+      "Class Activation Mapping"
+    ],
+    "models": [
+      "ResNet-50",
+      "DenseNet-121"
+    ],
+    "training_data": "Public datasets including ChestX-ray14.",
+    "evaluation_metrics": [
+      "Accuracy",
+      "Sensitivity",
+      "Specificity",
+      "AUC-ROC"
+    ]
+  },
+  "algorithms": [
+    {
+      "name": "Stochastic Gradient Descent",
+      "purpose": "Optimize neural network weights during training phase.",
+      "category": "optimization",
+      "complexity": "High"
+    }
+  ],
+  "difficulty": {
+    "level": "advanced",
+    "score": 8,
+    "reasons": [
+      "Requires deep understanding of computer vision and medical data.",
+      "Handling large datasets and complex neural architectures."
+    ],
+    "prerequisites": [
+      "Deep Learning",
+      "Python programming",
+      "Medical Image Analysis"
+    ]
+  },
+  "estimated_duration": {
+    "value": 6,
+    "unit": "months",
+    "phase_breakdown": [
+      {
+        "phase": "Literature review and data collection",
+        "duration": "1 month"
+      },
+      {
+        "phase": "Model architecture design and training",
+        "duration": "3 months"
+      },
+      {
+        "phase": "Evaluation and dashboard integration",
+        "duration": "2 months"
+      }
+    ]
+  },
+  "team_size": {
+    "minimum": 1,
+    "recommended": 2,
+    "maximum": 3,
+    "roles": [
+      "AI Researcher",
+      "Backend Engineer"
+    ]
+  },
+  "keywords": [
+    "deep learning",
+    "medical imaging",
+    "computer vision",
+    "CNN",
+    "healthcare",
+    "diagnostic assistant"
+  ],
+  "research_area": {
+    "primary": "Artificial Intelligence in Medicine",
+    "secondary": [
+      "Computer Vision",
+      "Health Informatics"
+    ],
+    "application_domain": "Clinical Diagnostics"
+  },
+  "supervisor_specialization": [
+    "Medical AI",
+    "Computer Vision",
+    "Deep Learning"
+  ],
+  "expected_outcomes": [
+    "A trained classification model with high accuracy.",
+    "An interactive web dashboard for clinicians.",
+    "A comprehensive research paper documenting the methodology and results."
+  ],
+  "limitations": [
+    "Model performance is highly dependent on the quality of training data.",
+    "Does not replace human medical professionals.",
+    "May struggle with rare anomalies not present in the training set."
+  ],
+  "future_scope": [
+    "Integrate with electronic health record (EHR) systems.",
+    "Expand to 3D image analysis like CT scans.",
+    "Implement federated learning to preserve patient privacy."
+  ]
+}

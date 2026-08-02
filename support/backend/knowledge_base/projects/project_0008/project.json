@@ -1,0 +1,293 @@
+{
+  "project_id": "project_0008",
+  "basic_information": {
+    "title": "Smart Personal Finance Manager and AI Investment Portfolio Forecaster",
+    "short_title": "AI Finance Manager",
+    "slug": "smart-personal-finance-investment-forecaster",
+    "project_type": "capstone",
+    "status": "completed",
+    "summary": "A comprehensive personal finance web application that tracks user spending habits and utilizes AI forecasting models to project the future performance of diversified investment portfolios.",
+    "repository_url": null,
+    "demo_url": null
+  },
+  "academic_information": {
+    "institution": "University of Data Science",
+    "faculty": "School of Computing and Finance",
+    "department": "Data Science",
+    "program": "BSc in Data Science",
+    "course_code": "DS450",
+    "course_title": "Data Science Practicum",
+    "academic_level": "undergraduate",
+    "academic_year": "2024-2025",
+    "semester": "spring",
+    "submission_date": "2025-05-12",
+    "authors": [
+      {
+        "name": "Jordan Smith",
+        "student_id": "DS-21-088",
+        "email": "jordan.smith@example.edu",
+        "department": "Data Science",
+        "role": "Data Engineer and ML Developer"
+      }
+    ],
+    "supervisor": {
+      "name": "Dr. Kevin Wu",
+      "email": "kevin.wu@example.edu",
+      "department": "Finance",
+      "role": "Supervisor"
+    },
+    "co_supervisor": null,
+    "evaluation": {
+      "grade": "A",
+      "score": 92,
+      "award_or_recognition": "Best Data Science Application"
+    }
+  },
+  "abstract": "Managing personal finances and making informed investment decisions can be daunting for the average individual. This project introduces a Smart Personal Finance Manager that automates expense tracking and provides actionable financial insights. Users can link their bank accounts securely via open banking APIs to categorize transactions automatically. The core innovation of this platform is the AI Investment Portfolio Forecaster, which uses Long Short-Term Memory (LSTM) neural networks to analyze historical market data (stocks, ETFs, crypto) and project potential future portfolio values under various risk scenarios. The system helps users balance their budget while visualizing the long-term impact of their investment contributions.",
+  "problem_statement": "Individuals struggle to simultaneously track their daily expenses and understand how their current savings rate will impact their long-term financial goals and investment growth.",
+  "objectives": {
+    "primary": [
+      "Develop an automated expense tracking system using open banking APIs.",
+      "Build a machine learning model to forecast investment portfolio performance.",
+      "Create an interactive dashboard for visualizing financial health and projections."
+    ],
+    "secondary": [
+      "Implement automated transaction categorization rules.",
+      "Allow users to simulate 'what-if' scenarios for different contribution amounts."
+    ]
+  },
+  "scope": {
+    "included": [
+      "Bank account integration for read-only transaction syncing.",
+      "Customizable budget goals and alerts.",
+      "Stock and cryptocurrency portfolio tracking.",
+      "LSTM-based time-series forecasting for portfolio assets."
+    ],
+    "excluded": [
+      "Direct trading or execution of investment orders.",
+      "Comprehensive tax preparation features.",
+      "Support for real estate or illiquid asset valuation."
+    ],
+    "target_users": [
+      "Young Professionals",
+      "Retail Investors",
+      "Individuals seeking financial literacy"
+    ],
+    "deployment_context": "Web application hosted on a cloud platform with a separate microservice for heavy machine learning inferences."
+  },
+  "features": [
+    {
+      "name": "Automated Transaction Syncing",
+      "description": "Securely imports and categorizes daily bank transactions.",
+      "priority": "core",
+      "user_roles": ["User"]
+    },
+    {
+      "name": "Budget and Expense Dashboard",
+      "description": "Visualizes spending patterns against user-defined monthly budgets.",
+      "priority": "core",
+      "user_roles": ["User"]
+    },
+    {
+      "name": "AI Portfolio Forecaster",
+      "description": "Projects the future value of investments based on historical trends and risk profiles.",
+      "priority": "important",
+      "user_roles": ["User"]
+    },
+    {
+      "name": "Scenario Simulator",
+      "description": "Interactive tool allowing users to adjust saving rates to see long-term impact.",
+      "priority": "important",
+      "user_roles": ["User"]
+    }
+  ],
+  "modules": [
+    {
+      "name": "Aggregation Module",
+      "purpose": "Interfaces with external banking and financial APIs to gather data.",
+      "responsibilities": [
+        "Authenticate with open banking providers.",
+        "Fetch and sanitize transaction data.",
+        "Update current portfolio holdings."
+      ],
+      "inputs": ["API credentials", "User accounts"],
+      "outputs": ["Standardized financial records"]
+    },
+    {
+      "name": "Forecasting Engine",
+      "purpose": "Predicts future asset prices and calculates portfolio trajectories.",
+      "responsibilities": [
+        "Fetch historical market data for assets.",
+        "Execute time-series forecasting models.",
+        "Aggregate predictions into portfolio-level projections."
+      ],
+      "inputs": ["Portfolio composition", "Historical market data"],
+      "outputs": ["Future value projections"]
+    }
+  ],
+  "technologies": {
+    "programming_languages": [
+      {
+        "name": "Python",
+        "version": "3.11",
+        "purpose": "Backend logic and machine learning models.",
+        "category": "backend"
+      },
+      {
+        "name": "JavaScript",
+        "version": "ES2022",
+        "purpose": "Frontend charting and UI interactions.",
+        "category": "frontend"
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "Django",
+        "version": "4.2",
+        "purpose": "Robust web framework for handling users and financial data securely.",
+        "category": "backend"
+      },
+      {
+        "name": "TensorFlow",
+        "version": "2.12",
+        "purpose": "Building and training LSTM forecasting models.",
+        "category": "ai"
+      }
+    ],
+    "database": [
+      {
+        "name": "PostgreSQL",
+        "purpose": "Secure storage of user data and transaction history.",
+        "category": "relational"
+      }
+    ],
+    "apis": [
+      {
+        "name": "Plaid API",
+        "purpose": "Securely connect to user bank accounts and retrieve transactions.",
+        "provider": "Plaid",
+        "integration_type": "third_party"
+      },
+      {
+        "name": "Alpha Vantage API",
+        "purpose": "Retrieve historical and real-time stock market data.",
+        "provider": "Alpha Vantage",
+        "integration_type": "third_party"
+      }
+    ],
+    "tools": [
+      {
+        "name": "D3.js",
+        "purpose": "Create complex, interactive financial visualizations.",
+        "category": "visualization"
+      }
+    ],
+    "platforms": [
+      {
+        "name": "Heroku",
+        "purpose": "Platform-as-a-Service for deploying the web application.",
+        "category": "deployment"
+      }
+    ]
+  },
+  "ai_usage": {
+    "uses_ai": true,
+    "description": "Utilizes machine learning for time-series forecasting of financial assets.",
+    "techniques": [
+      "Time-Series Forecasting",
+      "Deep Learning"
+    ],
+    "models": [
+      "Long Short-Term Memory (LSTM) Networks"
+    ],
+    "training_data": "Decades of historical stock and ETF price data sourced from financial APIs.",
+    "evaluation_metrics": [
+      "Mean Absolute Error (MAE)",
+      "Mean Squared Error (MSE)"
+    ]
+  },
+  "algorithms": [
+    {
+      "name": "Monte Carlo Simulation",
+      "purpose": "Generate varied potential future market paths for risk assessment.",
+      "category": "prediction",
+      "complexity": "Medium"
+    }
+  ],
+  "difficulty": {
+    "level": "intermediate",
+    "score": 7,
+    "reasons": [
+      "Requires secure handling of sensitive financial data.",
+      "Integration with complex third-party banking APIs.",
+      "Developing accurate and robust time-series forecasting models."
+    ],
+    "prerequisites": [
+      "Web API integration",
+      "Time-series machine learning",
+      "Data visualization"
+    ]
+  },
+  "estimated_duration": {
+    "value": 15,
+    "unit": "weeks",
+    "phase_breakdown": [
+      {
+        "phase": "API integration and data pipeline setup",
+        "duration": "5 weeks"
+      },
+      {
+        "phase": "Machine learning model development",
+        "duration": "4 weeks"
+      },
+      {
+        "phase": "Frontend dashboard and visualization",
+        "duration": "6 weeks"
+      }
+    ]
+  },
+  "team_size": {
+    "minimum": 1,
+    "recommended": 2,
+    "maximum": 3,
+    "roles": [
+      "Data Scientist",
+      "Full Stack Developer"
+    ]
+  },
+  "keywords": [
+    "personal finance",
+    "FinTech",
+    "investment forecasting",
+    "LSTM",
+    "open banking",
+    "Plaid"
+  ],
+  "research_area": {
+    "primary": "Financial Technology (FinTech)",
+    "secondary": [
+      "Applied Machine Learning",
+      "Data Visualization"
+    ],
+    "application_domain": "Personal wealth management and financial planning"
+  },
+  "supervisor_specialization": [
+    "Predictive Modeling",
+    "Financial Data Science"
+  ],
+  "expected_outcomes": [
+    "A secure web application capable of syncing real bank transactions.",
+    "A trained LSTM model that can forecast standard asset trajectories.",
+    "Interactive dashboards demonstrating current budget status and future wealth projections."
+  ],
+  "limitations": [
+    "Financial markets are inherently unpredictable; AI forecasts are estimates, not guarantees.",
+    "Plaid integration requires sandbox data for demonstration purposes due to banking regulations.",
+    "High computational cost for running real-time ML inferences for many users."
+  ],
+  "future_scope": [
+    "Integrate natural language processing to allow users to ask financial questions (e.g., 'How much did I spend on food last month?').",
+    "Implement automated tax-loss harvesting recommendations.",
+    "Add support for tracking and forecasting cryptocurrency portfolios."
+  ]
+}

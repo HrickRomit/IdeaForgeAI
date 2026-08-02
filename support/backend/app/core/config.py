@@ -21,6 +21,8 @@ class Settings(BaseSettings):
 
     jwt_secret_key: str = "replace_with_a_long_random_secret"
     jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 1440
+    refresh_token_expire_days: int = 30
 
     gemini_api_key: str | None = None
     chroma_host: str = "localhost"
@@ -28,7 +30,7 @@ class Settings(BaseSettings):
     upload_directory: str = "uploads"
     max_upload_size_mb: int = 10
 
-    backend_cors_origins: list[AnyHttpUrl | str] = Field(
+    backend_cors_origins: list[str] = Field(
         default_factory=lambda: [
             "http://localhost:5173",
             "http://127.0.0.1:5173",

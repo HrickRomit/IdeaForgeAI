@@ -1,0 +1,293 @@
+{
+  "project_id": "project_0009",
+  "basic_information": {
+    "title": "Warehouse Inventory and Supply Chain Management with Demand Prediction",
+    "short_title": "Predictive Supply Chain Management",
+    "slug": "warehouse-inventory-supply-chain-prediction",
+    "project_type": "industry_project",
+    "status": "completed",
+    "summary": "An enterprise-grade inventory management system that uses machine learning to predict future product demand, optimizing stock levels and reducing warehouse holding costs.",
+    "repository_url": null,
+    "demo_url": null
+  },
+  "academic_information": {
+    "institution": "Global Logistics Institute",
+    "faculty": "School of Engineering and Management",
+    "department": "Industrial Engineering",
+    "program": "MSc in Supply Chain Analytics",
+    "course_code": "SCA700",
+    "course_title": "Advanced Supply Chain Systems",
+    "academic_level": "graduate",
+    "academic_year": "2023-2024",
+    "semester": "spring",
+    "submission_date": "2024-05-20",
+    "authors": [
+      {
+        "name": "Maria Gonzalez",
+        "student_id": "SCA-23-011",
+        "email": "maria.gonzalez@example.edu",
+        "department": "Industrial Engineering",
+        "role": "Systems Architect and Analyst"
+      }
+    ],
+    "supervisor": {
+      "name": "Prof. Robert Chang",
+      "email": "robert.chang@example.edu",
+      "department": "Operations Management",
+      "role": "Academic Advisor"
+    },
+    "co_supervisor": null,
+    "evaluation": {
+      "grade": "A+",
+      "score": 96,
+      "award_or_recognition": "Excellence in Operations Research"
+    }
+  },
+  "abstract": "Effective inventory management is a delicate balance between avoiding stockouts and minimizing holding costs. This project developed a comprehensive Warehouse Inventory and Supply Chain Management system integrated with a predictive analytics engine. Traditional systems rely on static reorder points, which fail to account for seasonality, trends, and external factors. This solution utilizes XGBoost and time-series models to forecast product demand by analyzing historical sales data, promotional schedules, and seasonal patterns. The platform provides warehouse managers with automated restocking alerts, dynamic safety stock calculations, and visual dashboards detailing inventory turnover rates. The implementation demonstrated a theoretical reduction in inventory holding costs by 15% while improving order fulfillment rates.",
+  "problem_statement": "Static inventory reorder policies lead to overstocking of slow-moving items and stockouts of high-demand products, causing financial losses and reduced customer satisfaction in dynamic supply chains.",
+  "objectives": {
+    "primary": [
+      "Develop a centralized inventory tracking database for multiple warehouse locations.",
+      "Implement a machine learning model to forecast short-term and medium-term product demand.",
+      "Create a dashboard for visualizing stock levels, predictions, and operational metrics."
+    ],
+    "secondary": [
+      "Automate the generation of purchase orders based on predictive thresholds.",
+      "Implement barcode scanning compatibility for warehouse floor operations."
+    ]
+  },
+  "scope": {
+    "included": [
+      "Multi-location inventory tracking (SKU level).",
+      "Demand forecasting algorithms.",
+      "Automated reorder point and safety stock calculation.",
+      "Supplier management and purchase order generation."
+    ],
+    "excluded": [
+      "Real-time GPS tracking of delivery vehicles.",
+      "Robotic warehouse automation integration.",
+      "Direct integration with retail point-of-sale (POS) systems."
+    ],
+    "target_users": [
+      "Warehouse Managers",
+      "Supply Chain Analysts",
+      "Procurement Officers"
+    ],
+    "deployment_context": "Internal corporate web portal deployed on enterprise cloud infrastructure."
+  },
+  "features": [
+    {
+      "name": "Real-time Inventory Tracking",
+      "description": "Monitors stock levels, locations, and movements across multiple warehouses.",
+      "priority": "core",
+      "user_roles": ["Warehouse Manager"]
+    },
+    {
+      "name": "Predictive Demand Forecasting",
+      "description": "Generates 30-day and 90-day sales forecasts for individual SKUs.",
+      "priority": "core",
+      "user_roles": ["Supply Chain Analyst", "Procurement Officer"]
+    },
+    {
+      "name": "Automated Restocking Alerts",
+      "description": "Notifies procurement when stock levels are predicted to fall below required safety margins.",
+      "priority": "important",
+      "user_roles": ["Procurement Officer"]
+    },
+    {
+      "name": "Supplier Performance Tracking",
+      "description": "Evaluates suppliers based on lead times and order fulfillment accuracy.",
+      "priority": "optional",
+      "user_roles": ["Procurement Officer"]
+    }
+  ],
+  "modules": [
+    {
+      "name": "Inventory Management Module",
+      "purpose": "Maintains the authoritative state of all warehouse stock.",
+      "responsibilities": [
+        "Process stock-in and stock-out events.",
+        "Manage SKU definitions and categorizations.",
+        "Track bin and shelf locations."
+      ],
+      "inputs": ["Manual entries", "Barcode scan data"],
+      "outputs": ["Current stock reports", "Inventory ledger"]
+    },
+    {
+      "name": "Analytics and Prediction Engine",
+      "purpose": "Calculates future demand and optimal reorder metrics.",
+      "responsibilities": [
+        "Aggregate historical sales data.",
+        "Execute ML models to generate forecasts.",
+        "Calculate dynamic safety stock levels."
+      ],
+      "inputs": ["Historical sales", "Current inventory", "Lead times"],
+      "outputs": ["Demand forecasts", "Restock recommendations"]
+    }
+  ],
+  "technologies": {
+    "programming_languages": [
+      {
+        "name": "Python",
+        "version": "3.10",
+        "purpose": "Data processing and machine learning.",
+        "category": "backend"
+      },
+      {
+        "name": "C#",
+        "version": "11",
+        "purpose": "Enterprise backend API services.",
+        "category": "backend"
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "ASP.NET Core",
+        "version": "7.0",
+        "purpose": "High-performance REST API for inventory operations.",
+        "category": "backend"
+      },
+      {
+        "name": "Angular",
+        "version": "15",
+        "purpose": "Enterprise-grade frontend for complex dashboards.",
+        "category": "frontend"
+      }
+    ],
+    "database": [
+      {
+        "name": "Microsoft SQL Server",
+        "purpose": "Robust relational database for transaction and inventory integrity.",
+        "category": "relational"
+      }
+    ],
+    "apis": [],
+    "tools": [
+      {
+        "name": "Power BI",
+        "purpose": "Embedded analytics for advanced supply chain reporting.",
+        "category": "visualization"
+      },
+      {
+        "name": "Docker",
+        "purpose": "Containerization for deployment.",
+        "category": "devops"
+      }
+    ],
+    "platforms": [
+      {
+        "name": "Microsoft Azure",
+        "purpose": "Enterprise cloud hosting environment.",
+        "category": "deployment"
+      }
+    ]
+  },
+  "ai_usage": {
+    "uses_ai": true,
+    "description": "Applies machine learning for time-series forecasting of product demand.",
+    "techniques": [
+      "Gradient Boosting",
+      "Time-Series Analysis"
+    ],
+    "models": [
+      "XGBoost",
+      "ARIMA"
+    ],
+    "training_data": "3 years of anonymized corporate sales and inventory data.",
+    "evaluation_metrics": [
+      "Mean Absolute Percentage Error (MAPE)",
+      "Weighted Mean Absolute Error (WMAE)"
+    ]
+  },
+  "algorithms": [
+    {
+      "name": "Economic Order Quantity (EOQ)",
+      "purpose": "Calculates the ideal order quantity to minimize holding and ordering costs.",
+      "category": "optimization",
+      "complexity": "Low"
+    }
+  ],
+  "difficulty": {
+    "level": "advanced",
+    "score": 8,
+    "reasons": [
+      "Requires integration of complex business logic with predictive models.",
+      "Handling large datasets for accurate forecasting.",
+      "Enterprise software architecture standards."
+    ],
+    "prerequisites": [
+      "Operations Research concepts",
+      "Machine Learning for tabular data",
+      "Enterprise Application Development"
+    ]
+  },
+  "estimated_duration": {
+    "value": 6,
+    "unit": "months",
+    "phase_breakdown": [
+      {
+        "phase": "Requirements gathering and database design",
+        "duration": "1 month"
+      },
+      {
+        "phase": "Core inventory system development",
+        "duration": "2 months"
+      },
+      {
+        "phase": "Data pipeline and predictive model implementation",
+        "duration": "2 months"
+      },
+      {
+        "phase": "Dashboard integration and user acceptance testing",
+        "duration": "1 month"
+      }
+    ]
+  },
+  "team_size": {
+    "minimum": 2,
+    "recommended": 4,
+    "maximum": 5,
+    "roles": [
+      "Backend Developer",
+      "Frontend Developer",
+      "Data Scientist",
+      "Supply Chain Subject Matter Expert"
+    ]
+  },
+  "keywords": [
+    "supply chain",
+    "inventory management",
+    "predictive analytics",
+    "demand forecasting",
+    "logistics",
+    "XGBoost"
+  ],
+  "research_area": {
+    "primary": "Operations Research",
+    "secondary": [
+      "Information Systems",
+      "Predictive Analytics"
+    ],
+    "application_domain": "Logistics, Warehousing, and Supply Chain Management"
+  },
+  "supervisor_specialization": [
+    "Supply Chain Optimization",
+    "Enterprise Systems",
+    "Applied Machine Learning"
+  ],
+  "expected_outcomes": [
+    "A scalable inventory management web application.",
+    "A predictive model capable of forecasting demand with a MAPE of less than 20%.",
+    "A comprehensive dashboard for visualizing stockouts and overstock risks."
+  ],
+  "limitations": [
+    "Model struggles to predict demand for entirely new products (cold-start problem).",
+    "Forecast accuracy is highly susceptible to unprecedented external events (e.g., global pandemics).",
+    "Requires high-quality, consistent historical data to train models effectively."
+  ],
+  "future_scope": [
+    "Integrate external data sources (weather, economic indicators) into the prediction models.",
+    "Develop a mobile application for warehouse workers to scan barcodes and update inventory on the floor.",
+    "Implement multi-echelon inventory optimization across a global supply network."
+  ]
+}
