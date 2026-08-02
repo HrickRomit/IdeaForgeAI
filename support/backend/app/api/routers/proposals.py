@@ -243,10 +243,6 @@ def my_proposals(
     return (
         db.query(Proposal)
         .filter(Proposal.student_id == current_user.id)
-<<<<<<< HEAD
-        .order_by(Proposal.updated_at.desc())
-=======
         .order_by(Proposal.created_at.desc())
->>>>>>> 33c7a09658580e134d7e2f2b1defba9a33156613
         .all()
     )
