@@ -26,6 +26,7 @@ import FacultyPortalPage from "./pages/faculty/FacultyPortalPage.jsx";
 import ChatbotPage from "./pages/student/ChatbotPage.jsx";
 import SearchPage from "./pages/student/SearchPage.jsx";
 import StudentPortalPage from "./pages/student/StudentPortalPage.jsx";
+import AboutPage from "./pages/AboutPage.jsx";
 
 const audiences = [
   {
@@ -79,44 +80,6 @@ const metrics = [
   ["RAG", "project knowledge layer"],
 ];
 
-const primaryActions = [
-  {
-    icon: Search,
-    label: "Search Previous Projects",
-    href: "/student/search",
-  },
-  {
-    icon: Lightbulb,
-    label: "Get Project Ideas",
-    href: "/student",
-  },
-  {
-    icon: UploadCloud,
-    label: "Upload Proposal",
-    href: "/student",
-  },
-  {
-    icon: FileSearch,
-    label: "Check Similarity",
-    href: "/student",
-  },
-  {
-    icon: Bot,
-    label: "Ask Project Chatbot",
-    href: "/student/chatbot",
-  },
-  {
-    icon: ClipboardCheck,
-    label: "Review Proposals",
-    href: "/faculty",
-  },
-  {
-    icon: UserCheck,
-    label: "Recommend Supervisor",
-    href: "/student",
-  },
-];
-
 const actionGroups = [
   {
     id: "student-actions",
@@ -166,8 +129,8 @@ function App() {
     return <ChatbotPage />;
   }
 
-  if (window.location.pathname.startsWith("/student/chatbot")) {
-    return <ChatbotPage />;
+  if (window.location.pathname.startsWith("/about")) {
+    return <AboutPage />;
   }
 
   if (window.location.pathname.startsWith("/student")) {
@@ -201,9 +164,6 @@ function App() {
             </a>
             <a href="#workflow" className="transition hover:text-white">
               Workflow
-            </a>
-            <a href="#actions" className="transition hover:text-white">
-              Buttons
             </a>
           </nav>
           <div className="flex items-center gap-2">
@@ -239,10 +199,10 @@ function App() {
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <a
-                href="#actions"
+                href="#workflow"
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#15c7a8] px-6 text-sm font-bold text-[#071817] shadow-lg shadow-[#15c7a8]/20 transition hover:bg-[#74ead7]"
               >
-                Explore Actions
+                Explore Workflow
                 <ArrowRight className="size-4" aria-hidden="true" />
               </a>
               <a
@@ -265,40 +225,6 @@ function App() {
               <span className="text-sm font-medium uppercase tracking-[0.08em] text-[#52625d]">{label}</span>
             </div>
           ))}
-        </div>
-      </section>
-
-      <section id="actions" className="bg-[#eef5f2] px-5 py-16 sm:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#0b6b61]">Proposal-Matched Actions</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-normal text-[#17201d] sm:text-4xl">
-                The index page now exposes the project’s main buttons.
-              </h2>
-              <p className="mt-5 text-base leading-7 text-[#52625d]">
-                These actions match the proposal scope: project discovery, proposal upload, similarity and novelty
-                analysis, faculty review, project discovery, and RAG-based project Q&A.
-              </p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {primaryActions.map(({ icon: Icon, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  className="inline-flex min-h-14 items-center justify-between gap-3 rounded-md border border-[#d3dfda] bg-white px-4 py-3 text-sm font-bold text-[#1d2a26] shadow-sm transition hover:border-[#15c7a8] hover:bg-[#f7fffc]"
-                >
-                  <span className="inline-flex items-center gap-3">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-md bg-[#e5f8f4] text-[#0b6b61]">
-                      <Icon className="size-4" aria-hidden="true" />
-                    </span>
-                    {label}
-                  </span>
-                  <ArrowRight className="size-4 shrink-0 text-[#0b6b61]" aria-hidden="true" />
-                </a>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
@@ -409,32 +335,20 @@ function App() {
         </div>
       </section>
 
-      <section className="bg-[#f6f8f7] px-5 py-20 sm:px-8">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#0b6b61]">Ready For The Next Build</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-normal sm:text-4xl">
-              A strong front door for the platform you are building.
-            </h2>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-[#52625d]">
-              The landing page now introduces the product direction while leaving room for authentication, dashboards,
-              and real data flows as the backend grows.
-            </p>
-          </div>
-          <div className="rounded-md border border-[#dbe4df] bg-white p-6 shadow-sm">
-            {[
-              "Student idea discovery and proposal submission",
-              "Faculty review queue with similarity detail",
-              "RAG chatbot for project archive questions",
-            ].map((item) => (
-              <div key={item} className="flex gap-3 border-b border-[#e8eeeb] py-4 last:border-b-0">
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[#0b6b61]" aria-hidden="true" />
-                <span className="text-sm font-semibold text-[#26332f]">{item}</span>
-              </div>
-            ))}
-          </div>
+      <footer className="bg-[#17201d] px-5 py-20 sm:px-8">
+        <div className="mx-auto max-w-7xl text-center">
+          <p className="text-5xl font-bold tracking-tight text-[#74ead7] sm:text-6xl lg:text-7xl">
+            Discover Our Mission
+          </p>
+          <p className="mt-6 max-w-full whitespace-nowrap overflow-x-auto text-base leading-8 text-white/90 mx-auto sm:text-lg">Learn how we are transforming education by connecting students and faculties with the best resources for success.</p>
+          <a
+            href="/about"
+            className="mt-10 inline-flex rounded-full bg-[#74ead7] px-8 py-4 text-sm font-bold text-[#071817] shadow-lg shadow-[#74ead7]/30 transition hover:bg-[#9ef8da]"
+          >
+            Learn More About Us
+          </a>
         </div>
-      </section>
+      </footer>
     </main>
   );
 }
