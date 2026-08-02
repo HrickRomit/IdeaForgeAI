@@ -28,6 +28,21 @@ def register_user(
     payload: UserCreate,
     db: Session = Depends(get_database),
 ) -> User:
+    """
+    Public registration is restricted to students.
+
+    Faculty and admin accounts must be created by an authenticated admin
+    through POST /admin/users.
+    """
+    if payload.role != "student":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                "Public registration is only available for student accounts. "
+                "Faculty and admin accounts must be created by an administrator."
+            ),
+        )
+
     return create_user(db, payload)
 
 

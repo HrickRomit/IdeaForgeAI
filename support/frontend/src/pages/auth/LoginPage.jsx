@@ -48,10 +48,15 @@ export default function LoginPage() {
     try {
       const response = await loginUser(form);
       const token = response.data?.access_token;
+      const refreshToken = response.data?.refresh_token;
       const user = response.data?.user;
 
       if (token) {
-        localStorage.setItem("ideaforge_access_token", token);
+      localStorage.setItem("ideaforge_access_token", token);
+      }
+
+      if (refreshToken) {
+      localStorage.setItem("ideaforge_refresh_token", refreshToken);
       }
 
       if (user) {

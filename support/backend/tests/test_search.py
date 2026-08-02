@@ -1,35 +1,41 @@
-import sys
-from pathlib import Path
+def test_authenticated_user_can_search_archives(
+    client,
+    create_user,
+    auth_headers,
+    monkeypatch,
+):
+    user = create_user()
 
-# Connect to the backend (one folder up from /tests)
-current_dir = Path(__file__).resolve().parent
-backend_dir = current_dir.parent
-sys.path.append(str(backend_dir))
+    monkeypatch.setattr(
+        "app.api.routers.projects.search_projects",
+        lambda query, top_k: [
+            {
+                "project_id": "project_0001",
+                "document": "Smart campus maintenance project",
+                "metadata": {
+                    "title": "Smart Campus",
+                    "academic_year": "2025-2026",
+                },
+                "distance_score": 0.12,
+            }
+        ],
+    )
 
-from app.services.ai_service.search_engine import search_projects
+    response = client.get(
+        "/projects/search",
+        params={"q": "campus maintenance"},
+        headers=auth_headers(user),
+    )
 
-def run_test():
-    query = "I want to build a system for tracking maintenance and facility issues"
-    print(f"🔍 Searching for: '{query}'\n")
+    assert response.status_code == 200
+    assert response.json()["total"] == 1
+    assert response.json()["results"][0]["project_id"] == "project_0001"
 
-    # Call the semantic search engine you just built!
-    results = search_projects(query, top_k=2)
 
-    if not results:
-        print("No projects found. Did you run seed_archive.py?")
-        return
+def test_search_requires_login(client):
+    response = client.get(
+        "/projects/search",
+        params={"q": "campus maintenance"},
+    )
 
-    print(f"✅ Found {len(results)} matches!\n")
-
-    for i, res in enumerate(results):
-        print(f"--- MATCH {i+1} ---")
-        print(f"Project ID: {res['project_id']}")
-        print(f"Similarity Distance: {res['distance_score']:.4f}")
-
-        metadata = res['metadata']
-        print(f"Title: {metadata.get('title')}")
-        print(f"Keywords: {metadata.get('keywords')}")
-        print("-" * 40 + "\n")
-
-if __name__ == "__main__":
-    run_test()
+    assert response.status_code == 401
