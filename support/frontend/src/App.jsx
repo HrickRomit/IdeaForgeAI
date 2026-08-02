@@ -6,15 +6,12 @@ import {
   BrainCircuit,
   CheckCircle2,
   ClipboardCheck,
-  Database,
   FileSearch,
   GraduationCap,
   Lightbulb,
-  LibraryBig,
   LogIn,
   MessageSquareText,
   Search,
-  ShieldCheck,
   Sparkles,
   UploadCloud,
   UserCheck,
@@ -51,16 +48,6 @@ const audiences = [
       ["Feedback", "/faculty"],
     ],
   },
-  {
-    icon: ShieldCheck,
-    title: "Admins",
-    copy: "Manage departments, users, archived projects, and project intelligence reports across the program.",
-    actions: [
-      ["Manage Users", "#admin-actions"],
-      ["Project Archive", "#admin-actions"],
-      ["System Reports", "#admin-actions"],
-    ],
-  },
 ];
 
 const capabilities = [
@@ -87,7 +74,7 @@ const capabilities = [
 ];
 
 const metrics = [
-  ["3", "role-based portals"],
+  ["2", "focused portals"],
   ["AI", "assisted archive search"],
   ["RAG", "project knowledge layer"],
 ];
@@ -128,11 +115,6 @@ const primaryActions = [
     label: "Recommend Supervisor",
     href: "/student",
   },
-  {
-    icon: Database,
-    label: "Manage Archive",
-    href: "#admin-actions",
-  },
 ];
 
 const actionGroups = [
@@ -164,20 +146,6 @@ const actionGroups = [
       [CheckCircle2, "Approve / Reject", "Approve, reject, or request proposal modifications."],
       [UsersRound, "Student Progress", "Monitor student progress after proposal decisions."],
       [BarChart3, "Department Analytics", "View proposal and project trends across sessions."],
-    ],
-  },
-  {
-    id: "admin-actions",
-    eyebrow: "Admin Buttons",
-    title: "Administration controls",
-    copy: "System-level controls for accounts, departments, archives, reports, and the AI knowledge base.",
-    items: [
-      [UserPlus, "Manage Accounts", "Create and maintain student and faculty users."],
-      [LibraryBig, "Departments & Sessions", "Organize departments and academic sessions."],
-      [Database, "Project Archives", "Maintain previous projects and proposal records."],
-      [Bot, "AI Knowledge Base", "Manage the source material used by RAG features."],
-      [BarChart3, "Reports", "Review system, department, and project intelligence reports."],
-      [ShieldCheck, "System Maintenance", "Keep platform settings and operational data healthy."],
     ],
   },
 ];
@@ -236,9 +204,6 @@ function App() {
             </a>
             <a href="#actions" className="transition hover:text-white">
               Buttons
-            </a>
-            <a href="#roles" className="transition hover:text-white">
-              Roles
             </a>
           </nav>
           <div className="flex items-center gap-2">
@@ -313,7 +278,7 @@ function App() {
               </h2>
               <p className="mt-5 text-base leading-7 text-[#52625d]">
                 These actions match the proposal scope: project discovery, proposal upload, similarity and novelty
-                analysis, faculty review, archive management, and RAG-based project Q&A.
+                analysis, faculty review, project discovery, and RAG-based project Q&A.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -364,16 +329,16 @@ function App() {
         </div>
       </section>
 
-      <section id="roles" className="bg-[#17201d] px-5 py-20 text-white sm:px-8">
+      <section id="portals" className="bg-[#17201d] px-5 py-20 text-white sm:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-2xl">
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#74ead7]">Role-Based Access</p>
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#74ead7]">Portal Access</p>
             <h2 className="mt-3 text-3xl font-bold tracking-normal sm:text-4xl">
               Separate portals, shared project intelligence.
             </h2>
           </div>
 
-          <div className="mt-10 grid gap-4 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 lg:grid-cols-2">
             {audiences.map(({ icon: Icon, title, copy }) => (
               <article key={title} className="rounded-md border border-white/12 bg-white/7 p-6">
                 <div className="flex items-center gap-3">
@@ -460,7 +425,6 @@ function App() {
             {[
               "Student idea discovery and proposal submission",
               "Faculty review queue with similarity detail",
-              "Admin archive and department oversight",
               "RAG chatbot for project archive questions",
             ].map((item) => (
               <div key={item} className="flex gap-3 border-b border-[#e8eeeb] py-4 last:border-b-0">
