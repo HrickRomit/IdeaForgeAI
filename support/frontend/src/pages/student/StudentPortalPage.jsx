@@ -6,11 +6,18 @@ import {
   FileSearch,
   GraduationCap,
   Lightbulb,
+  Loader2,
   MessageSquareText,
   Save,
   Search,
   Send,
 } from "lucide-react";
+
+import {
+  createProposalDraft,
+  updateProposalDraft,
+} from "../../api/proposalsApi";
+import { searchArchivedProjects } from "../../api/projectsApi";
 
 const recommendations = [
   "Make the problem statement more specific to one academic department.",
@@ -24,6 +31,20 @@ const similarProjects = [
   ["Student Research Helper", "58% theme match"],
 ];
 
+function getErrorMessage(error, fallbackMessage) {
+  if (!error.response) {
+    return "Could not reach the backend. Make sure Docker is running.";
+  }
+
+  const detail = error.response.data?.detail;
+
+  if (Array.isArray(detail)) {
+    return detail.map((item) => item.msg).join(" ");
+  }
+
+  return detail || fallbackMessage;
+}
+
 export default function StudentPortalPage() {
   const [proposal, setProposal] = useState({
     title: "AI-Based Project Idea Assistant",
@@ -32,13 +53,28 @@ export default function StudentPortalPage() {
     problem:
       "Students often struggle to find unique and feasible project ideas because previous project records are hard to search manually.",
   });
+
+  const [draftId, setDraftId] = useState(null);
+  const [saveMessage, setSaveMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [archiveQuery, setArchiveQuery] = useState("");
+  const [archiveResults, setArchiveResults] = useState([]);
+  const [searchMessage, setSearchMessage] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
   const [question, setQuestion] = useState("");
   const [aiReply, setAiReply] = useState(
     "Ask the assistant for idea suggestions, title improvements, research gaps, or technology stack advice.",
   );
 
   const completeness = useMemo(() => {
-    const filled = [proposal.title, proposal.abstract, proposal.problem].filter((value) => value.trim()).length;
+    const filled = [
+      proposal.title,
+      proposal.abstract,
+      proposal.problem,
+    ].filter((value) => value.trim()).length;
+
     return Math.round((filled / 3) * 100);
   }, [proposal]);
 
@@ -47,6 +83,75 @@ export default function StudentPortalPage() {
       ...current,
       [field]: value,
     }));
+  };
+
+  const handleSaveDraft = async () => {
+    if (!proposal.title.trim() || !proposal.abstract.trim()) {
+      setSaveMessage("Add a title and abstract before saving.");
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveMessage("");
+
+    const payload = {
+      title: proposal.title.trim(),
+      abstract: proposal.abstract.trim(),
+      problem_statement: proposal.problem.trim() || null,
+    };
+
+    try {
+      const response = draftId
+        ? await updateProposalDraft(draftId, payload)
+        : await createProposalDraft(payload);
+
+      setDraftId(response.data.id);
+      setSaveMessage("Draft saved successfully.");
+    } catch (error) {
+      setSaveMessage(
+        getErrorMessage(error, "Could not save the draft. Try again."),
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleArchiveSearch = async (event) => {
+    event.preventDefault();
+
+    const query = archiveQuery.trim();
+
+    if (query.length < 2) {
+      setSearchMessage("Enter at least two letters to search.");
+      setArchiveResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchMessage("");
+    setArchiveResults([]);
+
+    try {
+      const response = await searchArchivedProjects({
+        query,
+        topK: 5,
+      });
+
+      const results = response.results || [];
+
+      setArchiveResults(results);
+      setSearchMessage(
+        results.length
+          ? `${results.length} archive project(s) found.`
+          : "No archived projects found for this search.",
+      );
+    } catch (error) {
+      setSearchMessage(
+        getErrorMessage(error, "Archive search is unavailable."),
+      );
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleAskAi = (event) => {
@@ -85,7 +190,7 @@ export default function StudentPortalPage() {
 
           <div className="grid grid-cols-3 gap-3">
             {[
-              ["Draft", "Status"],
+              [draftId ? "Saved" : "Draft", "Status"],
               [`${completeness}%`, "Complete"],
               ["3", "AI notes"],
             ].map(([value, label]) => (
@@ -106,12 +211,24 @@ export default function StudentPortalPage() {
               </div>
               <button
                 type="button"
-                className="inline-flex h-10 items-center gap-2 rounded-md bg-[#15c7a8] px-4 text-sm font-bold text-[#071817] transition hover:bg-[#74ead7]"
+                onClick={handleSaveDraft}
+                disabled={isSaving}
+                className="inline-flex h-10 items-center gap-2 rounded-md bg-[#15c7a8] px-4 text-sm font-bold text-[#071817] transition hover:bg-[#74ead7] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <Save className="size-4" aria-hidden="true" />
-                Save Draft
+                {isSaving ? (
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Save className="size-4" aria-hidden="true" />
+                )}
+                {isSaving ? "Saving..." : "Save Draft"}
               </button>
             </div>
+
+            {saveMessage ? (
+              <p className="mt-4 rounded-md bg-[#f1f5f3] p-3 text-sm font-semibold text-[#394842]">
+                {saveMessage}
+              </p>
+            ) : null}
 
             <div className="mt-5 space-y-4">
               <label className="block">
@@ -202,22 +319,54 @@ export default function StudentPortalPage() {
               </span>
               <div>
                 <h2 className="text-lg font-bold">Archived Project Search</h2>
-                <p className="text-sm text-[#64736f]">Search UI placeholder for the future RAG/archive API.</p>
+                <p className="text-sm text-[#64736f]">Search previous projects using the live archive API.</p>
               </div>
             </div>
-            <div className="mt-5 flex gap-2">
+
+            <form onSubmit={handleArchiveSearch} className="mt-5 flex gap-2">
               <input
+                value={archiveQuery}
+                onChange={(event) => setArchiveQuery(event.target.value)}
                 placeholder="Search previous projects..."
                 className="h-11 min-w-0 flex-1 rounded-md border border-[#cfdad5] bg-[#fbfdfc] px-3 text-sm outline-none transition focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
               />
               <button
-                type="button"
-                className="inline-flex h-11 items-center gap-2 rounded-md border border-[#cfdad5] bg-white px-4 text-sm font-bold text-[#17201d] transition hover:border-[#15c7a8]"
+                type="submit"
+                disabled={isSearching}
+                className="inline-flex h-11 items-center gap-2 rounded-md border border-[#cfdad5] bg-white px-4 text-sm font-bold text-[#17201d] transition hover:border-[#15c7a8] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <Search className="size-4" aria-hidden="true" />
+                {isSearching ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Search className="size-4" aria-hidden="true" />
+                )}
                 Search
               </button>
-            </div>
+            </form>
+
+            {searchMessage ? (
+              <p className="mt-4 text-sm font-semibold text-[#394842]">
+                {searchMessage}
+              </p>
+            ) : null}
+
+            {archiveResults.length > 0 ? (
+              <div className="mt-4 space-y-2">
+                {archiveResults.map((result) => (
+                  <div
+                    key={result.project_id}
+                    className="rounded-md bg-[#f1f5f3] p-3"
+                  >
+                    <p className="text-sm font-bold text-[#17201d]">
+                      {result.metadata?.title || "Archived project"}
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#52625d]">
+                      {result.document}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </article>
 
           <article className="rounded-md border border-[#d9e1dc] bg-[#17201d] p-5 text-white shadow-sm">
