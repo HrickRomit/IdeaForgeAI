@@ -1,20 +1,27 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   Bot,
+  Building2,
   CheckCircle2,
   FileSearch,
   GraduationCap,
+  IdCard,
   Lightbulb,
   Loader2,
+  LogOut,
+  Mail,
   MessageSquareText,
   Save,
   Search,
   Send,
+  UserCircle2,
 } from "lucide-react";
 
+import { getCurrentUser } from "../../api/authApi";
 import {
   createProposalDraft,
+  submitProposal,
   updateProposalDraft,
 } from "../../api/proposalsApi";
 import { searchArchivedProjects } from "../../api/projectsApi";
@@ -31,6 +38,15 @@ const similarProjects = [
   ["Student Research Helper", "58% theme match"],
 ];
 
+const panelClass =
+  "rounded-2xl bg-white p-6 shadow-[0_6px_20px_rgba(23,32,29,0.08)]";
+const quietPanelClass =
+  "rounded-2xl bg-[#f7faf8] p-4 shadow-[0_4px_16px_rgba(23,32,29,0.05)]";
+const iconTileClass =
+  "grid size-11 place-items-center rounded-2xl bg-[#e5f8f4] text-[#0b6b61]";
+const inputClass =
+  "mt-2 w-full rounded-2xl bg-[#fbfdfc] px-4 text-sm outline-none ring-1 ring-[#d7e2dd] transition focus:ring-2 focus:ring-[#15c7a8]/35";
+
 function getErrorMessage(error, fallbackMessage) {
   if (!error.response) {
     return "Could not reach the backend. Make sure Docker is running.";
@@ -45,18 +61,32 @@ function getErrorMessage(error, fallbackMessage) {
   return detail || fallbackMessage;
 }
 
+function getStoredStudentProfile() {
+  return {
+    full_name: localStorage.getItem("ideaforge_user_name") || "Student",
+    email: localStorage.getItem("ideaforge_user_email") || "",
+    role: localStorage.getItem("ideaforge_user_role") || "student",
+    student_id: localStorage.getItem("ideaforge_student_id") || "",
+    department_code: localStorage.getItem("ideaforge_department_code") || "",
+    department_id: localStorage.getItem("ideaforge_department_id") || "",
+  };
+}
+
 export default function StudentPortalPage() {
+  const [studentProfile, setStudentProfile] = useState(getStoredStudentProfile);
   const [proposal, setProposal] = useState({
     title: "AI-Based Project Idea Assistant",
     abstract:
       "A student-facing assistant that helps generate, refine, and validate final year project ideas using previous archived projects.",
     problem:
       "Students often struggle to find unique and feasible project ideas because previous project records are hard to search manually.",
+    facultyInitial: "",
   });
 
   const [draftId, setDraftId] = useState(null);
   const [saveMessage, setSaveMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
 
   const [archiveQuery, setArchiveQuery] = useState("");
   const [archiveResults, setArchiveResults] = useState([]);
@@ -68,14 +98,65 @@ export default function StudentPortalPage() {
     "Ask the assistant for idea suggestions, title improvements, research gaps, or technology stack advice.",
   );
 
+  useEffect(() => {
+    let isMounted = true;
+
+    getCurrentUser()
+      .then((response) => {
+        if (!isMounted || !response.data) {
+          return;
+        }
+
+        const user = response.data;
+
+        setStudentProfile({
+          full_name: user.full_name || "Student",
+          email: user.email || "",
+          role: user.role || "student",
+          student_id: user.student_id || "",
+          department_code: user.department_code || "",
+          department_id: user.department_id || "",
+        });
+
+        localStorage.setItem("ideaforge_user_name", user.full_name || "Student");
+        localStorage.setItem("ideaforge_user_role", user.role || "student");
+
+        if (user.email) {
+          localStorage.setItem("ideaforge_user_email", user.email);
+        }
+
+        if (user.student_id) {
+          localStorage.setItem("ideaforge_student_id", user.student_id);
+        }
+
+        if (user.department_code) {
+          localStorage.setItem("ideaforge_department_code", user.department_code);
+        }
+
+        if (user.department_id) {
+          localStorage.setItem("ideaforge_department_id", String(user.department_id));
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setStudentProfile(getStoredStudentProfile());
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const completeness = useMemo(() => {
     const filled = [
       proposal.title,
       proposal.abstract,
       proposal.problem,
+      proposal.facultyInitial,
     ].filter((value) => value.trim()).length;
 
-    return Math.round((filled / 3) * 100);
+    return Math.round((filled / 4) * 100);
   }, [proposal]);
 
   const handleProposalChange = (field, value) => {
@@ -98,6 +179,7 @@ export default function StudentPortalPage() {
       title: proposal.title.trim(),
       abstract: proposal.abstract.trim(),
       problem_statement: proposal.problem.trim() || null,
+      faculty_initial: proposal.facultyInitial.trim() || null,
     };
 
     try {
@@ -113,6 +195,40 @@ export default function StudentPortalPage() {
       );
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSubmitProposal = async () => {
+    if (!proposal.title.trim() || !proposal.abstract.trim()) {
+      setSaveMessage("Add a title and abstract before submitting.");
+      return;
+    }
+
+    if (!proposal.facultyInitial.trim()) {
+      setSaveMessage("Add the faculty initial before submitting.");
+      return;
+    }
+
+    setIsSubmittingProposal(true);
+    setSaveMessage("");
+
+    const payload = {
+      title: proposal.title.trim(),
+      abstract: proposal.abstract.trim(),
+      problem_statement: proposal.problem.trim() || null,
+      faculty_initial: proposal.facultyInitial.trim(),
+    };
+
+    try {
+      const response = await submitProposal(payload);
+      setDraftId(response.data.id);
+      setSaveMessage("Proposal submitted to the selected faculty.");
+    } catch (error) {
+      setSaveMessage(
+        getErrorMessage(error, "Could not submit the proposal. Try again."),
+      );
+    } finally {
+      setIsSubmittingProposal(false);
     }
   };
 
@@ -168,17 +284,109 @@ export default function StudentPortalPage() {
     setQuestion("");
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("ideaforge_access_token");
+    localStorage.removeItem("ideaforge_refresh_token");
+    localStorage.removeItem("ideaforge_user_role");
+    localStorage.removeItem("ideaforge_user_name");
+    localStorage.removeItem("ideaforge_user_email");
+    localStorage.removeItem("ideaforge_student_id");
+    localStorage.removeItem("ideaforge_department_code");
+    localStorage.removeItem("ideaforge_department_id");
+
+    window.location.assign("/login");
+  };
+
+  const studentDetails = [
+    {
+      icon: Mail,
+      label: studentProfile.email || "Email not set",
+    },
+    {
+      icon: IdCard,
+      label: studentProfile.student_id || "Student ID not set",
+    },
+    {
+      icon: Building2,
+      label: studentProfile.department_code
+        ? `${studentProfile.department_code}${studentProfile.department_id ? ` / Dept ID ${studentProfile.department_id}` : ""}`
+        : studentProfile.department_id
+          ? `Dept ID ${studentProfile.department_id}`
+        : "Department not set",
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-[#f6f8f7] text-[#17201d]">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-4 border-b border-[#d9e1dc] pb-5 md:flex-row md:items-center md:justify-between">
+      <nav className="bg-white/[0.92] shadow-[0_4px_18px_rgba(23,32,29,0.06)]">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div className="flex min-w-0 items-center gap-3">
+            <a
+              href="/"
+              className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e5f8f4] text-[#0b6b61] transition hover:bg-[#d7f7ed]"
+              aria-label="Go to home"
+            >
+              <GraduationCap className="size-5" aria-hidden="true" />
+            </a>
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">
+                Student Portal
+              </p>
+              <div className="mt-1 flex min-w-0 items-center gap-2">
+                <UserCircle2 className="size-5 shrink-0 text-[#64736f]" aria-hidden="true" />
+                <h2 className="truncate text-lg font-bold text-[#17201d]">
+                  {studentProfile.full_name}
+                </h2>
+                <span className="rounded-full bg-[#e5f8f4] px-3 py-1 text-xs font-bold capitalize text-[#0b6b61]">
+                  {studentProfile.role}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div className="grid gap-2 sm:grid-cols-3 lg:flex">
+              {studentDetails.map(({ icon: Icon, label }) => (
+                <span
+                  key={label}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-[#f7faf8] px-4 text-sm font-semibold text-[#394842] shadow-[0_3px_12px_rgba(23,32,29,0.04)]"
+                >
+                  <Icon className="size-4 shrink-0 text-[#0b6b61]" aria-hidden="true" />
+                  <span className="truncate">{label}</span>
+                </span>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <a
+                href="/student/search"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#f7faf8] px-4 text-sm font-bold text-[#17201d] shadow-[0_3px_12px_rgba(23,32,29,0.04)] transition hover:bg-[#eef7f3]"
+              >
+                <Search className="size-4" aria-hidden="true" />
+                Search
+              </a>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#17201d] px-4 text-sm font-bold text-white shadow-[0_5px_16px_rgba(23,32,29,0.16)] transition hover:bg-[#26332f]"
+              >
+                <LogOut className="size-4" aria-hidden="true" />
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <header className="flex flex-col gap-6 pb-2 md:flex-row md:items-center md:justify-between">
           <div>
             <a href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#0b6b61]">
               <ArrowLeft className="size-4" aria-hidden="true" />
               Home
             </a>
             <div className="mt-5 flex items-center gap-3">
-              <span className="grid size-12 place-items-center rounded-md bg-[#dff7f1] text-[#0b6b61]">
+              <span className="grid size-14 place-items-center rounded-2xl bg-[#dff7f1] text-[#0b6b61] shadow-[0_5px_14px_rgba(11,107,97,0.12)]">
                 <GraduationCap className="size-6" aria-hidden="true" />
               </span>
               <div>
@@ -194,7 +402,7 @@ export default function StudentPortalPage() {
               [`${completeness}%`, "Complete"],
               ["3", "AI notes"],
             ].map(([value, label]) => (
-              <div key={label} className="rounded-md border border-[#d9e1dc] bg-white px-4 py-3 shadow-sm">
+              <div key={label} className="rounded-2xl bg-white px-5 py-4 shadow-[0_5px_16px_rgba(23,32,29,0.07)]">
                 <p className="text-xl font-bold text-[#0b6b61]">{value}</p>
                 <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#64736f]">{label}</p>
               </div>
@@ -202,42 +410,70 @@ export default function StudentPortalPage() {
           </div>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <article className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
+        <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <article className={panelClass}>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#0b6b61]">Proposal Draft</p>
                 <h2 className="mt-2 text-2xl font-bold">Describe your project idea</h2>
               </div>
-              <button
-                type="button"
-                onClick={handleSaveDraft}
-                disabled={isSaving}
-                className="inline-flex h-10 items-center gap-2 rounded-md bg-[#15c7a8] px-4 text-sm font-bold text-[#071817] transition hover:bg-[#74ead7] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSaving ? (
-                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                ) : (
-                  <Save className="size-4" aria-hidden="true" />
-                )}
-                {isSaving ? "Saving..." : "Save Draft"}
-              </button>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={handleSaveDraft}
+                  disabled={isSaving || isSubmittingProposal}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-white px-5 text-sm font-bold text-[#17201d] shadow-[0_4px_14px_rgba(23,32,29,0.07)] transition hover:bg-[#f2fffb] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSaving ? (
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Save className="size-4" aria-hidden="true" />
+                  )}
+                  {isSaving ? "Saving..." : "Save Draft"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmitProposal}
+                  disabled={isSaving || isSubmittingProposal}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#15c7a8] px-5 text-sm font-bold text-[#071817] shadow-[0_5px_14px_rgba(21,199,168,0.18)] transition hover:bg-[#74ead7] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSubmittingProposal ? (
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Send className="size-4" aria-hidden="true" />
+                  )}
+                  {isSubmittingProposal ? "Submitting..." : "Submit"}
+                </button>
+              </div>
             </div>
 
             {saveMessage ? (
-              <p className="mt-4 rounded-md bg-[#f1f5f3] p-3 text-sm font-semibold text-[#394842]">
+              <p className="mt-5 rounded-2xl bg-[#f1f5f3] p-4 text-sm font-semibold text-[#394842]">
                 {saveMessage}
               </p>
             ) : null}
 
-            <div className="mt-5 space-y-4">
+            <div className="mt-6 space-y-5">
               <label className="block">
                 <span className="text-sm font-semibold text-[#26332f]">Project title</span>
                 <input
                   value={proposal.title}
                   onChange={(event) => handleProposalChange("title", event.target.value)}
-                  className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] bg-[#fbfdfc] px-3 text-sm outline-none transition focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
+                  className={`${inputClass} h-12`}
                 />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-semibold text-[#26332f]">Faculty initial</span>
+                <input
+                  value={proposal.facultyInitial}
+                  onChange={(event) => handleProposalChange("facultyInitial", event.target.value)}
+                  placeholder="FAC-CSE-104"
+                  className={`${inputClass} h-12 uppercase`}
+                />
+                <span className="mt-2 block text-xs leading-5 text-[#64736f]">
+                  Enter the faculty ID/initial for the supervisor this project is under.
+                </span>
               </label>
 
               <label className="block">
@@ -246,7 +482,7 @@ export default function StudentPortalPage() {
                   value={proposal.abstract}
                   onChange={(event) => handleProposalChange("abstract", event.target.value)}
                   rows={5}
-                  className="mt-2 w-full resize-none rounded-md border border-[#cfdad5] bg-[#fbfdfc] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
+                  className={`${inputClass} resize-none py-4 leading-6`}
                 />
               </label>
 
@@ -256,16 +492,16 @@ export default function StudentPortalPage() {
                   value={proposal.problem}
                   onChange={(event) => handleProposalChange("problem", event.target.value)}
                   rows={4}
-                  className="mt-2 w-full resize-none rounded-md border border-[#cfdad5] bg-[#fbfdfc] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
+                  className={`${inputClass} resize-none py-4 leading-6`}
                 />
               </label>
             </div>
           </article>
 
-          <aside className="space-y-6">
-            <article className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
+          <aside className="space-y-8">
+            <article className={panelClass}>
               <div className="flex items-center gap-3">
-                <span className="grid size-10 place-items-center rounded-md bg-[#e5f8f4] text-[#0b6b61]">
+                <span className={iconTileClass}>
                   <FileSearch className="size-5" aria-hidden="true" />
                 </span>
                 <div>
@@ -278,13 +514,13 @@ export default function StudentPortalPage() {
                   <span className="text-sm font-semibold text-[#52625d]">Estimated overlap</span>
                   <span className="text-3xl font-bold text-[#0b6b61]">28%</span>
                 </div>
-                <div className="mt-3 h-2 rounded-full bg-[#e7eeeb]">
-                  <div className="h-2 w-[28%] rounded-full bg-[#15c7a8]" />
+                <div className="mt-4 h-3 rounded-full bg-[#e7eeeb]">
+                  <div className="h-3 w-[28%] rounded-full bg-[#15c7a8]" />
                 </div>
               </div>
-              <div className="mt-5 space-y-2">
+              <div className="mt-6 space-y-3">
                 {similarProjects.map(([title, score]) => (
-                  <div key={title} className="flex items-center justify-between rounded-md bg-[#f6f8f7] px-3 py-2">
+                  <div key={title} className="flex items-center justify-between gap-4 rounded-2xl bg-[#f6f8f7] px-4 py-3">
                     <span className="text-sm font-semibold">{title}</span>
                     <span className="text-xs font-bold text-[#0b6b61]">{score}</span>
                   </div>
@@ -292,16 +528,16 @@ export default function StudentPortalPage() {
               </div>
             </article>
 
-            <article className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
+            <article className={panelClass}>
               <div className="flex items-center gap-3">
-                <span className="grid size-10 place-items-center rounded-md bg-[#e5f8f4] text-[#0b6b61]">
+                <span className={iconTileClass}>
                   <Lightbulb className="size-5" aria-hidden="true" />
                 </span>
                 <h2 className="text-lg font-bold">Recommendations</h2>
               </div>
-              <div className="mt-4 space-y-3">
+              <div className="mt-5 space-y-3">
                 {recommendations.map((item) => (
-                  <div key={item} className="flex gap-3 rounded-md bg-[#f6f8f7] p-3">
+                  <div key={item} className="flex gap-3 rounded-2xl bg-[#f6f8f7] p-4">
                     <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[#0b6b61]" aria-hidden="true" />
                     <p className="text-sm leading-6 text-[#394842]">{item}</p>
                   </div>
@@ -311,10 +547,10 @@ export default function StudentPortalPage() {
           </aside>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-          <article className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
+        <section className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr]">
+          <article className={panelClass}>
             <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center rounded-md bg-[#e5f8f4] text-[#0b6b61]">
+              <span className={iconTileClass}>
                 <Search className="size-5" aria-hidden="true" />
               </span>
               <div>
@@ -323,17 +559,17 @@ export default function StudentPortalPage() {
               </div>
             </div>
 
-            <form onSubmit={handleArchiveSearch} className="mt-5 flex gap-2">
+            <form onSubmit={handleArchiveSearch} className="mt-6 flex flex-col gap-3 sm:flex-row">
               <input
                 value={archiveQuery}
                 onChange={(event) => setArchiveQuery(event.target.value)}
                 placeholder="Search previous projects..."
-                className="h-11 min-w-0 flex-1 rounded-md border border-[#cfdad5] bg-[#fbfdfc] px-3 text-sm outline-none transition focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
+                className={`${inputClass} mt-0 h-12 min-w-0 flex-1`}
               />
               <button
                 type="submit"
                 disabled={isSearching}
-                className="inline-flex h-11 items-center gap-2 rounded-md border border-[#cfdad5] bg-white px-4 text-sm font-bold text-[#17201d] transition hover:border-[#15c7a8] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-12 items-center gap-2 rounded-2xl bg-white px-5 text-sm font-bold text-[#17201d] shadow-[0_4px_14px_rgba(23,32,29,0.07)] transition hover:bg-[#f2fffb] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSearching ? (
                   <Loader2 className="size-4 animate-spin" />
@@ -355,7 +591,7 @@ export default function StudentPortalPage() {
                 {archiveResults.map((result) => (
                   <div
                     key={result.project_id}
-                    className="rounded-md bg-[#f1f5f3] p-3"
+                    className={quietPanelClass}
                   >
                     <p className="text-sm font-bold text-[#17201d]">
                       {result.metadata?.title || "Archived project"}
@@ -369,9 +605,9 @@ export default function StudentPortalPage() {
             ) : null}
           </article>
 
-          <article className="rounded-md border border-[#d9e1dc] bg-[#17201d] p-5 text-white shadow-sm">
+          <article className="rounded-2xl bg-[#17201d] p-6 text-white shadow-[0_8px_24px_rgba(23,32,29,0.12)]">
             <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center rounded-md bg-[#15c7a8] text-[#071817]">
+              <span className="grid size-11 place-items-center rounded-2xl bg-[#15c7a8] text-[#071817]">
                 <Bot className="size-5" aria-hidden="true" />
               </span>
               <div>
@@ -380,7 +616,7 @@ export default function StudentPortalPage() {
               </div>
             </div>
 
-            <div className="mt-5 rounded-md border border-white/10 bg-white/8 p-4">
+            <div className="mt-6 rounded-2xl bg-white/[0.08] p-5 shadow-[0_6px_18px_rgba(0,0,0,0.08)]">
               <p className="flex items-center gap-2 text-sm font-semibold text-[#d7f7ed]">
                 <MessageSquareText className="size-4" aria-hidden="true" />
                 Assistant response
@@ -388,16 +624,16 @@ export default function StudentPortalPage() {
               <p className="mt-3 text-sm leading-6 text-white/82">{aiReply}</p>
             </div>
 
-            <form onSubmit={handleAskAi} className="mt-4 flex gap-2">
+            <form onSubmit={handleAskAi} className="mt-5 flex flex-col gap-3 sm:flex-row">
               <input
                 value={question}
                 onChange={(event) => setQuestion(event.target.value)}
                 placeholder="Ask for title ideas, research gaps, or tech stack suggestions..."
-                className="h-11 min-w-0 flex-1 rounded-md border border-white/14 bg-white px-3 text-sm text-[#17201d] outline-none"
+                className="h-12 min-w-0 flex-1 rounded-2xl bg-white px-4 text-sm text-[#17201d] outline-none ring-1 ring-white/20 transition focus:ring-2 focus:ring-[#15c7a8]/40"
               />
               <button
                 type="submit"
-                className="inline-flex h-11 items-center gap-2 rounded-md bg-[#15c7a8] px-4 text-sm font-bold text-[#071817] transition hover:bg-[#74ead7]"
+                className="inline-flex h-12 items-center gap-2 rounded-2xl bg-[#15c7a8] px-5 text-sm font-bold text-[#071817] shadow-[0_5px_14px_rgba(21,199,168,0.18)] transition hover:bg-[#74ead7]"
               >
                 <Send className="size-4" aria-hidden="true" />
                 Ask

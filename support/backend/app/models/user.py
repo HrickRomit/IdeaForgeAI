@@ -20,6 +20,15 @@ class User(TimestampMixin, Base):
     department_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id"))
 
     department = relationship("Department", back_populates="users")
+
+    @property
+    def department_code(self) -> str | None:
+        return self.department.code if self.department is not None else None
+
+    @property
+    def department_name(self) -> str | None:
+        return self.department.name if self.department is not None else None
+
     submitted_proposals = relationship(
         "Proposal",
         back_populates="student",

@@ -62,6 +62,13 @@ export default function LoginPage() {
       if (user) {
         localStorage.setItem("ideaforge_user_role", user.role);
         localStorage.setItem("ideaforge_user_name", user.full_name);
+        localStorage.setItem("ideaforge_user_email", user.email || "");
+        localStorage.setItem("ideaforge_student_id", user.student_id || "");
+        localStorage.setItem("ideaforge_department_code", user.department_code || "");
+        localStorage.setItem(
+          "ideaforge_department_id",
+          user.department_id ? String(user.department_id) : "",
+        );
       }
 
       setStatus("Login successful. Redirecting...");

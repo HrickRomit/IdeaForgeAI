@@ -8,7 +8,6 @@ import {
   ClipboardCheck,
   FileSearch,
   GraduationCap,
-  Lightbulb,
   LogIn,
   MessageSquareText,
   Search,
@@ -80,6 +79,44 @@ const metrics = [
   ["RAG", "project knowledge layer"],
 ];
 
+const primaryActions = [
+  {
+    icon: Search,
+    label: "Search Previous Projects",
+    href: "/student/search",
+  },
+  {
+    icon: Lightbulb,
+    label: "Get Project Ideas",
+    href: "/student",
+  },
+  {
+    icon: UploadCloud,
+    label: "Upload Proposal",
+    href: "/student",
+  },
+  {
+    icon: FileSearch,
+    label: "Check Similarity",
+    href: "/student",
+  },
+  {
+    icon: Bot,
+    label: "Ask Project Chatbot",
+    href: "/student/chatbot",
+  },
+  {
+    icon: ClipboardCheck,
+    label: "Review Proposals",
+    href: "/faculty",
+  },
+  {
+    icon: UserCheck,
+    label: "Recommend Supervisor",
+    href: "/student",
+  },
+];
+
 const actionGroups = [
   {
     id: "student-actions",
@@ -88,7 +125,6 @@ const actionGroups = [
     copy: "Everything a student needs before and after submitting a capstone proposal.",
     items: [
       [Search, "Semantic Search", "Find previous academic projects using natural language."],
-      [Lightbulb, "AI Project Suggestions", "Receive idea recommendations based on archived work."],
       [UploadCloud, "Upload Proposal", "Submit a proposal document for evaluation."],
       [FileSearch, "Similarity Score", "View overlap, novelty, and related previous projects."],
       [Wrench, "Technology Recommendations", "See suggested stacks and implementation approaches."],

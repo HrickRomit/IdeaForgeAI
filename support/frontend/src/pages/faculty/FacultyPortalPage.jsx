@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -17,8 +17,59 @@ import ProposalReviewPanel from "../../components/faculty/ProposalReviewPanel";
 import ReviewQueue from "../../components/faculty/ReviewQueue";
 import SimilarityDetailView from "../../components/faculty/SimilarityDetailView";
 import { facultyMember, getAssignedProposals, initialProposals, statusStyles } from "../../components/faculty/facultyMockData";
+import {
+  getFacultyProfile,
+  getFacultyProposals,
+  reviewFacultyProposal,
+} from "../../api/facultyApi";
 
-function FacultyOverview({ proposals, pendingCount, averageSimilarity, onNavigate }) {
+const apiStatusToViewStatus = {
+  draft: "Draft",
+  submitted: "Pending",
+  approved: "Approved",
+  changes_requested: "Changes",
+  rejected: "Rejected",
+};
+
+const viewStatusToApiDecision = {
+  Approved: "approved",
+  Changes: "changes_requested",
+  Rejected: "rejected",
+};
+
+function formatProposalDate(value) {
+  if (!value) {
+    return "Draft";
+  }
+
+  return new Intl.DateTimeFormat("en-CA").format(new Date(value));
+}
+
+function mapApiProposal(proposal, facultyId) {
+  const similarity = proposal.similarity_score
+    ? Math.round(proposal.similarity_score * 100)
+    : 0;
+
+  return {
+    id: `PROP-${proposal.id}`,
+    rawId: proposal.id,
+    assignedFacultyId: facultyId,
+    title: proposal.title,
+    student: proposal.student_name || "Student",
+    dept: proposal.department_code || "Unassigned",
+    date: formatProposalDate(proposal.submitted_at),
+    status: apiStatusToViewStatus[proposal.status] || "Draft",
+    similarity,
+    facultyComment: "",
+    notifications: [],
+    summary:
+      proposal.abstract ||
+      `${proposal.title} is assigned to this faculty account for review.`,
+    matches: [],
+  };
+}
+
+function FacultyOverview({ facultyInfo, proposals, pendingCount, averageSimilarity, onNavigate }) {
   const [showProfile, setShowProfile] = useState(false);
   const approvedCount = proposals.filter((proposal) => proposal.status === "Approved").length;
   const rejectedCount = proposals.filter((proposal) => proposal.status === "Rejected").length;
@@ -52,7 +103,7 @@ function FacultyOverview({ proposals, pendingCount, averageSimilarity, onNavigat
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#74ead7]">Welcome Back</p>
             <h3 className="mt-3 text-3xl font-bold tracking-normal sm:text-4xl">
-              Hello, {facultyMember.name}
+              Hello, {facultyInfo.name}
             </h3>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-white/72">
               Your faculty workspace is ready for project monitoring, pending reviews, and review analytics.
@@ -75,9 +126,9 @@ function FacultyOverview({ proposals, pendingCount, averageSimilarity, onNavigat
                 <UserCircle className="size-6" aria-hidden="true" />
               </span>
               <div>
-                <p className="text-sm font-bold">{facultyMember.name}</p>
+                <p className="text-sm font-bold">{facultyInfo.name}</p>
                 <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-white/62">
-                  {facultyMember.department} / {facultyMember.id}
+                  {facultyInfo.department} / {facultyInfo.id}
                 </p>
               </div>
             </div>
@@ -101,13 +152,13 @@ function FacultyOverview({ proposals, pendingCount, averageSimilarity, onNavigat
             </span>
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">Faculty Profile</p>
-              <h3 className="mt-1 text-xl font-bold text-[#17201d]">{facultyMember.name}</h3>
+              <h3 className="mt-1 text-xl font-bold text-[#17201d]">{facultyInfo.name}</h3>
             </div>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             {[
-              ["Faculty ID", facultyMember.id],
-              ["Department", facultyMember.department],
+              ["Faculty ID", facultyInfo.id],
+              ["Department", facultyInfo.department],
               ["Assigned Projects", proposals.length],
             ].map(([label, value]) => (
               <div key={label} className="rounded-md bg-[#f6f8f7] px-4 py-3">
@@ -237,15 +288,52 @@ function ProjectOverview({ proposals, onReviewProject }) {
 }
 
 export default function FacultyPortalPage() {
+  const [facultyInfo, setFacultyInfo] = useState(facultyMember);
   const [proposals, setProposals] = useState(initialProposals);
   const [selectedId, setSelectedId] = useState("CSE-26-014");
   const [query, setQuery] = useState("");
   const [toast, setToast] = useState("");
   const [activeView, setActiveView] = useState("overview");
 
+  useEffect(() => {
+    let isMounted = true;
+
+    Promise.all([getFacultyProfile(), getFacultyProposals()])
+      .then(([profileResponse, proposalsResponse]) => {
+        if (!isMounted) {
+          return;
+        }
+
+        const profile = profileResponse.data;
+        const liveFaculty = {
+          id: profile.faculty_id || `FAC-${profile.id}`,
+          name: profile.full_name || "Faculty",
+          department: profile.department_code || "Unassigned",
+        };
+        const liveProposals = (proposalsResponse.data || []).map((proposal) =>
+          mapApiProposal(proposal, liveFaculty.id),
+        );
+
+        setFacultyInfo(liveFaculty);
+        setProposals(liveProposals);
+        setSelectedId(liveProposals[0]?.id || "");
+      })
+      .catch(() => {
+        if (isMounted) {
+          setFacultyInfo(facultyMember);
+          setProposals(initialProposals);
+          setSelectedId("CSE-26-014");
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const assignedProposals = useMemo(
-    () => getAssignedProposals(proposals, facultyMember.id),
-    [proposals],
+    () => getAssignedProposals(proposals, facultyInfo.id),
+    [facultyInfo.id, proposals],
   );
 
   const pendingProposals = useMemo(
@@ -273,10 +361,22 @@ export default function FacultyPortalPage() {
     setSelectedId(proposalId);
   };
 
-  const handleDecision = (nextStatus, comment) => {
+  const handleDecision = async (nextStatus, comment) => {
     if (!comment.trim()) {
       setToast("Add a review comment before sending a decision.");
       return;
+    }
+
+    if (selected?.rawId && viewStatusToApiDecision[nextStatus]) {
+      try {
+        await reviewFacultyProposal(selected.rawId, {
+          decision: viewStatusToApiDecision[nextStatus],
+          comments: comment,
+        });
+      } catch (error) {
+        setToast(error.response?.data?.detail || "Could not send the review decision.");
+        return;
+      }
     }
 
     setProposals((current) =>
@@ -334,7 +434,7 @@ export default function FacultyPortalPage() {
               Academic Review
             </h1>
             <p className="mt-4 text-sm leading-6 text-white/72">
-              {facultyMember.name} / {facultyMember.department} / {facultyMember.id}
+              {facultyInfo.name} / {facultyInfo.department} / {facultyInfo.id}
             </p>
           </div>
           <nav className="mt-10 space-y-2 text-sm font-semibold">
@@ -396,6 +496,7 @@ export default function FacultyPortalPage() {
           <div className="mt-6">
             {activeView === "overview" && (
               <FacultyOverview
+                facultyInfo={facultyInfo}
                 proposals={assignedProposals}
                 pendingCount={pendingCount}
                 averageSimilarity={averageSimilarity}

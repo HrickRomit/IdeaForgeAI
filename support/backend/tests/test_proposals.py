@@ -76,3 +76,37 @@ def test_student_cannot_select_a_student_as_supervisor(
     )
 
     assert response.status_code == 422
+
+
+def test_student_can_assign_proposal_by_faculty_initial(
+    client,
+    create_user,
+    auth_headers,
+):
+    student = create_user(
+        email="student@example.com",
+        role="student",
+    )
+    faculty = create_user(
+        email="faculty@example.com",
+        role="faculty",
+        full_name="Dr. Farhana Islam",
+        faculty_id="FAC-CSE-104",
+    )
+
+    response = client.post(
+        "/proposals",
+        headers=auth_headers(student),
+        json={
+            "title": "Assigned Project Proposal",
+            "abstract": (
+                "A proposal with enough detail to satisfy validation "
+                "and verify assigned faculty lookup."
+            ),
+            "faculty_initial": "FAC-CSE-104",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["supervisor_id"] == faculty.id
+    assert response.json()["faculty_initial"] == "FAC-CSE-104"

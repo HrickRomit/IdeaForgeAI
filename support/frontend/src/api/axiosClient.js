@@ -17,6 +17,10 @@ function clearAuthentication() {
   localStorage.removeItem("ideaforge_refresh_token");
   localStorage.removeItem("ideaforge_user_role");
   localStorage.removeItem("ideaforge_user_name");
+  localStorage.removeItem("ideaforge_user_email");
+  localStorage.removeItem("ideaforge_student_id");
+  localStorage.removeItem("ideaforge_department_code");
+  localStorage.removeItem("ideaforge_department_id");
 }
 
 axiosClient.interceptors.request.use((config) => {

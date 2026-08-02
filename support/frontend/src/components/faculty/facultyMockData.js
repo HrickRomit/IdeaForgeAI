@@ -5,6 +5,7 @@ export const facultyMember = {
 };
 
 export const statusStyles = {
+  Draft: { color: "#52625d", bg: "#eef3f1", ink: "DRAFT" },
   Pending: { color: "#0b6b61", bg: "#e5f8f4", ink: "PENDING REVIEW" },
   Approved: { color: "#12805c", bg: "#e7f7ef", ink: "APPROVED" },
   Rejected: { color: "#b42318", bg: "#fee4e2", ink: "REJECTED" },

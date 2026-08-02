@@ -2,6 +2,12 @@ import { useState } from "react";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { registerUser } from "../../api/authApi";
 
+const departmentOptions = [
+  { code: "CSE", name: "Computer Science and Engineering" },
+  { code: "EEE", name: "Electrical and Electronic Engineering" },
+  { code: "CEE", name: "Civil and Environmental Engineering" },
+];
+
 function getErrorMessage(error) {
   if (!error.response) {
     return "Could not reach the backend server. Start the FastAPI backend on http://localhost:8000, then try again.";
@@ -33,7 +39,7 @@ export default function RegisterPage() {
     confirm_password: "",
     role: "student",
     student_id: "",
-    department_id: "",
+    department_code: "CSE",
   });
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,8 +62,9 @@ export default function RegisterPage() {
       email: form.email.trim(),
       password: form.password,
       role: form.role,
-      student_id: null,
+      student_id: form.student_id.trim() || null,
       faculty_id: null,
+      department_code: form.department_code,
       department_id: null,
       research_interests: null,
     };
@@ -94,9 +101,9 @@ export default function RegisterPage() {
           <p className="text-sm font-bold text-[#17201d]">What to enter</p>
           <ul className="mt-2 space-y-1 text-sm leading-6 text-[#52625d]">
             <li>Use your real full name, for example Ayesha Rahman.</li>
-            <li>Email can be any text for now while you are testing.</li>
-            <li>Password can be any text for now. The confirm field is only a visual helper.</li>
-            <li>Student ID and Department ID are shown for later, but are not submitted yet.</li>
+            <li>Use a valid email address for login.</li>
+            <li>Password must be at least 8 characters.</li>
+            <li>Student ID and department initial will be saved to your account.</li>
           </ul>
         </div>
 
@@ -172,20 +179,26 @@ export default function RegisterPage() {
               onChange={(event) => handleChange("student_id", event.target.value)}
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
               placeholder="CSE-2026-001"
+              required
             />
-            <span className="mt-1 block text-xs leading-5 text-[#64736f]">Optional visual field for now. It is not submitted yet.</span>
+            <span className="mt-1 block text-xs leading-5 text-[#64736f]">This will appear in your student navbar.</span>
           </label>
 
-          <label className="block sm:col-span-2">
-            <span className="text-sm font-semibold">Department ID</span>
-            <input
-              type="number"
-              value={form.department_id}
-              onChange={(event) => handleChange("department_id", event.target.value)}
+          <label className="block">
+            <span className="text-sm font-semibold">Department Initial</span>
+            <select
+              value={form.department_code}
+              onChange={(event) => handleChange("department_code", event.target.value)}
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
-              placeholder="Optional, for example 1"
-            />
-            <span className="mt-1 block text-xs leading-5 text-[#64736f]">Optional visual field for now. It is not submitted yet.</span>
+              required
+            >
+              {departmentOptions.map((department) => (
+                <option key={department.code} value={department.code}>
+                  {department.code} - {department.name}
+                </option>
+              ))}
+            </select>
+            <span className="mt-1 block text-xs leading-5 text-[#64736f]">This will be saved as your department.</span>
           </label>
 
           <button

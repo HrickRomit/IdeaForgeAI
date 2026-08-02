@@ -2,12 +2,39 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash, verify_password
+from app.models.department import Department
 from app.models.user import User
 from app.schemas.user import UserCreate
+
+DEFAULT_DEPARTMENT_NAMES = {
+    "CSE": "Computer Science and Engineering",
+    "EEE": "Electrical and Electronic Engineering",
+    "CEE": "Civil and Environmental Engineering",
+}
 
 
 def get_user_by_email(db: Session, email: str) -> User | None:
     return db.query(User).filter(User.email == email.lower()).first()
+
+
+def resolve_department_id(db: Session, payload: UserCreate) -> int | None:
+    department_code = payload.department_code
+
+    if not department_code:
+        return payload.department_id
+
+    department = db.query(Department).filter(Department.code == department_code).first()
+
+    if department is None:
+        department = Department(
+            code=department_code,
+            name=DEFAULT_DEPARTMENT_NAMES.get(department_code, department_code),
+            description=f"{department_code} department",
+        )
+        db.add(department)
+        db.flush()
+
+    return department.id
 
 
 def create_user(db: Session, payload: UserCreate) -> User:
@@ -28,7 +55,7 @@ def create_user(db: Session, payload: UserCreate) -> User:
         role=role,
         student_id=payload.student_id,
         faculty_id=payload.faculty_id,
-        department_id=payload.department_id,
+        department_id=resolve_department_id(db, payload),
         research_interests=payload.research_interests,
         is_active=True,
     )

@@ -65,6 +65,8 @@ def create_user():
         email: str = "student@example.com",
         password: str = "Password123",
         full_name: str = "Test User",
+        student_id: str | None = None,
+        faculty_id: str | None = None,
         department_id: int | None = None,
     ) -> User:
         db = TestingSessionLocal()
@@ -74,6 +76,8 @@ def create_user():
             email=email,
             hashed_password=get_password_hash(password),
             role=role,
+            student_id=student_id,
+            faculty_id=faculty_id,
             department_id=department_id,
             is_active=True,
         )

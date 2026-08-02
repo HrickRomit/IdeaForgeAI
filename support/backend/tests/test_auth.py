@@ -77,3 +77,25 @@ def test_public_registration_cannot_create_admin(client):
     )
 
     assert response.status_code == 403
+
+
+def test_public_registration_stores_student_id_and_department_code(client):
+    response = client.post(
+        "/auth/register",
+        json={
+            "full_name": "Ayesha Rahman",
+            "email": "ayesha@example.com",
+            "password": "Password123",
+            "role": "student",
+            "student_id": "CSE-2026-001",
+            "department_code": "CSE",
+        },
+    )
+
+    assert response.status_code == 201
+
+    data = response.json()
+    assert data["student_id"] == "CSE-2026-001"
+    assert data["department_id"] is not None
+    assert data["department_code"] == "CSE"
+    assert data["department_name"] == "Computer Science and Engineering"

@@ -14,6 +14,7 @@ class UserCreate(BaseModel):
     student_id: str | None = Field(default=None, max_length=50)
     faculty_id: str | None = Field(default=None, max_length=50)
     department_id: int | None = None
+    department_code: str | None = Field(default=None, max_length=20)
     research_interests: str | None = None
 
     @field_validator("full_name")
@@ -38,6 +39,14 @@ class UserCreate(BaseModel):
         if value is None:
             return None
         value = value.strip()
+        return value or None
+
+    @field_validator("department_code", mode="before")
+    @classmethod
+    def clean_department_code(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip().upper()
         return value or None
 
 
@@ -91,5 +100,7 @@ class UserRead(BaseModel):
     student_id: str | None = None
     faculty_id: str | None = None
     department_id: int | None = None
+    department_code: str | None = None
+    department_name: str | None = None
     research_interests: str | None = None
     is_active: bool

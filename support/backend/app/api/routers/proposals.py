@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_database, require_role
@@ -20,6 +21,7 @@ class ProposalPayload(BaseModel):
     methodology: str | None = Field(default=None, max_length=10000)
     technology_stack: str | None = Field(default=None, max_length=5000)
     supervisor_id: int | None = Field(default=None, gt=0)
+    faculty_initial: str | None = Field(default=None, max_length=50)
 
     @field_validator(
         "title",
@@ -28,6 +30,7 @@ class ProposalPayload(BaseModel):
         "objectives",
         "methodology",
         "technology_stack",
+        "faculty_initial",
         mode="before",
     )
     @classmethod
@@ -57,23 +60,70 @@ class ProposalRead(BaseModel):
     status: str
     student_id: int
     supervisor_id: int | None = None
+    faculty_initial: str | None = None
     department_id: int | None = None
 
 
-def _validate_supervisor(
+def _resolve_supervisor_id(
     db: Session,
     supervisor_id: int | None,
-) -> None:
-    if supervisor_id is None:
-        return
+    faculty_initial: str | None,
+) -> int | None:
+    resolved_supervisor_id = supervisor_id
 
-    supervisor = db.get(User, supervisor_id)
+    if faculty_initial:
+        supervisor = (
+            db.query(User)
+            .filter(
+                User.role == "faculty",
+                User.is_active.is_(True),
+                func.lower(User.faculty_id) == faculty_initial.lower(),
+            )
+            .first()
+        )
+
+        if supervisor is None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Faculty initial must match an active faculty ID.",
+            )
+
+        resolved_supervisor_id = supervisor.id
+
+    if resolved_supervisor_id is None:
+        return None
+
+    supervisor = db.get(User, resolved_supervisor_id)
 
     if supervisor is None or supervisor.role != "faculty" or not supervisor.is_active:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Supervisor must be an active faculty user.",
         )
+
+    return supervisor.id
+
+
+def _proposal_to_read(proposal: Proposal) -> ProposalRead:
+    return ProposalRead(
+        id=proposal.id,
+        title=proposal.title,
+        abstract=proposal.abstract,
+        problem_statement=proposal.problem_statement,
+        objectives=proposal.objectives,
+        methodology=proposal.methodology,
+        technology_stack=proposal.technology_stack,
+        document_path=proposal.document_path,
+        status=proposal.status,
+        student_id=proposal.student_id,
+        supervisor_id=proposal.supervisor_id,
+        faculty_initial=(
+            proposal.supervisor.faculty_id
+            if proposal.supervisor is not None
+            else None
+        ),
+        department_id=proposal.department_id,
+    )
 
 
 def _get_owned_proposal_or_404(
@@ -103,7 +153,11 @@ def create_proposal_draft(
     db: Session = Depends(get_database),
     current_user: User = Depends(require_role("student")),
 ) -> Proposal:
-    _validate_supervisor(db, payload.supervisor_id)
+    supervisor_id = _resolve_supervisor_id(
+        db,
+        payload.supervisor_id,
+        payload.faculty_initial,
+    )
 
     proposal = Proposal(
         title=payload.title,
@@ -112,7 +166,7 @@ def create_proposal_draft(
         objectives=payload.objectives,
         methodology=payload.methodology,
         technology_stack=payload.technology_stack,
-        supervisor_id=payload.supervisor_id,
+        supervisor_id=supervisor_id,
         department_id=current_user.department_id,
         student_id=current_user.id,
         status="draft",
@@ -122,7 +176,7 @@ def create_proposal_draft(
     db.commit()
     db.refresh(proposal)
 
-    return proposal
+    return _proposal_to_read(proposal)
 
 
 # Update an existing saved draft.
@@ -135,7 +189,7 @@ def update_proposal_draft(
     payload: ProposalPayload,
     db: Session = Depends(get_database),
     current_user: User = Depends(require_role("student")),
-) -> Proposal:
+) -> ProposalRead:
     proposal = _get_owned_proposal_or_404(
         db,
         proposal_id,
@@ -148,7 +202,11 @@ def update_proposal_draft(
             detail="Only draft proposals can be edited.",
         )
 
-    _validate_supervisor(db, payload.supervisor_id)
+    supervisor_id = _resolve_supervisor_id(
+        db,
+        payload.supervisor_id,
+        payload.faculty_initial,
+    )
 
     proposal.title = payload.title
     proposal.abstract = payload.abstract
@@ -156,12 +214,12 @@ def update_proposal_draft(
     proposal.objectives = payload.objectives
     proposal.methodology = payload.methodology
     proposal.technology_stack = payload.technology_stack
-    proposal.supervisor_id = payload.supervisor_id
+    proposal.supervisor_id = supervisor_id
 
     db.commit()
     db.refresh(proposal)
 
-    return proposal
+    return _proposal_to_read(proposal)
 
 
 # Submit a proposal for faculty review.
@@ -174,8 +232,12 @@ def submit_proposal(
     payload: ProposalPayload,
     db: Session = Depends(get_database),
     current_user: User = Depends(require_role("student")),
-) -> Proposal:
-    _validate_supervisor(db, payload.supervisor_id)
+) -> ProposalRead:
+    supervisor_id = _resolve_supervisor_id(
+        db,
+        payload.supervisor_id,
+        payload.faculty_initial,
+    )
 
     proposal = Proposal(
         title=payload.title,
@@ -184,7 +246,7 @@ def submit_proposal(
         objectives=payload.objectives,
         methodology=payload.methodology,
         technology_stack=payload.technology_stack,
-        supervisor_id=payload.supervisor_id,
+        supervisor_id=supervisor_id,
         department_id=current_user.department_id,
         student_id=current_user.id,
         status="submitted",
@@ -195,7 +257,7 @@ def submit_proposal(
     db.commit()
     db.refresh(proposal)
 
-    return proposal
+    return _proposal_to_read(proposal)
 
 
 @router.post(
@@ -208,7 +270,7 @@ async def upload_proposal_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_database),
     current_user: User = Depends(require_role("student")),
-) -> Proposal:
+) -> ProposalRead:
     proposal = _get_owned_proposal_or_404(
         db,
         proposal_id,
@@ -232,17 +294,19 @@ async def upload_proposal_document(
     if old_document_path and old_document_path != new_document_path:
         delete_stored_file(old_document_path)
 
-    return proposal
+    return _proposal_to_read(proposal)
 
 
 @router.get("/mine", response_model=list[ProposalRead])
 def my_proposals(
     db: Session = Depends(get_database),
     current_user: User = Depends(require_role("student")),
-) -> list[Proposal]:
-    return (
+) -> list[ProposalRead]:
+    proposals = (
         db.query(Proposal)
         .filter(Proposal.student_id == current_user.id)
         .order_by(Proposal.created_at.desc())
         .all()
     )
+
+    return [_proposal_to_read(proposal) for proposal in proposals]
