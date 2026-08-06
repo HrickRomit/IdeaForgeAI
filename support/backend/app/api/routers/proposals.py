@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -8,9 +9,17 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_database, require_role
 from app.models.proposal import Proposal
 from app.models.user import User
+from app.services.ai_service.similarity_engine import check_proposal_similarity
 from app.services.file_service import delete_stored_file, save_proposal_pdf
 
 router = APIRouter(prefix="/proposals", tags=["Student Proposals"])
+
+
+class ProposalSimilarityPayload(BaseModel):
+    title: str = Field(min_length=3, max_length=255)
+    abstract: str | None = Field(default="", max_length=10000)
+    problem_statement: str | None = Field(default=None, max_length=10000)
+    top_k: int = Field(default=5, ge=1, le=20)
 
 
 class ProposalPayload(BaseModel):
@@ -310,3 +319,25 @@ def my_proposals(
     )
 
     return [_proposal_to_read(proposal) for proposal in proposals]
+
+
+@router.post("/similarity")
+def check_similarity(
+    payload: ProposalSimilarityPayload,
+    current_user: User = Depends(require_role("student")),
+) -> dict[str, Any]:
+    """
+    Checks the similarity of the given proposal draft against the ChromaDB archive.
+    """
+    try:
+        return check_proposal_similarity(
+            title=payload.title,
+            abstract=payload.abstract,
+            problem_statement=payload.problem_statement,
+            top_k=payload.top_k,
+        )
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI Similarity engine is temporarily unavailable.",
+        ) from error

@@ -420,6 +420,20 @@ export default function StudentPortalPage() {
               <div className="flex flex-col gap-2 sm:flex-row">
                 <button
                   type="button"
+                  onClick={() => {
+                    if (!proposal.title.trim()) {
+                      setSaveMessage("Add a title before comparing.");
+                      return;
+                    }
+                    window.location.assign(`/student/similarity-report?title=${encodeURIComponent(proposal.title)}&abstract=${encodeURIComponent(proposal.abstract)}&problem=${encodeURIComponent(proposal.problem)}`);
+                  }}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#e5f8f4] px-5 text-sm font-bold text-[#0b6b61] shadow-[0_4px_14px_rgba(23,32,29,0.07)] transition hover:bg-[#d7f7ed]"
+                >
+                  <FileSearch className="size-4" aria-hidden="true" />
+                  Compare
+                </button>
+                <button
+                  type="button"
                   onClick={handleSaveDraft}
                   disabled={isSaving || isSubmittingProposal}
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-white px-5 text-sm font-bold text-[#17201d] shadow-[0_4px_14px_rgba(23,32,29,0.07)] transition hover:bg-[#f2fffb] disabled:cursor-not-allowed disabled:opacity-60"
@@ -477,7 +491,7 @@ export default function StudentPortalPage() {
               </label>
 
               <label className="block">
-                <span className="text-sm font-semibold text-[#26332f]">Abstract</span>
+                <span className="text-sm font-semibold text-[#26332f]">Project idea (under 100 words)</span>
                 <textarea
                   value={proposal.abstract}
                   onChange={(event) => handleProposalChange("abstract", event.target.value)}

@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   FileSearch,
   GraduationCap,
+  Lightbulb,
   LogIn,
   MessageSquareText,
   Search,
@@ -24,6 +25,7 @@ import RegisterPage from "./pages/auth/RegisterPage.jsx";
 import FacultyPortalPage from "./pages/faculty/FacultyPortalPage.jsx";
 import ChatbotPage from "./pages/student/ChatbotPage.jsx";
 import SearchPage from "./pages/student/SearchPage.jsx";
+import SimilarityReportPage from "./pages/student/SimilarityReportPage.jsx";
 import StudentPortalPage from "./pages/student/StudentPortalPage.jsx";
 import AboutPage from "./pages/AboutPage.jsx";
 
@@ -163,6 +165,9 @@ function App() {
   }
   if (window.location.pathname.startsWith("/student/chatbot")) {
     return <ChatbotPage />;
+  }
+  if (window.location.pathname.startsWith("/student/similarity-report")) {
+    return <SimilarityReportPage />;
   }
 
   if (window.location.pathname.startsWith("/about")) {

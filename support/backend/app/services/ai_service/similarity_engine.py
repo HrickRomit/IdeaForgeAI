@@ -10,7 +10,7 @@ __all__ = ["check_proposal_similarity"]
 
 def check_proposal_similarity(
     title: str,
-    abstract: str,
+    abstract: str = "",
     problem_statement: str | None = None,
     top_k: int = 5,
 ) -> dict[str, Any]:
@@ -27,7 +27,9 @@ def check_proposal_similarity(
         A dictionary containing overall_similarity_score (0.0 to 1.0) and top match details.
     """
     # 1. Combine proposal text fields into a single comprehensive query text
-    proposal_text = f"Title: {title}\nAbstract: {abstract}"
+    proposal_text = f"Title: {title}"
+    if abstract:
+        proposal_text += f"\nAbstract: {abstract}"
     if problem_statement:
         proposal_text += f"\nProblem Statement: {problem_statement}"
 

@@ -30,3 +30,7 @@ export function uploadProposalDocument(proposalId, file) {
     },
   );
 }
+
+export function checkProposalSimilarity(payload) {
+  return axiosClient.post("/proposals/similarity", payload);
+}
