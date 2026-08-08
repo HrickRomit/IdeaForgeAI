@@ -1,3 +1,6 @@
+export function getAdminDashboardStats() {
+  return axiosClient.get("/admin/dashboard");
+}
 import axiosClient from "./axiosClient";
 
 // Users

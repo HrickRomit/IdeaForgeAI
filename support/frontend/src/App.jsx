@@ -28,6 +28,8 @@ import SearchPage from "./pages/student/SearchPage.jsx";
 import SimilarityReportPage from "./pages/student/SimilarityReportPage.jsx";
 import StudentPortalPage from "./pages/student/StudentPortalPage.jsx";
 import AboutPage from "./pages/AboutPage.jsx";
+import AdminLoginPage from "./pages/admin/AdminLoginPage.jsx";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage.jsx";
 
 const audiences = [
   {
@@ -152,6 +154,13 @@ const actionGroups = [
 ];
 
 function App() {
+    if (window.location.pathname.startsWith("/admin")) {
+    const isAdmin =
+      localStorage.getItem("ideaforge_user_role") === "admin" &&
+      localStorage.getItem("ideaforge_access_token");
+
+    return isAdmin ? <AdminDashboardPage /> : <AdminLoginPage />;
+  }
   if (window.location.pathname.startsWith("/login")) {
     return <LoginPage />;
   }

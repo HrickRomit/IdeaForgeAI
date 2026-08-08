@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.security import decode_access_token
 from app.db.session import get_db
 from app.models.user import User
+from app.services.admin_service import is_fixed_admin
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -57,3 +58,15 @@ def require_role(*allowed_roles: str):
         return current_user
 
     return role_checker
+
+
+def require_fixed_admin(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    if not is_fixed_admin(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the fixed system administrator can access this resource.",
+        )
+
+    return current_user

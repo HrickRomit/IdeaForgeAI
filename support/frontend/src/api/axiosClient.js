@@ -71,10 +71,14 @@ axiosClient.interceptors.response.use(
 
       return axiosClient(originalRequest);
     } catch (refreshError) {
+            const previousRole = localStorage.getItem("ideaforge_user_role");
       clearAuthentication();
 
-      if (!window.location.pathname.startsWith("/login")) {
-        window.location.assign("/login");
+      const destination = previousRole === "admin" ? "/admin" : "/login";
+
+      if (!window.location.pathname.startsWith(destination)) {
+        window.location.assign(destination);
+      }
       }
 
       return Promise.reject(refreshError);

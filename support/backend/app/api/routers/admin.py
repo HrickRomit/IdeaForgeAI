@@ -1,36 +1,54 @@
 import json
 from uuid import uuid4
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_database, require_role
+from app.api.deps import get_database, require_fixed_admin
 from app.core.security import get_password_hash
 from app.models.archived_project import ArchivedProject
 from app.models.department import Department
 from app.models.proposal import Proposal
 from app.models.similarity_report import SimilarityReport
 from app.models.user import User
-from app.schemas.department import (
-    DepartmentCreate,
-    DepartmentRead,
-    DepartmentUpdate,
-)
+from app.schemas.admin import AdminDashboardStats
 from app.schemas.archived_project import (
     ArchivedProjectCreate,
     ArchivedProjectRead,
     ArchivedProjectUpdate,
 )
+from app.schemas.department import (
+    DepartmentCreate,
+    DepartmentRead,
+    DepartmentUpdate,
+)
+from app.schemas.user import UserCreate, UserRead, UserUpdate
+from app.services.admin_service import FIXED_ADMIN_EMAIL
 from app.services.ai_service.chroma_client import get_archived_projects_collection
 from app.services.ai_service.embeddings import get_embedding
-from app.schemas.user import UserCreate, UserRead, UserUpdate
 
 router = APIRouter(
     prefix="/admin",
     tags=["Admin"],
-    dependencies=[Depends(require_role("admin"))],
+    dependencies=[Depends(require_fixed_admin)],
 )
+@router.get("/dashboard", response_model=AdminDashboardStats)
+def get_dashboard_stats(
+    db: Session = Depends(get_database),
+) -> AdminDashboardStats:
+    return AdminDashboardStats(
+        total_students=db.scalar(
+            select(func.count(User.id)).where(User.role == "student")
+        ) or 0,
+        total_faculty=db.scalar(
+            select(func.count(User.id)).where(User.role == "faculty")
+        ) or 0,
+        total_archived_projects=db.scalar(
+            select(func.count(ArchivedProject.id))
+        ) or 0,
+    )
 
 
 def _get_user_or_404(db: Session, user_id: int) -> User:
@@ -56,6 +74,11 @@ def _get_department_or_404(db: Session, department_id: int) -> Department:
 
     return department
 
+    if payload.role == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Creating additional admin accounts is not allowed.",
+        )
 
 def _validate_department_id(db: Session, department_id: int | None) -> None:
     if department_id is not None:
@@ -632,6 +655,17 @@ def update_archived_project(
         )
 
     updates = payload.model_dump(exclude_unset=True)
+    if user.email == FIXED_ADMIN_EMAIL:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The fixed administrator account cannot be modified.",
+        )
+
+    if updates.get("role") == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Promoting a user to admin is not allowed.",
+        )
 
     if not updates:
         raise HTTPException(

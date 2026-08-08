@@ -8,8 +8,14 @@ from app.core.security import (
     decode_refresh_token,
 )
 from app.models.user import User
-from app.schemas.auth import LoginRequest, RefreshTokenRequest, TokenResponse
+from app.schemas.auth import (
+    AdminLoginRequest,
+    LoginRequest,
+    RefreshTokenRequest,
+    TokenResponse,
+)
 from app.schemas.user import UserCreate, UserRead
+from app.services.admin_service import authenticate_fixed_admin, is_fixed_admin
 from app.services.auth_service import authenticate_user, create_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -28,19 +34,10 @@ def register_user(
     payload: UserCreate,
     db: Session = Depends(get_database),
 ) -> User:
-    """
-    Public registration is restricted to students.
-
-    Faculty and admin accounts must be created by an authenticated admin
-    through POST /admin/users.
-    """
     if payload.role != "student":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=(
-                "Public registration is only available for student accounts. "
-                "Faculty and admin accounts must be created by an administrator."
-            ),
+            detail="Public registration is only available for student accounts.",
         )
 
     return create_user(db, payload)
@@ -53,10 +50,26 @@ def login_user(
 ) -> TokenResponse:
     user = authenticate_user(db, payload.email, payload.password)
 
-    if not user:
+    if not user or user.role == "admin":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
+        )
+
+    return _create_token_response(user)
+
+
+@router.post("/admin/login", response_model=TokenResponse)
+def login_fixed_admin(
+    payload: AdminLoginRequest,
+    db: Session = Depends(get_database),
+) -> TokenResponse:
+    user = authenticate_fixed_admin(db, payload.username, payload.password)
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid admin username or password",
         )
 
     return _create_token_response(user)
@@ -75,10 +88,8 @@ def refresh_access_token(
             detail="Invalid or expired refresh token",
         )
 
-    subject = token_payload.get("sub")
-
     try:
-        user_id = int(subject)
+        user_id = int(token_payload.get("sub"))
     except (TypeError, ValueError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -91,6 +102,12 @@ def refresh_access_token(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive",
+        )
+
+    if user.role == "admin" and not is_fixed_admin(user):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid admin account",
         )
 
     return _create_token_response(user)
