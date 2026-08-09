@@ -26,6 +26,10 @@ function getErrorMessage(error) {
 }
 
 export default function LoginPage() {
+  const selectedRole = new URLSearchParams(window.location.search).get("role");
+  const isFacultyLogin = selectedRole === "faculty";
+  const registerHref = isFacultyLogin ? "/faculty/register" : "/register";
+
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -150,7 +154,7 @@ export default function LoginPage() {
 
         <p className="mt-5 text-sm text-[#64736f]">
           No account yet?{" "}
-          <a href="/register" className="font-bold text-[#0b6b61]">
+          <a href={registerHref} className="font-bold text-[#0b6b61]">
             Register here
           </a>
         </p>

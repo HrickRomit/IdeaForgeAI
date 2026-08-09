@@ -5,7 +5,7 @@ import { registerUser } from "../../api/authApi";
 const departmentOptions = [
   { code: "CSE", name: "Computer Science and Engineering" },
   { code: "EEE", name: "Electrical and Electronic Engineering" },
-  { code: "CEE", name: "Civil and Environmental Engineering" },
+  { code: "ME", name: "Mechanical Engineering" },
 ];
 
 function getErrorMessage(error) {
@@ -31,14 +31,18 @@ function getErrorMessage(error) {
   return detail || error.message || "Registration failed.";
 }
 
-export default function RegisterPage() {
+export default function RegisterPage({ accountType = "student" }) {
+  const isFaculty = accountType === "faculty";
+  const identifierLabel = isFaculty ? "Faculty ID" : "Student ID";
+  const oppositeRegisterHref = isFaculty ? "/register" : "/faculty/register";
+  const oppositeRegisterLabel = isFaculty ? "Student registration" : "Faculty registration";
+
   const [form, setForm] = useState({
     full_name: "",
     email: "",
     password: "",
     confirm_password: "",
-    role: "student",
-    student_id: "",
+    identifier: "",
     department_code: "CSE",
   });
   const [status, setStatus] = useState("");
@@ -54,6 +58,11 @@ export default function RegisterPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (form.password !== form.confirm_password) {
+      setStatus("Registration failed: Password and confirm password do not match.");
+      return;
+    }
+
     setIsSubmitting(true);
     setStatus("Creating account...");
 
@@ -61,9 +70,9 @@ export default function RegisterPage() {
       full_name: form.full_name.trim(),
       email: form.email.trim(),
       password: form.password,
-      role: form.role,
-      student_id: form.role === 'student' ? form.student_id.trim() || null : null,
-      faculty_id: form.role === 'faculty' ? form.student_id.trim() || null : null,
+      role: accountType,
+      student_id: isFaculty ? null : form.identifier.trim(),
+      faculty_id: isFaculty ? form.identifier.trim() : null,
       department_code: form.department_code,
       department_id: null,
       research_interests: null,
@@ -91,20 +100,12 @@ export default function RegisterPage() {
           <span className="grid size-12 place-items-center rounded-md bg-[#e5f8f4] text-[#0b6b61]">
             <UserPlus className="size-6" aria-hidden="true" />
           </span>
-          <h1 className="mt-4 text-3xl font-bold">Register</h1>
+          <h1 className="mt-4 text-3xl font-bold">
+            {isFaculty ? "Faculty Registration" : "Student Registration"}
+          </h1>
           <p className="mt-2 text-sm leading-6 text-[#64736f]">
-            Fill in the required account details. The form will send them to the backend registration endpoint.
+            Create your {isFaculty ? "faculty" : "student"} account for IdeaForge AI.
           </p>
-        </div>
-
-        <div className="mt-6 rounded-md border border-[#cfdad5] bg-[#f6f8f7] p-4">
-          <p className="text-sm font-bold text-[#17201d]">What to enter</p>
-          <ul className="mt-2 space-y-1 text-sm leading-6 text-[#52625d]">
-            <li>Use your real full name, for example Ayesha Rahman.</li>
-            <li>Use a valid email address for login.</li>
-            <li>Password must be at least 8 characters.</li>
-            <li>Student ID and department initial will be saved to your account.</li>
-          </ul>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -117,20 +118,29 @@ export default function RegisterPage() {
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
               placeholder="Ayesha Rahman"
             />
-            <span className="mt-1 block text-xs leading-5 text-[#64736f]">Enter your name as it should appear in the portal.</span>
           </label>
 
           <label className="block sm:col-span-2">
-            <span className="text-sm font-semibold">Email or username</span>
+            <span className="text-sm font-semibold">Email</span>
             <input
-              type="text"
+              type="email"
               value={form.email}
               onChange={(event) => handleChange("email", event.target.value)}
               required
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
-              placeholder="student@example.com or student1"
+              placeholder={isFaculty ? "faculty@example.com" : "student@example.com"}
             />
-            <span className="mt-1 block text-xs leading-5 text-[#64736f]">No email format restriction for now. You can type anything.</span>
+          </label>
+
+          <label className="block sm:col-span-2">
+            <span className="text-sm font-semibold">{identifierLabel}</span>
+            <input
+              value={form.identifier}
+              onChange={(event) => handleChange("identifier", event.target.value)}
+              className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
+              placeholder={isFaculty ? "FAC-CSE-104" : "CSE-2026-001"}
+              required
+            />
           </label>
 
           <label className="block">
@@ -140,10 +150,10 @@ export default function RegisterPage() {
               value={form.password}
               onChange={(event) => handleChange("password", event.target.value)}
               required
+              minLength={8}
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
-              placeholder="Any password"
+              placeholder="At least 8 characters"
             />
-            <span className="mt-1 block text-xs leading-5 text-[#64736f]">No length or complexity rule for now.</span>
           </label>
 
           <label className="block">
@@ -152,41 +162,15 @@ export default function RegisterPage() {
               type="password"
               value={form.confirm_password}
               onChange={(event) => handleChange("confirm_password", event.target.value)}
-              className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
-              placeholder="Optional"
-            />
-            <span className="mt-1 block text-xs leading-5 text-[#64736f]">Optional for now. It will not block registration.</span>
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-semibold">Role</span>
-            <select
-              value={form.role}
-              onChange={(event) => handleChange("role", event.target.value)}
-              className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
-            >
-              <option value="student">Student</option>
-              <option value="faculty">Faculty</option>
-            </select>
-            <span className="mt-1 block text-xs leading-5 text-[#64736f]">Choose your role in the portal.</span>
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-semibold">{form.role === 'faculty' ? 'Faculty ID' : 'Student ID'}</span>
-            <input
-              value={form.student_id}
-              onChange={(event) => handleChange("student_id", event.target.value)}
-              className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
-              placeholder={form.role === 'faculty' ? "FAC-CSE-104" : "CSE-2026-001"}
               required
+              minLength={8}
+              className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
+              placeholder="Repeat password"
             />
-            <span className="mt-1 block text-xs leading-5 text-[#64736f]">
-              {form.role === 'faculty' ? 'This will appear in your faculty profile.' : 'This will appear in your student navbar.'}
-            </span>
           </label>
 
-          <label className="block">
-            <span className="text-sm font-semibold">Department Initial</span>
+          <label className="block sm:col-span-2">
+            <span className="text-sm font-semibold">Department</span>
             <select
               value={form.department_code}
               onChange={(event) => handleChange("department_code", event.target.value)}
@@ -199,7 +183,6 @@ export default function RegisterPage() {
                 </option>
               ))}
             </select>
-            <span className="mt-1 block text-xs leading-5 text-[#64736f]">This will be saved as your department.</span>
           </label>
 
           <button
@@ -222,6 +205,10 @@ export default function RegisterPage() {
           Already have an account?{" "}
           <a href="/login" className="font-bold text-[#0b6b61]">
             Login here
+          </a>
+          <span className="mx-2 text-[#a3afaa]">/</span>
+          <a href={oppositeRegisterHref} className="font-bold text-[#0b6b61]">
+            {oppositeRegisterLabel}
           </a>
         </p>
       </section>

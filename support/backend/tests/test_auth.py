@@ -41,6 +41,27 @@ def test_login_refresh_and_current_user(client, create_user):
     assert refresh_response.json()["refresh_token"]
 
 
+def test_faculty_can_login_with_faculty_id(client, create_user):
+    user = create_user(
+        role="faculty",
+        email="faculty@example.com",
+        password="Password123",
+        faculty_id="FAC-CSE-104",
+    )
+
+    login_response = client.post(
+        "/auth/login",
+        json={
+            "email": "FAC-CSE-104",
+            "password": "Password123",
+        },
+    )
+
+    assert login_response.status_code == 200
+    assert login_response.json()["user"]["id"] == user.id
+    assert login_response.json()["user"]["role"] == "faculty"
+
+
 def test_refresh_token_cannot_access_protected_routes(client, create_user):
     create_user(
         email="student@example.com",

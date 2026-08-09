@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash, verify_password
@@ -15,6 +16,23 @@ DEFAULT_DEPARTMENT_NAMES = {
 
 def get_user_by_email(db: Session, email: str) -> User | None:
     return db.query(User).filter(User.email == email.lower()).first()
+
+
+def get_user_by_login_identifier(db: Session, identifier: str) -> User | None:
+    identifier = identifier.strip()
+    normalized_email = identifier.lower()
+
+    return (
+        db.query(User)
+        .filter(
+            or_(
+                User.email == normalized_email,
+                User.student_id == identifier,
+                User.faculty_id == identifier,
+            )
+        )
+        .first()
+    )
 
 
 def resolve_department_id(db: Session, payload: UserCreate) -> int | None:
@@ -67,7 +85,7 @@ def create_user(db: Session, payload: UserCreate) -> User:
 
 
 def authenticate_user(db: Session, email: str, password: str) -> User | None:
-    user = get_user_by_email(db, email)
+    user = get_user_by_login_identifier(db, email)
 
     if not user:
         return None

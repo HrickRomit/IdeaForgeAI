@@ -34,23 +34,15 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage.jsx";
 const audiences = [
   {
     icon: GraduationCap,
-    title: "Students",
-    copy: "Discover feasible ideas, refine proposal direction, and track submission progress from one workspace.",
-    actions: [
-      ["Search Projects", "/student"],
-      ["Submit Proposal", "/student"],
-      ["Track Status", "/student"],
-    ],
+    title: "Student",
+    copy: "Continue to login and open the student project portal.",
+    href: "/login?role=student",
   },
   {
     icon: UsersRound,
     title: "Faculty",
-    copy: "Review proposals with similarity context, archive evidence, and clear decision support.",
-    actions: [
-      ["Review Queue", "/faculty"],
-      ["Analytics", "/faculty#analytics"],
-      ["Feedback", "/faculty"],
-    ],
+    copy: "Continue to login and open the faculty review portal.",
+    href: "/login?role=faculty",
   },
 ];
 
@@ -153,7 +145,36 @@ const actionGroups = [
   },
 ];
 
+function getProfileHref() {
+  const role = localStorage.getItem("ideaforge_user_role");
+
+  if (role === "faculty") {
+    return "/faculty";
+  }
+
+  if (role === "admin") {
+    return "/admin";
+  }
+
+  return "/student";
+}
+
+function handleLogout() {
+  localStorage.removeItem("ideaforge_access_token");
+  localStorage.removeItem("ideaforge_refresh_token");
+  localStorage.removeItem("ideaforge_user_role");
+  localStorage.removeItem("ideaforge_user_name");
+  localStorage.removeItem("ideaforge_user_email");
+  localStorage.removeItem("ideaforge_student_id");
+  localStorage.removeItem("ideaforge_department_code");
+  localStorage.removeItem("ideaforge_department_id");
+
+  window.location.assign("/");
+}
+
 function App() {
+  const isLoggedIn = Boolean(localStorage.getItem("ideaforge_access_token"));
+
     if (window.location.pathname.startsWith("/admin")) {
     const isAdmin =
       localStorage.getItem("ideaforge_user_role") === "admin" &&
@@ -165,8 +186,12 @@ function App() {
     return <LoginPage />;
   }
 
+  if (window.location.pathname.startsWith("/faculty/register")) {
+    return <RegisterPage accountType="faculty" />;
+  }
+
   if (window.location.pathname.startsWith("/register")) {
-    return <RegisterPage />;
+    return <RegisterPage accountType="student" />;
   }
 
   if (window.location.pathname.startsWith("/student/search")) {
@@ -217,20 +242,40 @@ function App() {
             </a>
           </nav>
           <div className="flex items-center gap-2">
-            <a
-              href="/login"
-              className="hidden h-10 items-center gap-2 rounded-md border border-white/20 bg-white/8 px-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/16 sm:inline-flex"
-            >
-              <LogIn className="size-4" aria-hidden="true" />
-              Login
-            </a>
-            <a
-              href="/register"
-              className="inline-flex h-10 items-center gap-2 rounded-md bg-white px-4 text-sm font-semibold text-[#12312e] shadow-sm transition hover:bg-[#d7f7ed]"
-            >
-              Register
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </a>
+            {isLoggedIn ? (
+              <>
+                <a
+                  href={getProfileHref()}
+                  className="hidden h-10 items-center gap-2 rounded-md border border-white/20 bg-white/8 px-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/16 sm:inline-flex"
+                >
+                  My Profile
+                </a>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="inline-flex h-10 items-center gap-2 rounded-md bg-white px-4 text-sm font-semibold text-[#12312e] shadow-sm transition hover:bg-[#d7f7ed]"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <a
+                  href="/login"
+                  className="hidden h-10 items-center gap-2 rounded-md border border-white/20 bg-white/8 px-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/16 sm:inline-flex"
+                >
+                  <LogIn className="size-4" aria-hidden="true" />
+                  Login
+                </a>
+                <a
+                  href="/register"
+                  className="inline-flex h-10 items-center gap-2 rounded-md bg-white px-4 text-sm font-semibold text-[#12312e] shadow-sm transition hover:bg-[#d7f7ed]"
+                >
+                  Register
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </a>
+              </>
+            )}
           </div>
         </header>
 
@@ -310,34 +355,25 @@ function App() {
           <div className="max-w-2xl">
             <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#74ead7]">Portal Access</p>
             <h2 className="mt-3 text-3xl font-bold tracking-normal sm:text-4xl">
-              Separate portals, shared project intelligence.
+              I am a
             </h2>
           </div>
 
           <div className="mt-10 grid gap-4 lg:grid-cols-2">
-            {audiences.map(({ icon: Icon, title, copy }) => (
-              <article key={title} className="rounded-md border border-white/12 bg-white/7 p-6">
+            {audiences.map(({ icon: Icon, title, copy, href }) => (
+              <a
+                key={title}
+                href={href}
+                className="group rounded-md border border-white/12 bg-white/7 p-6 transition hover:border-[#15c7a8] hover:bg-white/12"
+              >
                 <div className="flex items-center gap-3">
-                  <span className="grid size-11 place-items-center rounded-md bg-[#15c7a8] text-[#071817]">
+                  <span className="grid size-11 place-items-center rounded-md bg-[#15c7a8] text-[#071817] transition group-hover:bg-[#74ead7]">
                     <Icon className="size-5" aria-hidden="true" />
                   </span>
-                  <h3 className="text-xl font-bold">{title}</h3>
+                  <h3 className="text-2xl font-bold">{title}</h3>
                 </div>
                 <p className="mt-5 text-sm leading-6 text-white/72">{copy}</p>
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {audiences
-                    .find((audience) => audience.title === title)
-                    .actions.map(([label, href]) => (
-                      <a
-                        key={label}
-                        href={href}
-                        className="inline-flex h-9 items-center rounded-md border border-white/14 bg-white/8 px-3 text-xs font-bold text-white/88 transition hover:bg-white/16"
-                      >
-                        {label}
-                      </a>
-                    ))}
-                </div>
-              </article>
+              </a>
             ))}
           </div>
         </div>

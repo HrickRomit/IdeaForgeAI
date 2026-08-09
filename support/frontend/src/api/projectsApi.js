@@ -7,7 +7,7 @@ export async function searchArchivedProjects({ query, filters = {}, topK = 6 }) 
       top_k: topK,
       department: filters.department || undefined,
       year: filters.year || undefined,
-      difficulty: filters.difficulty || undefined,
+      semester: filters.semester || undefined,
     },
   });
 
