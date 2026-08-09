@@ -221,7 +221,113 @@ function FacultyOverview({ facultyInfo, proposals, pendingCount, averageSimilari
   );
 }
 
-function ProjectOverview({ proposals, onReviewProject }) {
+function ReviewOutcome({ proposal }) {
+  const hasOutcome = proposal.status !== "Pending" && proposal.status !== "Draft";
+  const hasRemarks = Boolean(proposal.facultyComment?.trim());
+
+  return (
+    <article className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">Faculty Review Record</p>
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64736f]">Decision</p>
+          <p className="mt-1 text-lg font-bold" style={{ color: statusStyles[proposal.status].color }}>
+            {statusStyles[proposal.status].ink}
+          </p>
+        </div>
+        {proposal.notifications?.[0] && (
+          <p className="rounded-md bg-[#f6f8f7] px-3 py-2 text-sm font-semibold text-[#394842]">
+            {proposal.notifications[0]}
+          </p>
+        )}
+      </div>
+
+      {hasRemarks ? (
+        <div className="mt-4 rounded-md border border-[#d9e1dc] bg-[#f6f8f7] p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#64736f]">Saved Remarks</p>
+          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#394842]">{proposal.facultyComment}</p>
+        </div>
+      ) : (
+        <p className="mt-4 rounded-md border border-[#d9e1dc] bg-[#f6f8f7] p-4 text-sm text-[#64736f]">
+          {hasOutcome ? "No faculty remarks were recorded for this decision." : "No faculty decision or remarks have been recorded yet."}
+        </p>
+      )}
+    </article>
+  );
+}
+
+function ProjectDetail({ proposal, onBack }) {
+  return (
+    <section className="space-y-6">
+      <button
+        type="button"
+        onClick={onBack}
+        className="inline-flex h-10 items-center gap-2 rounded-md border border-[#cfdad5] bg-white px-4 text-sm font-bold text-[#17201d] transition hover:border-[#15c7a8] hover:bg-[#f2fffb]"
+      >
+        <ArrowLeft className="size-4" aria-hidden="true" />
+        Back to Projects
+      </button>
+
+      <article className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">{proposal.id}</p>
+            <h3 className="mt-2 text-3xl font-bold tracking-normal">{proposal.title}</h3>
+            <p className="mt-2 text-sm text-[#64736f]">
+              {proposal.student} / {proposal.dept} / {proposal.date}
+            </p>
+          </div>
+          <div
+            className="inline-flex items-center gap-2 rounded-md border px-4 py-3 text-sm font-bold uppercase tracking-[0.08em]"
+            style={{
+              borderColor: statusStyles[proposal.status].color,
+              backgroundColor: statusStyles[proposal.status].bg,
+              color: statusStyles[proposal.status].color,
+            }}
+          >
+            <Stamp className="size-4" aria-hidden="true" />
+            {statusStyles[proposal.status].ink}
+          </div>
+        </div>
+
+        <div className="mt-5 rounded-md border border-[#d9e1dc] bg-[#f6f8f7] p-4">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0b6b61]">
+            <BookOpenCheck className="size-4" aria-hidden="true" />
+            Summary
+          </p>
+          <p className="mt-3 whitespace-pre-line text-base leading-7 text-[#394842]">{proposal.summary}</p>
+        </div>
+
+        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+          {[
+            ["Problem Statement", proposal.problemStatement],
+            ["Objectives", proposal.objectives],
+            ["Methodology", proposal.methodology],
+            ["Technology Stack", proposal.technologyStack],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-md border border-[#d9e1dc] bg-white p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#64736f]">{label}</p>
+              <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#394842]">
+                {value || `${label} was not provided.`}
+              </p>
+            </div>
+          ))}
+        </div>
+      </article>
+
+      <SimilarityDetailView proposal={proposal} />
+      <ReviewOutcome proposal={proposal} />
+    </section>
+  );
+}
+
+function ProjectOverview({ proposals, selectedProjectId, onOpenProject, onCloseProject }) {
+  const selectedProject = proposals.find((proposal) => proposal.id === selectedProjectId);
+
+  if (selectedProject) {
+    return <ProjectDetail proposal={selectedProject} onBack={onCloseProject} />;
+  }
+
   const statusOrder = ["Pending", "Approved", "Rejected", "Changes"];
   const visibleStatuses = statusOrder.filter((status) => proposals.some((proposal) => proposal.status === status));
 
@@ -240,7 +346,12 @@ function ProjectOverview({ proposals, onReviewProject }) {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {proposals.map((proposal) => (
-          <article key={proposal.id} className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
+          <button
+            key={proposal.id}
+            type="button"
+            onClick={() => onOpenProject(proposal.id)}
+            className="rounded-md border border-[#d9e1dc] bg-white p-5 text-left shadow-sm transition hover:border-[#15c7a8] hover:bg-[#f2fffb]"
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">{proposal.id}</p>
@@ -274,17 +385,11 @@ function ProjectOverview({ proposals, onReviewProject }) {
 
             <p className="mt-4 line-clamp-2 text-sm leading-6 text-[#394842]">{proposal.summary}</p>
 
-            {proposal.status === "Pending" && (
-              <button
-                type="button"
-                onClick={() => onReviewProject(proposal.id)}
-                className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-[#15c7a8] px-4 text-sm font-bold text-[#071817] transition hover:bg-[#74ead7]"
-              >
-                Open Review
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </button>
-            )}
-          </article>
+            <span className="mt-4 inline-flex h-10 items-center gap-2 rounded-md border border-[#cfdad5] px-4 text-sm font-bold text-[#17201d]">
+              Open Project
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </span>
+          </button>
         ))}
       </div>
     </section>
@@ -298,6 +403,7 @@ export default function FacultyPortalPage() {
   const [query, setQuery] = useState("");
   const [toast, setToast] = useState("");
   const [activeView, setActiveView] = useState("overview");
+  const [selectedProjectId, setSelectedProjectId] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -408,15 +514,12 @@ export default function FacultyPortalPage() {
     setToast(`${statusStyles[nextStatus].ink} stamped on ${selected.id}. Student notification saved.`);
   };
 
-  const openReviewQueue = (proposalId) => {
-    setSelectedId(proposalId);
-    setQuery("");
-    setActiveView("queue");
-  };
-
   const handleNavigate = (view, proposalId) => {
     if (proposalId) {
       setSelectedId(proposalId);
+    }
+    if (view !== "projects") {
+      setSelectedProjectId("");
     }
     setQuery("");
     setActiveView(view);
@@ -509,7 +612,12 @@ export default function FacultyPortalPage() {
             )}
 
             {activeView === "projects" && (
-              <ProjectOverview proposals={assignedProposals} onReviewProject={openReviewQueue} />
+              <ProjectOverview
+                proposals={assignedProposals}
+                selectedProjectId={selectedProjectId}
+                onOpenProject={setSelectedProjectId}
+                onCloseProject={() => setSelectedProjectId("")}
+              />
             )}
 
             {activeView === "queue" && (
