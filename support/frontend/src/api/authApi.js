@@ -20,3 +20,7 @@ export function refreshAccessToken(refreshToken) {
 export function getCurrentUser() {
   return axiosClient.get("/auth/me");
 }
+
+export function changePassword(payload) {
+  return axiosClient.post("/auth/change-password", payload);
+}

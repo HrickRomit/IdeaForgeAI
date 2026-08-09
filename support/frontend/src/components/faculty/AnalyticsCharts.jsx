@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -16,6 +16,8 @@ import {
 import { statusStyles } from "./facultyMockData";
 
 export default function AnalyticsCharts({ proposals }) {
+  const [hoveredStatus, setHoveredStatus] = useState("");
+
   const analytics = useMemo(() => {
     const total = proposals.length || 1;
     const approved = proposals.filter((proposal) => proposal.status === "Approved").length;
@@ -86,16 +88,55 @@ export default function AnalyticsCharts({ proposals }) {
 
         <div className="h-72 rounded-md border border-[#d9e1dc] bg-[#fbfdfc] p-4">
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#64736f]">Status Breakdown</p>
-          <ResponsiveContainer width="100%" height="88%">
-            <PieChart>
-              <Pie data={analytics.byStatus} dataKey="value" nameKey="name" innerRadius={48} outerRadius={82} label>
-                {analytics.byStatus.map((entry) => (
-                  <Cell key={entry.name} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="mt-2 grid h-[88%] grid-cols-[1fr_116px] items-center gap-3">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={analytics.byStatus}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={42}
+                  outerRadius={70}
+                  label
+                  onMouseEnter={(_, index) => setHoveredStatus(analytics.byStatus[index]?.name || "")}
+                  onMouseLeave={() => setHoveredStatus("")}
+                >
+                  {analytics.byStatus.map((entry) => (
+                    <Cell
+                      key={entry.name}
+                      fill={entry.color}
+                      opacity={hoveredStatus && hoveredStatus !== entry.name ? 0.38 : 1}
+                      stroke={hoveredStatus === entry.name ? "#17201d" : "#fbfdfc"}
+                      strokeWidth={hoveredStatus === entry.name ? 2 : 1}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="space-y-2">
+              {analytics.byStatus.map((status) => (
+                <div
+                  key={status.name}
+                  onMouseEnter={() => setHoveredStatus(status.name)}
+                  onMouseLeave={() => setHoveredStatus("")}
+                  className={`flex items-center justify-between gap-2 rounded-md px-2 py-1 text-xs font-semibold text-[#394842] transition ${
+                    hoveredStatus === status.name ? "bg-white shadow-sm ring-1 ring-[#d9e1dc]" : ""
+                  }`}
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span
+                      className="size-3 shrink-0 rounded-sm"
+                      style={{ backgroundColor: status.color }}
+                      aria-hidden="true"
+                    />
+                    <span className="truncate">{statusStyles[status.name].ink}</span>
+                  </span>
+                  <span className="font-bold text-[#17201d]">{status.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="h-72 rounded-md border border-[#d9e1dc] bg-[#fbfdfc] p-4">

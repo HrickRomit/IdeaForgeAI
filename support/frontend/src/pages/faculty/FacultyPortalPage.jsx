@@ -5,14 +5,18 @@ import {
   Bell,
   BookOpenCheck,
   ClipboardList,
+  Edit3,
   FileSearch,
+  KeyRound,
   LayoutDashboard,
   PieChart as PieChartIcon,
+  Save,
   Stamp,
   UserCircle,
   X,
 } from "lucide-react";
 import AnalyticsCharts from "../../components/faculty/AnalyticsCharts";
+import ChatbotWidget from "../../components/common/ChatbotWidget";
 import ProposalReviewPanel from "../../components/faculty/ProposalReviewPanel";
 import ReviewQueue from "../../components/faculty/ReviewQueue";
 import SimilarityDetailView from "../../components/faculty/SimilarityDetailView";
@@ -22,6 +26,7 @@ import {
   getFacultyProposals,
   reviewFacultyProposal,
 } from "../../api/facultyApi";
+import { changePassword } from "../../api/authApi";
 
 const apiStatusToViewStatus = {
   draft: "Draft",
@@ -73,32 +78,74 @@ function mapApiProposal(proposal, facultyId) {
   };
 }
 
-function FacultyOverview({ facultyInfo, proposals, pendingCount, averageSimilarity, onNavigate }) {
+function FacultyOverview({ facultyInfo, proposals, pendingCount, averageSimilarity, onNavigate, onUpdateProfile }) {
   const [showProfile, setShowProfile] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileDraft, setProfileDraft] = useState({
+    email: facultyInfo.email || "",
+    username: facultyInfo.username || "",
+    department: facultyInfo.department || "",
+  });
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    current_password: "",
+    new_password: "",
+    confirm_password: "",
+  });
+  const [passwordStatus, setPasswordStatus] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const approvedCount = proposals.filter((proposal) => proposal.status === "Approved").length;
   const rejectedCount = proposals.filter((proposal) => proposal.status === "Rejected").length;
   const latestPending = proposals.find((proposal) => proposal.status === "Pending");
+  const username = facultyInfo.username || facultyInfo.email?.split("@")[0] || facultyInfo.id;
 
-  const actions = [
-    {
-      icon: FileSearch,
-      title: "View Projects",
-      copy: "See every assigned project grouped by review status.",
-      view: "projects",
-    },
-    {
-      icon: ClipboardList,
-      title: "Open Review Queue",
-      copy: "Review pending projects and send decisions to students.",
-      view: "queue",
-    },
-    {
-      icon: PieChartIcon,
-      title: "Check Analytics",
-      copy: "Track approval rate, rejection rate, departments, and submission trends.",
-      view: "analytics",
-    },
-  ];
+  useEffect(() => {
+    setProfileDraft({
+      email: facultyInfo.email || "",
+      username: facultyInfo.username || "",
+      department: facultyInfo.department || "",
+    });
+  }, [facultyInfo]);
+
+  const saveProfile = () => {
+    onUpdateProfile({
+      email: profileDraft.email.trim(),
+      username: profileDraft.username.trim(),
+      department: profileDraft.department.trim(),
+    });
+    setIsEditingProfile(false);
+  };
+
+  const handlePasswordChange = (field, value) => {
+    setPasswordForm((current) => ({ ...current, [field]: value }));
+    setPasswordStatus("");
+  };
+
+  const submitPasswordChange = async (event) => {
+    event.preventDefault();
+
+    if (passwordForm.new_password !== passwordForm.confirm_password) {
+      setPasswordStatus("New password and confirm password do not match.");
+      return;
+    }
+
+    setIsChangingPassword(true);
+    setPasswordStatus("");
+
+    try {
+      await changePassword(passwordForm);
+      setPasswordForm({
+        current_password: "",
+        new_password: "",
+        confirm_password: "",
+      });
+      setPasswordStatus("Password changed successfully.");
+    } catch (error) {
+      setPasswordStatus(error.response?.data?.detail || "Could not change password.");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   return (
     <section className="space-y-6">
@@ -150,26 +197,110 @@ function FacultyOverview({ facultyInfo, proposals, pendingCount, averageSimilari
 
       {showProfile && (
         <article className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="grid size-11 place-items-center rounded-md bg-[#e5f8f4] text-[#0b6b61]">
-              <UserCircle className="size-5" aria-hidden="true" />
-            </span>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-center gap-3">
+              <span className="grid size-11 place-items-center rounded-md bg-[#e5f8f4] text-[#0b6b61]">
+                <UserCircle className="size-5" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">Faculty Profile</p>
+                <h3 className="mt-1 text-xl font-bold text-[#17201d]">{facultyInfo.name}</h3>
+              </div>
+            </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">Faculty Profile</p>
-              <h3 className="mt-1 text-xl font-bold text-[#17201d]">{facultyInfo.name}</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  if (isEditingProfile) {
+                    saveProfile();
+                    return;
+                  }
+                  setIsEditingProfile(true);
+                }}
+                className="inline-flex h-10 items-center gap-2 rounded-md bg-[#15c7a8] px-4 text-sm font-bold text-[#071817] transition hover:bg-[#74ead7]"
+              >
+                {isEditingProfile ? <Save className="size-4" aria-hidden="true" /> : <Edit3 className="size-4" aria-hidden="true" />}
+                {isEditingProfile ? "Save Profile" : "Edit Profile"}
+              </button>
             </div>
           </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               ["Faculty ID", facultyInfo.id],
-              ["Department", facultyInfo.department],
-              ["Assigned Projects", proposals.length],
+              ["Email", isEditingProfile ? profileDraft.email : facultyInfo.email || "Email not set", "email"],
+              ["Username", isEditingProfile ? profileDraft.username : username, "username"],
+              ["Department", isEditingProfile ? profileDraft.department : facultyInfo.department || "Department not set", "department"],
             ].map(([label, value]) => (
               <div key={label} className="rounded-md bg-[#f6f8f7] px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64736f]">{label}</p>
-                <p className="mt-1 text-sm font-bold text-[#17201d]">{value}</p>
+                {isEditingProfile && label !== "Faculty ID" ? (
+                  <input
+                    value={value}
+                    onChange={(event) =>
+                      setProfileDraft((current) => ({
+                        ...current,
+                        [label.toLowerCase()]: event.target.value,
+                      }))
+                    }
+                    className="mt-2 h-10 w-full rounded-md border border-[#cfdad5] bg-white px-3 text-sm font-bold text-[#17201d] outline-none"
+                  />
+                ) : (
+                  <p className="mt-1 break-words text-sm font-bold text-[#17201d]">{value}</p>
+                )}
               </div>
             ))}
+          </div>
+
+          <div className="mt-5 border-t border-[#e4ebe8] pt-5">
+            <button
+              type="button"
+              onClick={() => setShowPasswordSection((current) => !current)}
+              className="inline-flex h-10 items-center gap-2 rounded-md border border-[#cfdad5] bg-white px-4 text-sm font-bold text-[#17201d] transition hover:border-[#15c7a8] hover:bg-[#f2fffb]"
+            >
+              <KeyRound className="size-4" aria-hidden="true" />
+              Change Password
+            </button>
+
+            {showPasswordSection && (
+              <form onSubmit={submitPasswordChange} className="mt-4 rounded-md border border-[#d9e1dc] bg-[#fbfdfc] p-4">
+                <div className="grid gap-3 lg:grid-cols-3">
+                  {[
+                    ["Current Password", "current_password", "current-password"],
+                    ["New Password", "new_password", "new-password"],
+                    ["Confirm Password", "confirm_password", "new-password"],
+                  ].map(([label, field, autoComplete]) => (
+                    <label key={field} className="block">
+                      <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#64736f]">{label}</span>
+                      <input
+                        type="password"
+                        value={passwordForm[field]}
+                        onChange={(event) => handlePasswordChange(field, event.target.value)}
+                        autoComplete={autoComplete}
+                        required
+                        minLength={field === "current_password" ? 1 : 8}
+                        className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] bg-white px-3 text-sm outline-none transition focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
+                      />
+                    </label>
+                  ))}
+                </div>
+
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  {passwordStatus && (
+                    <p className={`text-sm font-semibold ${passwordStatus.includes("successfully") ? "text-[#12805c]" : "text-[#b42318]"}`}>
+                      {passwordStatus}
+                    </p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={isChangingPassword}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#15c7a8] px-4 text-sm font-bold text-[#071817] transition hover:bg-[#74ead7] disabled:cursor-not-allowed disabled:opacity-60 sm:ml-auto"
+                  >
+                    {isChangingPassword ? "Changing..." : "Update Password"}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </article>
       )}
@@ -185,23 +316,6 @@ function FacultyOverview({ facultyInfo, proposals, pendingCount, averageSimilari
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64736f]">{label}</p>
             <p className="mt-1 text-2xl font-bold text-[#0b6b61]">{value}</p>
           </div>
-        ))}
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-3">
-        {actions.map(({ icon: Icon, title, copy, view }) => (
-          <button
-            key={title}
-            type="button"
-            onClick={() => onNavigate(view)}
-            className="group rounded-md border border-[#d9e1dc] bg-white p-5 text-left shadow-sm transition hover:border-[#15c7a8] hover:bg-[#f2fffb]"
-          >
-            <span className="grid size-11 place-items-center rounded-md bg-[#e5f8f4] text-[#0b6b61] transition group-hover:bg-[#15c7a8] group-hover:text-[#071817]">
-              <Icon className="size-5" aria-hidden="true" />
-            </span>
-            <span className="mt-5 block text-lg font-bold text-[#17201d]">{title}</span>
-            <span className="mt-2 block text-sm leading-6 text-[#52625d]">{copy}</span>
-          </button>
         ))}
       </div>
 
@@ -418,7 +532,9 @@ export default function FacultyPortalPage() {
         const liveFaculty = {
           id: profile.faculty_id || `FAC-${profile.id}`,
           name: profile.full_name || "Faculty",
-          department: profile.department_code || "Unassigned",
+          email: profile.email || "",
+          username: profile.email?.split("@")[0] || profile.faculty_id || `faculty-${profile.id}`,
+          department: profile.department_code || profile.department_name || "Unassigned",
         };
         const liveProposals = (proposalsResponse.data || []).map((proposal) =>
           mapApiProposal(proposal, liveFaculty.id),
@@ -608,6 +724,12 @@ export default function FacultyPortalPage() {
                 pendingCount={pendingCount}
                 averageSimilarity={averageSimilarity}
                 onNavigate={handleNavigate}
+                onUpdateProfile={(updates) =>
+                  setFacultyInfo((current) => ({
+                    ...current,
+                    ...updates,
+                  }))
+                }
               />
             )}
 
@@ -705,6 +827,7 @@ export default function FacultyPortalPage() {
           </div>
         </section>
       </div>
+      <ChatbotWidget />
     </main>
   );
 }

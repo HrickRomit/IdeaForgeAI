@@ -1,6 +1,8 @@
 export const facultyMember = {
   id: "FAC-CSE-104",
   name: "Dr. Farhana Islam",
+  email: "farhana.islam@ideaforge.edu",
+  username: "farhana.islam",
   department: "CSE",
 };
 
