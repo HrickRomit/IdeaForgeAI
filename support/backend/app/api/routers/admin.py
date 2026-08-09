@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_database, require_fixed_admin
+from app.api.deps import get_database, require_fixed_admin, require_role
 from app.core.security import get_password_hash
 from app.models.archived_project import ArchivedProject
 from app.models.department import Department
@@ -74,11 +74,6 @@ def _get_department_or_404(db: Session, department_id: int) -> Department:
 
     return department
 
-    if payload.role == "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Creating additional admin accounts is not allowed.",
-        )
 
 def _validate_department_id(db: Session, department_id: int | None) -> None:
     if department_id is not None:
@@ -189,6 +184,12 @@ def create_user(
     payload: UserCreate,
     db: Session = Depends(get_database),
 ) -> User:
+    if payload.role == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Creating additional admin accounts is not allowed.",
+        )
+
     _validate_department_id(db, payload.department_id)
 
     _ensure_unique_user_fields(
@@ -241,6 +242,18 @@ def update_user(
 ) -> User:
     user = _get_user_or_404(db, user_id)
     updates = payload.model_dump(exclude_unset=True)
+
+    if user.email == FIXED_ADMIN_EMAIL:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The fixed administrator account cannot be modified.",
+        )
+
+    if updates.get("role") == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Promoting a user to admin is not allowed.",
+        )
 
     if not updates:
         raise HTTPException(
@@ -655,17 +668,6 @@ def update_archived_project(
         )
 
     updates = payload.model_dump(exclude_unset=True)
-    if user.email == FIXED_ADMIN_EMAIL:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="The fixed administrator account cannot be modified.",
-        )
-
-    if updates.get("role") == "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Promoting a user to admin is not allowed.",
-        )
 
     if not updates:
         raise HTTPException(

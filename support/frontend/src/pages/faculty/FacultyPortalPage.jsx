@@ -65,6 +65,10 @@ function mapApiProposal(proposal, facultyId) {
     summary:
       proposal.abstract ||
       `${proposal.title} is assigned to this faculty account for review.`,
+    problemStatement: proposal.problem_statement || "No problem statement provided.",
+    objectives: proposal.objectives || "No objectives provided.",
+    methodology: proposal.methodology || "No methodology provided.",
+    technologyStack: proposal.technology_stack || "No technology stack provided.",
     matches: [],
   };
 }
@@ -551,11 +555,30 @@ export default function FacultyPortalPage() {
                       <div className="mt-5 rounded-md border border-[#d9e1dc] bg-[#f6f8f7] p-4">
                         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0b6b61]">
                           <BookOpenCheck className="size-4" aria-hidden="true" />
-                          AI Summary Annotation
+                          Abstract & AI Summary
                         </p>
-                        <p className="mt-3 text-base leading-7 text-[#394842]">
+                        <p className="mt-3 whitespace-pre-line text-base leading-7 text-[#394842]">
                           {selected.summary}
                         </p>
+                      </div>
+
+                      <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                        <div className="rounded-md border border-[#d9e1dc] bg-white p-4">
+                          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#64736f]">Problem Statement</p>
+                          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#394842]">{selected.problemStatement}</p>
+                        </div>
+                        <div className="rounded-md border border-[#d9e1dc] bg-white p-4">
+                          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#64736f]">Objectives</p>
+                          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#394842]">{selected.objectives}</p>
+                        </div>
+                        <div className="rounded-md border border-[#d9e1dc] bg-white p-4">
+                          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#64736f]">Methodology</p>
+                          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#394842]">{selected.methodology}</p>
+                        </div>
+                        <div className="rounded-md border border-[#d9e1dc] bg-white p-4">
+                          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#64736f]">Technology Stack</p>
+                          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#394842]">{selected.technologyStack}</p>
+                        </div>
                       </div>
                     </article>
 

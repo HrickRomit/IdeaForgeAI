@@ -79,7 +79,6 @@ axiosClient.interceptors.response.use(
       if (!window.location.pathname.startsWith(destination)) {
         window.location.assign(destination);
       }
-      }
 
       return Promise.reject(refreshError);
     } finally {

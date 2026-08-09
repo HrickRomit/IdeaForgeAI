@@ -34,10 +34,10 @@ def register_user(
     payload: UserCreate,
     db: Session = Depends(get_database),
 ) -> User:
-    if payload.role != "student":
+    if payload.role not in {"student", "faculty"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Public registration is only available for student accounts.",
+            detail="Public registration is only available for student and faculty accounts.",
         )
 
     return create_user(db, payload)

@@ -25,6 +25,11 @@ class FacultyProposalListItem(BaseModel):
     department_code: str | None
     submitted_at: datetime | None
     similarity_score: float | None
+    abstract: str
+    problem_statement: str | None
+    objectives: str | None
+    methodology: str | None
+    technology_stack: str | None
 
 
 class SimilarityMatchRead(BaseModel):
@@ -46,11 +51,6 @@ class ReviewHistoryRead(BaseModel):
 
 
 class FacultyProposalDetailRead(FacultyProposalListItem):
-    abstract: str
-    problem_statement: str | None
-    objectives: str | None
-    methodology: str | None
-    technology_stack: str | None
     document_path: str | None
     student_id: int
     supervisor_id: int | None

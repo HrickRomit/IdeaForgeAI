@@ -47,6 +47,11 @@ def _proposal_list_item(
         department_code=department_code,
         submitted_at=proposal.submitted_at,
         similarity_score=similarity_score,
+        abstract=proposal.abstract,
+        problem_statement=proposal.problem_statement,
+        objectives=proposal.objectives,
+        methodology=proposal.methodology,
+        technology_stack=proposal.technology_stack,
     )
 
 
@@ -206,11 +211,6 @@ def get_assigned_proposal(
             department_code=proposal.department.code if proposal.department else None,
             similarity_score=highest_similarity,
         ).model_dump(),
-        abstract=proposal.abstract,
-        problem_statement=proposal.problem_statement,
-        objectives=proposal.objectives,
-        methodology=proposal.methodology,
-        technology_stack=proposal.technology_stack,
         document_path=proposal.document_path,
         student_id=proposal.student_id,
         supervisor_id=proposal.supervisor_id,

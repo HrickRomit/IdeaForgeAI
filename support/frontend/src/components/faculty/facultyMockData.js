@@ -26,6 +26,10 @@ export const initialProposals = [
     notifications: [],
     summary:
       "Strong applied systems proposal with measurable energy goals. Novelty depends on using adaptive schedules rather than a conventional dashboard-only IoT implementation.",
+    problemStatement: "Current campus energy systems run on fixed schedules, wasting significant power during unoccupied hours.",
+    objectives: "1. Develop an IoT sensor network.\n2. Create an adaptive schedule algorithm.\n3. Reduce energy waste by 15%.",
+    methodology: "We will deploy ESP32-based sensors in 3 classrooms to collect occupancy data for a month, then train a model to predict usage.",
+    technologyStack: "Hardware: ESP32, PIR sensors.\nSoftware: Python, FastAPI, React, SQLite.",
     matches: [
       {
         project: "IoT Based Energy Monitoring",

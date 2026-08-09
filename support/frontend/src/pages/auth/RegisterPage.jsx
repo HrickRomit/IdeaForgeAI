@@ -62,8 +62,8 @@ export default function RegisterPage() {
       email: form.email.trim(),
       password: form.password,
       role: form.role,
-      student_id: form.student_id.trim() || null,
-      faculty_id: null,
+      student_id: form.role === 'student' ? form.student_id.trim() || null : null,
+      faculty_id: form.role === 'faculty' ? form.student_id.trim() || null : null,
       department_code: form.department_code,
       department_id: null,
       research_interests: null,
@@ -167,21 +167,22 @@ export default function RegisterPage() {
             >
               <option value="student">Student</option>
               <option value="faculty">Faculty</option>
-              <option value="admin">Admin</option>
             </select>
-            <span className="mt-1 block text-xs leading-5 text-[#64736f]">Choose student for normal student portal accounts.</span>
+            <span className="mt-1 block text-xs leading-5 text-[#64736f]">Choose your role in the portal.</span>
           </label>
 
           <label className="block">
-            <span className="text-sm font-semibold">Student ID</span>
+            <span className="text-sm font-semibold">{form.role === 'faculty' ? 'Faculty ID' : 'Student ID'}</span>
             <input
               value={form.student_id}
               onChange={(event) => handleChange("student_id", event.target.value)}
               className="mt-2 h-11 w-full rounded-md border border-[#cfdad5] px-3 text-sm outline-none focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
-              placeholder="CSE-2026-001"
+              placeholder={form.role === 'faculty' ? "FAC-CSE-104" : "CSE-2026-001"}
               required
             />
-            <span className="mt-1 block text-xs leading-5 text-[#64736f]">This will appear in your student navbar.</span>
+            <span className="mt-1 block text-xs leading-5 text-[#64736f]">
+              {form.role === 'faculty' ? 'This will appear in your faculty profile.' : 'This will appear in your student navbar.'}
+            </span>
           </label>
 
           <label className="block">

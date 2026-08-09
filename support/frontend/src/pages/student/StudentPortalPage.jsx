@@ -80,6 +80,9 @@ export default function StudentPortalPage() {
       "A student-facing assistant that helps generate, refine, and validate final year project ideas using previous archived projects.",
     problem:
       "Students often struggle to find unique and feasible project ideas because previous project records are hard to search manually.",
+    objectives: "",
+    methodology: "",
+    technologyStack: "",
     facultyInitial: "",
   });
 
@@ -153,10 +156,13 @@ export default function StudentPortalPage() {
       proposal.title,
       proposal.abstract,
       proposal.problem,
+      proposal.objectives,
+      proposal.methodology,
+      proposal.technologyStack,
       proposal.facultyInitial,
     ].filter((value) => value.trim()).length;
 
-    return Math.round((filled / 4) * 100);
+    return Math.round((filled / 7) * 100);
   }, [proposal]);
 
   const handleProposalChange = (field, value) => {
@@ -179,6 +185,9 @@ export default function StudentPortalPage() {
       title: proposal.title.trim(),
       abstract: proposal.abstract.trim(),
       problem_statement: proposal.problem.trim() || null,
+      objectives: proposal.objectives.trim() || null,
+      methodology: proposal.methodology.trim() || null,
+      technology_stack: proposal.technologyStack.trim() || null,
       faculty_initial: proposal.facultyInitial.trim() || null,
     };
 
@@ -216,6 +225,9 @@ export default function StudentPortalPage() {
       title: proposal.title.trim(),
       abstract: proposal.abstract.trim(),
       problem_statement: proposal.problem.trim() || null,
+      objectives: proposal.objectives.trim() || null,
+      methodology: proposal.methodology.trim() || null,
+      technology_stack: proposal.technologyStack.trim() || null,
       faculty_initial: proposal.facultyInitial.trim(),
     };
 
@@ -506,6 +518,36 @@ export default function StudentPortalPage() {
                   value={proposal.problem}
                   onChange={(event) => handleProposalChange("problem", event.target.value)}
                   rows={4}
+                  className={`${inputClass} resize-none py-4 leading-6`}
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-semibold text-[#26332f]">Objectives</span>
+                <textarea
+                  value={proposal.objectives}
+                  onChange={(event) => handleProposalChange("objectives", event.target.value)}
+                  rows={4}
+                  className={`${inputClass} resize-none py-4 leading-6`}
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-semibold text-[#26332f]">Methodology</span>
+                <textarea
+                  value={proposal.methodology}
+                  onChange={(event) => handleProposalChange("methodology", event.target.value)}
+                  rows={4}
+                  className={`${inputClass} resize-none py-4 leading-6`}
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-semibold text-[#26332f]">Technology Stack</span>
+                <textarea
+                  value={proposal.technologyStack}
+                  onChange={(event) => handleProposalChange("technologyStack", event.target.value)}
+                  rows={3}
                   className={`${inputClass} resize-none py-4 leading-6`}
                 />
               </label>
