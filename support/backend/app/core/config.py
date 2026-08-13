@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     upload_directory: str = "uploads"
     max_upload_size_mb: int = 10
 
-    backend_cors_origins: list[str] = Field(
+    backend_cors_origins: str | list[str] = Field(
         default_factory=lambda: [
             "http://localhost:5173",
             "http://127.0.0.1:5173",
