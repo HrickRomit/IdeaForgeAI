@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { sendChatMessage } from "../../api/chatApi";
+import ChatMarkdownRenderer from "../../components/common/ChatMarkdownRenderer.jsx";
 
 const starterPrompts = [
   "Suggest three unique final year project ideas using AI and web technologies.",
@@ -164,33 +165,43 @@ export default function ChatbotPage() {
             </div>
           </div>
 
-          <div className="flex-1 space-y-4 overflow-y-auto p-4">
+          <div className="flex-1 space-y-4 overflow-y-auto p-4 bg-[#f9fbfa]">
             {messages.map((message) => {
               const isUser = message.role === "user";
 
               return (
-                <div key={message.id} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[85%] rounded-md px-4 py-3 text-sm leading-6 ${
-                      isUser ? "bg-[#15c7a8] font-semibold text-[#071817]" : "bg-[#f1f5f3] text-[#394842]"
-                    }`}
-                  >
-                    {message.content}
-                    {message.sources?.length > 0 ? (
-                      <p className="mt-3 text-xs font-bold uppercase tracking-[0.08em] text-[#0b6b61]">
-                        {message.sources.length} archive source{message.sources.length === 1 ? "" : "s"} used
-                      </p>
-                    ) : null}
-                  </div>
+                <div key={message.id} className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
+                  {isUser ? (
+                    <div className="max-w-[80%] rounded-2xl bg-[#17201d] px-4 py-3 text-sm text-white shadow-sm">
+                      {message.content}
+                    </div>
+                  ) : (
+                    <div className="max-w-[90%] sm:max-w-[85%] rounded-2xl border border-[#e4ebe8] bg-white p-4 shadow-sm">
+                      <div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-[#0b6b61]">
+                        <span className="grid size-6 place-items-center rounded-lg bg-[#e5f8f4]">
+                          <Bot className="size-3.5 text-[#0b6b61]" />
+                        </span>
+                        IdeaForge AI
+                      </div>
+                      <ChatMarkdownRenderer content={message.content} sources={message.sources} />
+                    </div>
+                  )}
                 </div>
               );
             })}
 
             {isSending ? (
-              <div className="flex justify-start">
-                <div className="inline-flex items-center gap-2 rounded-md bg-[#f1f5f3] px-4 py-3 text-sm font-semibold text-[#52625d]">
-                  <Loader2 className="size-4 animate-spin text-[#0b6b61]" aria-hidden="true" />
-                  Thinking through the archive...
+              <div className="flex justify-start mb-4">
+                <div className="flex items-center gap-2.5 rounded-2xl border border-[#e4ebe8] bg-white px-4 py-3 text-xs font-semibold text-[#52625d] shadow-sm">
+                  <span className="grid size-6 place-items-center rounded-lg bg-[#e5f8f4]">
+                    <Loader2 className="size-3.5 animate-spin text-[#0b6b61]" />
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span>IdeaForge AI is analyzing archived projects...</span>
+                    <span className="flex items-center gap-1">
+                      <span className="size-1.5 rounded-full bg-[#15c7a8] animate-ping" />
+                    </span>
+                  </div>
                 </div>
               </div>
             ) : null}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -17,6 +17,8 @@ import {
   Wrench,
 } from "lucide-react";
 import { searchArchivedProjects } from "../../api/projectsApi";
+import { getArchivedProjects } from "../../api/adminApi";
+import ArchivedProjectDetailModal from "../../components/student/ArchivedProjectDetailModal.jsx";
 
 const archivedProjects = [
   {
@@ -45,7 +47,7 @@ const archivedProjects = [
   },
   {
     id: "project_0002",
-    title: "AI Project Archive Search",
+    title: "AI Project Archive Search & RAG Intelligence",
     summary:
       "A semantic archive search concept for helping students inspect previous capstone projects before finalizing a proposal.",
     abstract:
@@ -68,7 +70,7 @@ const archivedProjects = [
   },
   {
     id: "project_0003",
-    title: "Student Research Helper",
+    title: "Student Capstone Research Assistant",
     summary:
       "A guided assistant for refining student project ideas into problem statements, objectives, and feasible implementation plans.",
     abstract:
@@ -89,6 +91,121 @@ const archivedProjects = [
     ],
     gap: "Needs deeper grounding in institutional archive data to avoid generic recommendations.",
   },
+  {
+    id: "project_0004",
+    title: "Electronic Health Records (EHR) & Blockchain Prescription Verification",
+    summary:
+      "A decentralized medical record and smart contract verification system preventing prescription fraud and unauthorized medical tampering.",
+    abstract:
+      "Patient data is securely stored and medical prescriptions are tokenized on a blockchain network to ensure authenticity and immutability.",
+    department: "Computer Science and Engineering",
+    year: "2024-2025",
+    semester: "Fall",
+    difficulty: "Advanced",
+    difficultyScore: 9,
+    supervisor: "Dr. Tanvir Ahmed",
+    domain: "Blockchain & Cybersecurity",
+    technologies: ["Solidity", "TypeScript", "Next.js", "Hardhat", "IPFS"],
+    keywords: ["blockchain", "EHR", "smart contracts", "prescription verification", "security"],
+    outcomes: [
+      "Immutable prescription issuance and verification",
+      "Decentralized record storage using IPFS",
+      "Cryptographic audit trails for pharmacy workflows",
+    ],
+    gap: "Future scope includes zero-knowledge proof verification without exposing patient data.",
+  },
+  {
+    id: "project_0005",
+    title: "Intelligent Traffic Management & Automated Congestion Analytics",
+    summary:
+      "A computer vision system for real-time intersection Monitoring, traffic signal timing optimization, and vehicle count analytics.",
+    abstract:
+      "Processes CCTV camera streams using YOLO object detection to dynamically adjust traffic light durations based on lane congestion.",
+    department: "Electrical and Electronic Engineering",
+    year: "2025",
+    semester: "Spring",
+    difficulty: "Advanced",
+    difficultyScore: 8,
+    supervisor: "Prof. Mahmud Hasan",
+    domain: "Computer Vision & Smart Cities",
+    technologies: ["Python", "YOLOv8", "OpenCV", "PyTorch", "Raspberry Pi"],
+    keywords: ["traffic optimization", "computer vision", "YOLO", "smart traffic light", "congestion analytics"],
+    outcomes: [
+      "Real-time vehicle classification and counting",
+      "Dynamic adaptive green-light duration calculation",
+      "Emergency vehicle priority routing alert",
+    ],
+    gap: "Can be integrated with connected vehicle V2X communications for predictive corridor management.",
+  },
+  {
+    id: "project_0006",
+    title: "Decentralized Peer-to-Peer Renewable Energy Microgrid Trading",
+    summary:
+      "An IoT smart meter and micro-grid energy exchange system enabling residential solar owners to trade surplus power locally.",
+    abstract:
+      "Combines embedded power sensors with automated smart contract settlement to manage microgrid voltage stability and credit billing.",
+    department: "Electrical and Electronic Engineering",
+    year: "2026",
+    semester: "Spring",
+    difficulty: "Advanced",
+    difficultyScore: 8,
+    supervisor: "Dr. Suraia Parveen",
+    domain: "Renewable Energy & IoT",
+    technologies: ["ESP32", "MQTT", "Python", "Node.js", "InfluxDB"],
+    keywords: ["renewable energy", "smart grid", "P2P trading", "solar microgrid", "IoT meter"],
+    outcomes: [
+      "Real-time power generation & load consumption tracking",
+      "Automated P2P energy auction matching",
+      "Microgrid voltage regulation dashboard",
+    ],
+    gap: "Needs battery storage degradation modeling and automated load shedding mechanisms.",
+  },
+  {
+    id: "project_0007",
+    title: "Autonomous Drone-Based Structural Defect Detection",
+    summary:
+      "An aerial inspection system that captures bridge and building imagery to automatically classify concrete cracks and rebar corrosion.",
+    abstract:
+      "Combines drone flight telemetry with deep learning semantic segmentation models to generate automated structural health reports.",
+    department: "Civil and Environment Engineering",
+    year: "2025",
+    semester: "Fall",
+    difficulty: "Intermediate",
+    difficultyScore: 7,
+    supervisor: "Dr. Tariqul Islam",
+    domain: "Infrastructure & Inspection",
+    technologies: ["Python", "TensorFlow", "OpenCV", "QGIS", "Flask"],
+    keywords: ["drone inspection", "defect detection", "structural health", "concrete crack", "GIS"],
+    outcomes: [
+      "Automated crack width and depth estimation",
+      "3D building defect heatmap generation",
+      "Inspection PDF report generation",
+    ],
+    gap: "Can be extended with thermal imaging sensors to detect sub-surface voids.",
+  },
+  {
+    id: "project_0008",
+    title: "IoT Smart Water Quality & Pipeline Leakage Monitoring System",
+    summary:
+      "A wireless sensor network deployed across municipal water distribution pipes to detect turbidity, pH, contamination, and acoustic pressure leaks.",
+    abstract:
+      "Monitors real-time water purity metrics and uses differential pressure sensors to pinpoint pipe rupture locations within urban supply lines.",
+    department: "Civil and Environment Engineering",
+    year: "2024-2025",
+    semester: "Summer",
+    difficulty: "Intermediate",
+    difficultyScore: 6,
+    supervisor: "Engr. Rafiqul Alam",
+    domain: "Environmental Monitoring",
+    technologies: ["Arduino", "LoRaWAN", "Python", "ThingSpeak", "Grafana"],
+    keywords: ["water quality", "leak detection", "sensor network", "LoRaWAN", "environmental monitoring"],
+    outcomes: [
+      "Continuous pH, turbidity, and total dissolved solids tracking",
+      "Acoustic leak detection alerting",
+      "Geographic map view for maintenance crews",
+    ],
+    gap: "Future scope includes bio-sensor integration for detecting specific bacterial contamination.",
+  },
 ];
 
 const filterOptions = {
@@ -98,17 +215,17 @@ const filterOptions = {
     "Electrical and Electronic Engineering",
     "Civil and Environment Engineering",
     "Mechanical Engineering",
-    "Chemical Engineering",
   ],
-  year: ["All Years", "2026", "2025-2026", "2025"],
+  year: ["All Years", "2026", "2025-2026", "2025", "2024-2025"],
   difficulty: ["All Difficulties", "Intermediate", "Advanced"],
 };
 
 const popularQueries = [
-  "campus maintenance analytics",
-  "AI duplicate project detection",
-  "student proposal assistant",
-  "React FastAPI archive system",
+  "Blockchain",
+  "Smart Campus",
+  "Traffic Management",
+  "Drone",
+  "Water Quality",
 ];
 
 function normalize(value) {
@@ -125,9 +242,9 @@ function scoreProject(project, query) {
       project.department,
       project.domain,
       project.supervisor,
-      project.technologies.join(" "),
-      project.keywords.join(" "),
-      project.outcomes.join(" "),
+      ...(project.technologies || []),
+      ...(project.keywords || []),
+      ...(project.outcomes || []),
       project.gap,
     ].join(" "),
   );
@@ -172,64 +289,122 @@ function normalizeApiResults(results) {
 }
 
 export default function SearchPage() {
-  const [query, setQuery] = useState("campus maintenance analytics");
-  const [submittedQuery, setSubmittedQuery] = useState("campus maintenance analytics");
+  const [query, setQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const [filters, setFilters] = useState({
     department: "All Departments",
     year: "All Years",
     difficulty: "All Difficulties",
   });
+  const [dbArchiveProjects, setDbArchiveProjects] = useState([]);
   const [selectedId, setSelectedId] = useState(archivedProjects[0].id);
   const [apiResults, setApiResults] = useState([]);
   const [status, setStatus] = useState("local");
   const [error, setError] = useState("");
+  const [activeModalProject, setActiveModalProject] = useState(null);
+
+  useEffect(() => {
+    async function loadBackendArchives() {
+      try {
+        const response = await getArchivedProjects();
+        const data = response.data || [];
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((item) => ({
+            id: `archive_${item.id}`,
+            title: item.title,
+            summary: item.abstract,
+            abstract: item.abstract,
+            department: item.department_name || item.department?.name || "Computer Science and Engineering",
+            year: item.academic_year || "2025-2026",
+            semester: "Fall",
+            difficulty: "Intermediate",
+            difficultyScore: 7,
+            supervisor: item.supervisor_name || "Faculty Advisor",
+            domain: "Academic Systems",
+            technologies: Array.isArray(item.technology_stack)
+              ? item.technology_stack
+              : typeof item.technology_stack === "string"
+              ? item.technology_stack.split(",").map((s) => s.trim())
+              : ["Python", "FastAPI", "React"],
+            keywords: Array.isArray(item.keywords)
+              ? item.keywords
+              : typeof item.keywords === "string"
+              ? item.keywords.split(",").map((s) => s.trim())
+              : ["archive", "project"],
+            outcomes: [
+              "Role-based capstone tracking and evaluation",
+              "Automated record cataloging and indexing",
+              "Semantic search and proposal discovery",
+            ],
+            gap: "Future scope notes potential for domain-specific LLM fine-tuning, real-time collaboration, and predictive analytics.",
+          }));
+          setDbArchiveProjects(mapped);
+        }
+      } catch {
+        // Fall back gracefully to full sample catalog
+      }
+    }
+    loadBackendArchives();
+  }, []);
+
+  const allProjects = useMemo(() => {
+    const combined = [...dbArchiveProjects];
+    archivedProjects.forEach((proj) => {
+      if (!combined.some((item) => item.id === proj.id || item.title.toLowerCase() === proj.title.toLowerCase())) {
+        combined.push(proj);
+      }
+    });
+    return combined;
+  }, [dbArchiveProjects]);
 
   const localResults = useMemo(() => {
-    return archivedProjects
+    const q = submittedQuery.trim().toLowerCase();
+    return allProjects
       .filter((project) => filters.department === "All Departments" || project.department === filters.department)
       .filter((project) => filters.year === "All Years" || project.year === filters.year)
       .filter((project) => filters.difficulty === "All Difficulties" || project.difficulty === filters.difficulty)
-      .map((project) => ({
-        ...project,
-        match: scoreProject(project, submittedQuery),
-        source: "local",
-      }))
-      .sort((a, b) => b.match - a.match);
-  }, [filters, submittedQuery]);
+      .filter((project) => {
+        if (!q) return true; // Show ALL projects when search box is empty
+        // Search strictly in project title
+        return String(project.title || "").toLowerCase().includes(q);
+      });
+  }, [allProjects, filters, submittedQuery]);
 
   const results = apiResults.length > 0 ? apiResults : localResults;
   const selected = results.find((project) => project.id === selectedId) || results[0] || localResults[0];
 
   const handleSearch = async (event) => {
-    event.preventDefault();
+    if (event) event.preventDefault();
     const nextQuery = query.trim();
+    setSubmittedQuery(nextQuery);
+    setError("");
 
     if (!nextQuery) {
-      setError("Type a project theme, technology, problem domain, or research gap to search.");
+      setApiResults([]);
+      setStatus("local");
       return;
     }
 
-    setSubmittedQuery(nextQuery);
-    setError("");
     setStatus("loading");
 
     try {
-      const response = await searchArchivedProjects({ query: nextQuery, filters, topK: 6 });
+      const response = await searchArchivedProjects({ query: nextQuery, filters, topK: 10 });
       const normalized = normalizeApiResults(response?.results || response);
+      const titleFiltered = normalized.filter((item) =>
+        String(item.title || "").toLowerCase().includes(nextQuery.toLowerCase())
+      );
 
-      if (normalized.length > 0) {
-        setApiResults(normalized);
-        setSelectedId(normalized[0].id);
+      if (titleFiltered.length > 0) {
+        setApiResults(titleFiltered);
+        setSelectedId(titleFiltered[0].id);
         setStatus("api");
         return;
       }
 
       setApiResults([]);
-      setSelectedId(localResults[0]?.id || archivedProjects[0].id);
       setStatus("local");
     } catch {
       setApiResults([]);
-      setSelectedId(localResults[0]?.id || archivedProjects[0].id);
       setStatus("local");
     }
   };
@@ -276,8 +451,15 @@ export default function SearchPage() {
               <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#0b6b61]" />
               <input
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search by topic, technology, problem domain, or research gap"
+                onChange={(event) => {
+                  const val = event.target.value;
+                  setQuery(val);
+                  if (!val.trim()) {
+                    setSubmittedQuery("");
+                    setApiResults([]);
+                  }
+                }}
+                placeholder="Search by topic, technology, or leave empty to view full archive..."
                 className="h-14 w-full rounded-md border border-[#cfdad5] bg-[#fbfdfc] pl-12 pr-4 text-base outline-none transition focus:border-[#15c7a8] focus:ring-2 focus:ring-[#15c7a8]/20"
               />
             </label>
@@ -369,38 +551,49 @@ export default function SearchPage() {
 
             <div className="space-y-3">
               {results.map((project) => (
-                <button
+                <div
                   key={project.id}
-                  type="button"
-                  onClick={() => setSelectedId(project.id)}
-                  className={`w-full rounded-md border bg-white p-4 text-left shadow-sm transition ${
+                  onClick={() => {
+                    setSelectedId(project.id);
+                    setActiveModalProject(project);
+                  }}
+                  className={`group cursor-pointer rounded-xl border bg-white p-5 text-left shadow-sm transition hover:border-[#15c7a8] hover:shadow-md ${
                     selected?.id === project.id
                       ? "border-[#15c7a8] ring-2 ring-[#15c7a8]/20"
-                      : "border-[#d9e1dc] hover:border-[#15c7a8]"
+                      : "border-[#d9e1dc]"
                   }`}
                 >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="font-['IBM_Plex_Mono'] text-xs font-bold uppercase tracking-[0.08em] text-[#64736f]">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-['IBM_Plex_Mono'] text-xs font-bold uppercase tracking-[0.08em] text-[#0b6b61]">
                         {project.id} / {project.department}
                       </p>
-                      <h2 className="mt-2 text-xl font-bold tracking-normal text-[#17201d]">{project.title}</h2>
-                      <p className="mt-3 text-sm leading-6 text-[#52625d]">{project.summary}</p>
+                      <h2 className="mt-2 text-xl font-bold tracking-normal text-[#17201d] transition group-hover:text-[#0b6b61]">
+                        {project.title}
+                      </h2>
+                      <p className="mt-2.5 text-sm leading-6 text-[#52625d]">{project.summary}</p>
                     </div>
-                    <div className="shrink-0 rounded-md bg-[#e5f8f4] px-3 py-2 text-center">
-                      <p className="text-2xl font-bold text-[#0b6b61]">{project.match}%</p>
-                      <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#52625d]">match</p>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedId(project.id);
+                        setActiveModalProject(project);
+                      }}
+                      className="shrink-0 rounded-xl bg-[#e5f8f4] px-3.5 py-2 text-xs font-bold text-[#0b6b61] transition hover:bg-[#15c7a8] hover:text-[#071817]"
+                    >
+                      View Details & Ask AI →
+                    </button>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[#edf2ef] pt-3">
                     {[project.year, project.difficulty, project.domain, ...project.keywords.slice(0, 3)].map((item) => (
                       <span key={item} className="rounded-md bg-[#f1f5f3] px-2.5 py-1 text-xs font-semibold text-[#52625d]">
                         {item}
                       </span>
                     ))}
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </div>
@@ -448,10 +641,25 @@ export default function SearchPage() {
                 <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#9b6b1a]">Research gap</p>
                 <p className="mt-3 text-sm leading-6 text-[#5c4c2f]">{selected.gap}</p>
               </article>
+
+              <button
+                type="button"
+                onClick={() => setActiveModalProject(selected)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#15c7a8] py-3.5 text-sm font-bold text-[#071817] shadow-sm transition hover:bg-[#74ead7]"
+              >
+                <Bot className="size-4" /> Open Interactive Modal & Ask AI
+              </button>
             </aside>
           ) : null}
         </section>
       </div>
+
+      {activeModalProject && (
+        <ArchivedProjectDetailModal
+          project={activeModalProject}
+          onClose={() => setActiveModalProject(null)}
+        />
+      )}
     </main>
   );
 }

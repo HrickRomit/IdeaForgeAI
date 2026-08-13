@@ -26,6 +26,7 @@ import FacultyPortalPage from "./pages/faculty/FacultyPortalPage.jsx";
 import ChatbotPage from "./pages/student/ChatbotPage.jsx";
 import SearchPage from "./pages/student/SearchPage.jsx";
 import SimilarityReportPage from "./pages/student/SimilarityReportPage.jsx";
+import ArchivedProjectDetailPage from "./pages/student/ArchivedProjectDetailPage.jsx";
 import StudentPortalPage from "./pages/student/StudentPortalPage.jsx";
 import AboutPage from "./pages/AboutPage.jsx";
 import AdminLoginPage from "./pages/admin/AdminLoginPage.jsx";
@@ -202,6 +203,9 @@ function App() {
   }
   if (window.location.pathname.startsWith("/student/similarity-report")) {
     return <SimilarityReportPage />;
+  }
+  if (window.location.pathname.startsWith("/student/archived-project")) {
+    return <ArchivedProjectDetailPage />;
   }
 
   if (window.location.pathname.startsWith("/about")) {

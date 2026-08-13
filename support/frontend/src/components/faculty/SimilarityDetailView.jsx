@@ -35,6 +35,10 @@ export default function SimilarityDetailView({ proposal }) {
   const matches = proposal.matches || [];
   const activeMatch = matches[expandedMatch] || matches[0];
 
+  const getMatchPercent = (m) => (typeof m.percent === "number" ? m.percent : Math.round((m.similarity_score || 0) * 100));
+  const getMatchSource = (m) => m.source || m.explanation || (m.matched_sections ? JSON.stringify(m.matched_sections) : "No source excerpt available.");
+  const getMatchSubmitted = (m) => m.submitted || proposal.summary || proposal.problemStatement || "Submitted proposal excerpt.";
+
   return (
     <article id="similarity" className="rounded-md border border-[#d9e1dc] bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-4">
@@ -48,27 +52,30 @@ export default function SimilarityDetailView({ proposal }) {
       </div>
 
       <div className="mt-4 space-y-3">
-        {matches.map((match, index) => (
-          <button
-            key={match.project}
-            type="button"
-            onClick={() => setExpandedMatch(index)}
-            className={`w-full rounded-md border bg-[#fbfdfc] p-3 text-left transition hover:border-[#15c7a8] ${
-              expandedMatch === index ? "border-[#15c7a8] ring-2 ring-[#15c7a8]/15" : "border-[#d9e1dc]"
-            }`}
-          >
-            <span className="flex items-center justify-between gap-3">
-              <span className="font-semibold text-[#17201d]">{match.project}</span>
-              <span className="text-sm font-bold text-[#0b6b61]">{match.percent}%</span>
-            </span>
-            <span className="mt-2 block h-2 overflow-hidden rounded-full bg-[#e7eeeb]">
-              <span
-                className="block h-full"
-                style={{ width: `${match.percent}%`, backgroundColor: match.percent > 40 ? "#b42318" : "#15c7a8" }}
-              />
-            </span>
-          </button>
-        ))}
+        {matches.map((match, index) => {
+          const matchPercent = getMatchPercent(match);
+          return (
+            <button
+              key={`${match.project}-${index}`}
+              type="button"
+              onClick={() => setExpandedMatch(index)}
+              className={`w-full rounded-md border bg-[#fbfdfc] p-3 text-left transition hover:border-[#15c7a8] ${
+                expandedMatch === index ? "border-[#15c7a8] ring-2 ring-[#15c7a8]/15" : "border-[#d9e1dc]"
+              }`}
+            >
+              <span className="flex items-center justify-between gap-3">
+                <span className="font-semibold text-[#17201d]">{match.project}</span>
+                <span className="text-sm font-bold text-[#0b6b61]">{matchPercent}%</span>
+              </span>
+              <span className="mt-2 block h-2 overflow-hidden rounded-full bg-[#e7eeeb]">
+                <span
+                  className="block h-full"
+                  style={{ width: `${matchPercent}%`, backgroundColor: matchPercent > 40 ? "#b42318" : "#15c7a8" }}
+                />
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {activeMatch ? (
@@ -77,7 +84,7 @@ export default function SimilarityDetailView({ proposal }) {
             <div key={label} className="rounded-md border border-[#d9e1dc] bg-[#f6f8f7] p-4">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#64736f]">{label}</p>
               <p className="mt-3 min-h-24 text-sm leading-7 text-[#394842]">
-                {highlightOverlap(index === 0 ? activeMatch.source : activeMatch.submitted)}
+                {highlightOverlap(index === 0 ? getMatchSource(activeMatch) : getMatchSubmitted(activeMatch))}
               </p>
             </div>
           ))}

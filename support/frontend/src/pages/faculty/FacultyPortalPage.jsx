@@ -23,6 +23,7 @@ import SimilarityDetailView from "../../components/faculty/SimilarityDetailView"
 import { facultyMember, getAssignedProposals, initialProposals, statusStyles } from "../../components/faculty/facultyMockData";
 import {
   getFacultyProfile,
+  getFacultyProposal,
   getFacultyProposals,
   reviewFacultyProposal,
 } from "../../api/facultyApi";
@@ -75,6 +76,61 @@ function mapApiProposal(proposal, facultyId) {
     methodology: proposal.methodology || "No methodology provided.",
     technologyStack: proposal.technology_stack || "No technology stack provided.",
     matches: [],
+  };
+}
+
+function mapApiProposalDetail(proposalDetail, facultyId) {
+  const similarity = proposalDetail.similarity_score
+    ? Math.round(proposalDetail.similarity_score * 100)
+    : 0;
+
+  const reviews = proposalDetail.reviews || [];
+  const latestReview = reviews[reviews.length - 1];
+  const facultyComment = latestReview?.comments || "";
+
+  const matches = (proposalDetail.similarity_matches || []).map((match) => ({
+    project: match.project || "Archived Project",
+    percent: Math.round((match.similarity_score || 0) * 100),
+    explanation: match.explanation || "",
+    source:
+      match.explanation ||
+      (match.matched_sections ? JSON.stringify(match.matched_sections) : "No section preview"),
+    submitted:
+      proposalDetail.abstract || proposalDetail.problem_statement || "Submitted proposal text",
+  }));
+
+  const notifications = reviews.map((r) => {
+    const decLabel =
+      r.decision === "approved"
+        ? "Approved"
+        : r.decision === "changes_requested"
+          ? "Revision requested"
+          : "Rejected";
+    return `Faculty Review (${decLabel}): ${r.comments}`;
+  });
+
+  return {
+    id: `PROP-${proposalDetail.id}`,
+    rawId: proposalDetail.id,
+    assignedFacultyId: facultyId,
+    title: proposalDetail.title,
+    student: proposalDetail.student_name || "Student",
+    dept: proposalDetail.department_code || "Unassigned",
+    date: formatProposalDate(proposalDetail.submitted_at),
+    status: apiStatusToViewStatus[proposalDetail.status] || "Draft",
+    similarity,
+    facultyComment,
+    reviews,
+    notifications,
+    summary:
+      proposalDetail.abstract ||
+      `${proposalDetail.title} is assigned to this faculty account for review.`,
+    problemStatement: proposalDetail.problem_statement || "No problem statement provided.",
+    objectives: proposalDetail.objectives || "No objectives provided.",
+    methodology: proposalDetail.methodology || "No methodology provided.",
+    technologyStack: proposalDetail.technology_stack || "No technology stack provided.",
+    documentPath: proposalDetail.document_path || null,
+    matches,
   };
 }
 
@@ -370,7 +426,9 @@ function ReviewOutcome({ proposal }) {
   );
 }
 
-function ProjectDetail({ proposal, onBack }) {
+function ProjectDetail({ proposal, onBack, onDecision }) {
+  const isActionable = proposal.status === "Pending" || proposal.status === "Changes";
+
   return (
     <section className="space-y-6">
       <button
@@ -430,16 +488,20 @@ function ProjectDetail({ proposal, onBack }) {
       </article>
 
       <SimilarityDetailView proposal={proposal} />
-      <ReviewOutcome proposal={proposal} />
+      {isActionable ? (
+        <ProposalReviewPanel proposal={proposal} onDecision={onDecision} />
+      ) : (
+        <ReviewOutcome proposal={proposal} />
+      )}
     </section>
   );
 }
 
-function ProjectOverview({ proposals, selectedProjectId, onOpenProject, onCloseProject }) {
+function ProjectOverview({ proposals, selectedProjectId, onOpenProject, onCloseProject, onDecision }) {
   const selectedProject = proposals.find((proposal) => proposal.id === selectedProjectId);
 
   if (selectedProject) {
-    return <ProjectDetail proposal={selectedProject} onBack={onCloseProject} />;
+    return <ProjectDetail proposal={selectedProject} onBack={onCloseProject} onDecision={onDecision} />;
   }
 
   const statusOrder = ["Pending", "Approved", "Rejected", "Changes"];
@@ -518,6 +580,7 @@ export default function FacultyPortalPage() {
   const [toast, setToast] = useState("");
   const [activeView, setActiveView] = useState("overview");
   const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [isLiveBackend, setIsLiveBackend] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -528,6 +591,7 @@ export default function FacultyPortalPage() {
           return;
         }
 
+        setIsLiveBackend(true);
         const profile = profileResponse.data;
         const liveFaculty = {
           id: profile.faculty_id || `FAC-${profile.id}`,
@@ -542,13 +606,21 @@ export default function FacultyPortalPage() {
 
         setFacultyInfo(liveFaculty);
         setProposals(liveProposals);
-        setSelectedId(liveProposals[0]?.id || "");
+        if (liveProposals.length > 0) {
+          setSelectedId(liveProposals[0].id);
+        }
       })
-      .catch(() => {
+      .catch((error) => {
         if (isMounted) {
+          setIsLiveBackend(false);
           setFacultyInfo(facultyMember);
           setProposals(initialProposals);
           setSelectedId("CSE-26-014");
+          const msg =
+            error.response?.status === 401
+              ? "Not logged in as faculty. Operating in demo mode."
+              : "Backend unavailable. Operating in demo mode.";
+          setToast(msg);
         }
       });
 
@@ -563,17 +635,43 @@ export default function FacultyPortalPage() {
   );
 
   const pendingProposals = useMemo(
-    () => assignedProposals.filter((proposal) => proposal.status === "Pending"),
+    () =>
+      assignedProposals.filter(
+        (proposal) => proposal.status === "Pending" || proposal.status === "Changes",
+      ),
     [assignedProposals],
   );
 
   const selected =
     pendingProposals.find((proposal) => proposal.id === selectedId) ||
-    pendingProposals[0];
+    pendingProposals[0] ||
+    assignedProposals[0];
 
-  const pendingCount = assignedProposals.filter((proposal) => proposal.status === "Pending").length;
+  useEffect(() => {
+    const activeViewId = selectedProjectId || selectedId;
+    const targetProposal = proposals.find((p) => p.id === activeViewId);
+
+    if (isLiveBackend && targetProposal?.rawId) {
+      getFacultyProposal(targetProposal.rawId)
+        .then((response) => {
+          const detailed = mapApiProposalDetail(response.data, facultyInfo.id);
+          setProposals((current) =>
+            current.map((p) => (p.rawId === detailed.rawId ? { ...p, ...detailed } : p)),
+          );
+        })
+        .catch((err) => {
+          console.error("Could not fetch full proposal detail:", err);
+        });
+    }
+  }, [selectedId, selectedProjectId, isLiveBackend, facultyInfo.id]);
+
+  const pendingCount = assignedProposals.filter(
+    (proposal) => proposal.status === "Pending" || proposal.status === "Changes",
+  ).length;
+
   const averageSimilarity = Math.round(
-    assignedProposals.reduce((sum, proposal) => sum + proposal.similarity, 0) / Math.max(assignedProposals.length, 1),
+    assignedProposals.reduce((sum, proposal) => sum + proposal.similarity, 0) /
+      Math.max(assignedProposals.length, 1),
   );
 
   const viewTitle = {
@@ -593,41 +691,59 @@ export default function FacultyPortalPage() {
       return;
     }
 
-    if (selected?.rawId && viewStatusToApiDecision[nextStatus]) {
+    const activeProposal =
+      (activeView === "projects" && selectedProjectId
+        ? proposals.find((p) => p.id === selectedProjectId)
+        : selected) || selected;
+
+    if (!activeProposal) {
+      return;
+    }
+
+    if (activeProposal.rawId && viewStatusToApiDecision[nextStatus]) {
       try {
-        await reviewFacultyProposal(selected.rawId, {
+        await reviewFacultyProposal(activeProposal.rawId, {
           decision: viewStatusToApiDecision[nextStatus],
-          comments: comment,
+          comments: comment.trim(),
         });
+
+        const detailRes = await getFacultyProposal(activeProposal.rawId);
+        const detailed = mapApiProposalDetail(detailRes.data, facultyInfo.id);
+
+        setProposals((current) =>
+          current.map((p) => (p.rawId === detailed.rawId ? { ...p, ...detailed } : p)),
+        );
+
+        setToast(`${statusStyles[nextStatus].ink} decision recorded on ${activeProposal.id}.`);
       } catch (error) {
         setToast(error.response?.data?.detail || "Could not send the review decision.");
         return;
       }
+    } else {
+      setProposals((current) =>
+        current.map((proposal) => {
+          if (proposal.id !== activeProposal.id) {
+            return proposal;
+          }
+
+          const notification =
+            nextStatus === "Approved"
+              ? `Approval sent to ${proposal.student}.`
+              : nextStatus === "Rejected"
+                ? `Rejection sent to ${proposal.student}.`
+                : `Revision request sent to ${proposal.student}.`;
+
+          return {
+            ...proposal,
+            status: nextStatus,
+            facultyComment: comment,
+            notifications: [notification, ...(proposal.notifications || [])],
+          };
+        }),
+      );
+
+      setToast(`${statusStyles[nextStatus].ink} decision recorded on ${activeProposal.id} (Demo mode).`);
     }
-
-    setProposals((current) =>
-      current.map((proposal) => {
-        if (proposal.id !== selected.id) {
-          return proposal;
-        }
-
-        const notification =
-          nextStatus === "Approved"
-            ? `Approval sent to ${proposal.student}.`
-            : nextStatus === "Rejected"
-              ? `Rejection sent to ${proposal.student}.`
-              : `Revision request sent to ${proposal.student}.`;
-
-        return {
-          ...proposal,
-          status: nextStatus,
-          facultyComment: comment,
-          notifications: [notification, ...(proposal.notifications || [])],
-        };
-      }),
-    );
-
-    setToast(`${statusStyles[nextStatus].ink} stamped on ${selected.id}. Student notification saved.`);
   };
 
   const handleNavigate = (view, proposalId) => {
@@ -640,6 +756,11 @@ export default function FacultyPortalPage() {
     setQuery("");
     setActiveView(view);
   };
+
+  const activeProposal =
+    (activeView === "projects" && selectedProjectId
+      ? proposals.find((p) => p.id === selectedProjectId)
+      : selected) || selected;
 
   return (
     <main className="min-h-screen bg-[#f6f8f7] text-[#17201d]">
@@ -659,6 +780,11 @@ export default function FacultyPortalPage() {
             <p className="mt-4 text-sm leading-6 text-white/72">
               {facultyInfo.name} / {facultyInfo.department} / {facultyInfo.id}
             </p>
+            {!isLiveBackend && (
+              <span className="mt-3 inline-block rounded-md bg-[#fff4cf] px-2 py-1 text-[11px] font-bold text-[#8a5d00]">
+                Demo Mode (Logged Out)
+              </span>
+            )}
           </div>
           <nav className="mt-10 space-y-2 text-sm font-semibold">
             {[
@@ -739,6 +865,7 @@ export default function FacultyPortalPage() {
                 selectedProjectId={selectedProjectId}
                 onOpenProject={setSelectedProjectId}
                 onCloseProject={() => setSelectedProjectId("")}
+                onDecision={handleDecision}
               />
             )}
 
@@ -827,7 +954,7 @@ export default function FacultyPortalPage() {
           </div>
         </section>
       </div>
-      <ChatbotWidget />
+      <ChatbotWidget proposal={activeProposal} />
     </main>
   );
 }

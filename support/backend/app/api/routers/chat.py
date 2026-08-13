@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_database
 from app.models.chat import ChatMessage, ChatSession
+from app.models.proposal import Proposal
+from app.models.similarity_report import SimilarityReport
 from app.models.user import User
 from app.schemas.chat import (
     ChatMessageRequest,
@@ -55,8 +57,9 @@ def send_chat_message(
     current_user: User = Depends(get_current_user),
 ) -> ChatMessageResponse:
     """
-    Saves the student's message, retrieves relevant archived projects,
-    asks the RAG assistant, then saves its answer and sources.
+    Saves the user's message, retrieves relevant archived projects,
+    asks the RAG assistant (incorporating optional proposal review context),
+    then saves its answer and sources.
 
     Send no session_id to create a new conversation.
     Send an existing session_id to continue that conversation.
@@ -97,12 +100,48 @@ def send_chat_message(
     )
     db.add(user_message)
 
+    proposal_info = None
+    if payload.proposal_id is not None:
+        proposal = db.scalar(select(Proposal).where(Proposal.id == payload.proposal_id))
+        if proposal is not None:
+            sim_report = db.scalar(
+                select(SimilarityReport)
+                .where(SimilarityReport.proposal_id == proposal.id)
+                .order_by(SimilarityReport.id.desc())
+            )
+            sim_score = (
+                round(sim_report.similarity_score * 100, 1)
+                if sim_report and sim_report.similarity_score is not None
+                else None
+            )
+            student_name = "Student"
+            if proposal.student is not None:
+                student_name = getattr(proposal.student, "full_name", getattr(proposal.student, "name", "Student"))
+
+            proposal_info = {
+                "id": proposal.id,
+                "title": proposal.title,
+                "student_name": student_name,
+                "department": proposal.department.code if proposal.department else "Unassigned",
+                "status": proposal.status,
+                "similarity_score": sim_score,
+                "abstract": proposal.abstract,
+                "problem_statement": proposal.problem_statement or "N/A",
+                "objectives": proposal.objectives or "N/A",
+                "methodology": proposal.methodology or "N/A",
+                "technology_stack": proposal.technology_stack or "N/A",
+                "similarity_notes": sim_report.explanation if sim_report else "N/A",
+            }
+
+    if proposal_info is None and payload.proposal_context is not None:
+        proposal_info = payload.proposal_context
+
     try:
         # This search is used to save the sources shown with the answer.
         search_results = search_projects(question, top_k=3)
 
-        # ask_chatbot performs the RAG search and asks Gemini for the answer.
-        answer = ask_chatbot(question)
+        # ask_chatbot performs RAG search & proposal context integration
+        answer = ask_chatbot(question, proposal_context=proposal_info)
     except Exception as error:
         db.rollback()
         raise HTTPException(

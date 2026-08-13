@@ -14,6 +14,14 @@ class ChatMessageRequest(BaseModel):
         default=None,
         description="Existing chat session ID. Omit this to start a new session.",
     )
+    proposal_id: int | None = Field(
+        default=None,
+        description="Optional proposal ID for faculty/student review context.",
+    )
+    proposal_context: dict[str, Any] | str | None = Field(
+        default=None,
+        description="Optional client-side proposal details (fallback or current active view context).",
+    )
 
 
 class ChatSource(BaseModel):

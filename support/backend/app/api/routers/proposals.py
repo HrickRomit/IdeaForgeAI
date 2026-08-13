@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.api.deps import get_database, require_role
 from app.models.proposal import Proposal
@@ -55,6 +55,13 @@ class ProposalPayload(BaseModel):
         return value
 
 
+class ReviewSummaryRead(BaseModel):
+    id: int
+    decision: str
+    comments: str | None = None
+    created_at: datetime
+
+
 class ProposalRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -69,8 +76,13 @@ class ProposalRead(BaseModel):
     status: str
     student_id: int
     supervisor_id: int | None = None
+    supervisor_name: str | None = None
     faculty_initial: str | None = None
     department_id: int | None = None
+    faculty_comment: str | None = None
+    submitted_at: datetime | None = None
+    created_at: datetime | None = None
+    reviews: list[ReviewSummaryRead] = Field(default_factory=list)
 
 
 def _resolve_supervisor_id(
@@ -114,6 +126,9 @@ def _resolve_supervisor_id(
 
 
 def _proposal_to_read(proposal: Proposal) -> ProposalRead:
+    reviews_list = sorted(proposal.reviews, key=lambda r: r.created_at) if proposal.reviews else []
+    latest_comment = reviews_list[-1].comments if reviews_list else None
+
     return ProposalRead(
         id=proposal.id,
         title=proposal.title,
@@ -126,12 +141,25 @@ def _proposal_to_read(proposal: Proposal) -> ProposalRead:
         status=proposal.status,
         student_id=proposal.student_id,
         supervisor_id=proposal.supervisor_id,
+        supervisor_name=proposal.supervisor.full_name if proposal.supervisor else None,
         faculty_initial=(
             proposal.supervisor.faculty_id
             if proposal.supervisor is not None
             else None
         ),
         department_id=proposal.department_id,
+        faculty_comment=latest_comment,
+        submitted_at=proposal.submitted_at,
+        created_at=proposal.created_at,
+        reviews=[
+            ReviewSummaryRead(
+                id=r.id,
+                decision=r.decision,
+                comments=r.comments,
+                created_at=r.created_at,
+            )
+            for r in reviews_list
+        ],
     )
 
 
@@ -313,6 +341,10 @@ def my_proposals(
 ) -> list[ProposalRead]:
     proposals = (
         db.query(Proposal)
+        .options(
+            joinedload(Proposal.supervisor),
+            selectinload(Proposal.reviews),
+        )
         .filter(Proposal.student_id == current_user.id)
         .order_by(Proposal.created_at.desc())
         .all()

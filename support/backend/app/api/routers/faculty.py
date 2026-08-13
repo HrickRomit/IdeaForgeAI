@@ -235,7 +235,6 @@ def review_proposal(
 ) -> ReviewResultRead:
     proposal = db.scalar(
         select(Proposal)
-        .options(joinedload(Proposal.student))
         .where(
             Proposal.id == proposal_id,
             Proposal.supervisor_id == current_user.id,
