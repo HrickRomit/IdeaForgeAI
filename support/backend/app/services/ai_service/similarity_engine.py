@@ -37,14 +37,28 @@ def check_proposal_similarity(
     query_vector = get_embedding(proposal_text)
 
     # 3. Retrieve ChromaDB vector collection
-    collection = get_archived_projects_collection()
+    try:
+        collection = get_archived_projects_collection()
+        count = collection.count()
+        if count == 0:
+            return {
+                "overall_similarity_score": 0.0,
+                "total_matches_found": 0,
+                "matches": [],
+            }
 
-    # 4. Perform vector similarity query
-    results = collection.query(
-        query_embeddings=[query_vector],
-        n_results=top_k,
-        include=["documents", "metadatas", "distances"],
-    )
+        # 4. Perform vector similarity query
+        results = collection.query(
+            query_embeddings=[query_vector],
+            n_results=min(top_k, count),
+            include=["documents", "metadatas", "distances"],
+        )
+    except Exception as e:
+        return {
+            "overall_similarity_score": 0.0,
+            "total_matches_found": 0,
+            "matches": [],
+        }
 
     matches: list[dict[str, Any]] = []
     highest_score = 0.0

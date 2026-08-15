@@ -13,15 +13,20 @@ def search_projects(query: str, top_k: int = 5) -> list[dict[str, Any]]:
     Takes a natural language search query, embeds it, and queries ChromaDB
     for the most semantically relevant archived projects.
     """
-    query_vector = get_embedding(query)
-    collection = get_archived_projects_collection()
+    try:
+        collection = get_archived_projects_collection()
+        count = collection.count()
+        if count == 0:
+            return []
 
-    # Perform the vector search
-    results = collection.query(
-        query_embeddings=[query_vector],
-        n_results=top_k,
-        include=["documents", "metadatas", "distances"]
-    )
+        # Perform the vector search
+        results = collection.query(
+            query_embeddings=[query_vector],
+            n_results=min(top_k, count),
+            include=["documents", "metadatas", "distances"]
+        )
+    except Exception:
+        return []
 
     formatted_results = []
     if not results or not results.get("ids") or len(results["ids"][0]) == 0:
