@@ -9,10 +9,12 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from app.api.deps import get_database, require_role
 from app.models.proposal import Proposal
 from app.models.user import User
+from app.services.ai_service.difficulty_engine import analyze_project_difficulty_and_duration
 from app.services.ai_service.similarity_engine import check_proposal_similarity
 from app.services.file_service import delete_stored_file, save_proposal_pdf
 
 router = APIRouter(prefix="/proposals", tags=["Student Proposals"])
+
 
 
 class ProposalSimilarityPayload(BaseModel):
@@ -373,3 +375,44 @@ def check_similarity(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="AI Similarity engine is temporarily unavailable.",
         ) from error
+
+
+class ProposalDifficultyPayload(BaseModel):
+    title: str = Field(min_length=2, max_length=255)
+    abstract: str = Field(min_length=5, max_length=10000)
+    problem_statement: str | None = Field(default=None, max_length=10000)
+    objectives: str | None = Field(default=None, max_length=10000)
+    methodology: str | None = Field(default=None, max_length=10000)
+    technology_stack: str | None = Field(default=None, max_length=5000)
+
+
+class ProposalDifficultyResponse(BaseModel):
+    difficulty_score: float
+    complexity_tier: str
+    estimated_total_hours: int
+    estimated_duration_days: int
+    daily_work_rate: str = "1 hour per day"
+    summary: str
+    challenges: list[str]
+    prerequisites: list[str]
+
+
+@router.post("/analyze-difficulty", response_model=ProposalDifficultyResponse)
+def analyze_difficulty(
+    payload: ProposalDifficultyPayload,
+    current_user: User = Depends(require_role("student")),
+) -> ProposalDifficultyResponse:
+    """
+    Analyzes project proposal difficulty score (out of 10) and estimates total duration in days
+    assuming the student works 1 hour per day.
+    """
+    result = analyze_project_difficulty_and_duration(
+        proposal_title=payload.title,
+        proposal_abstract=payload.abstract,
+        proposal_problem=payload.problem_statement,
+        tech_stack=payload.technology_stack,
+        objectives=payload.objectives,
+        methodology=payload.methodology,
+    )
+    return ProposalDifficultyResponse(**result)
+

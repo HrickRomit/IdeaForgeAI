@@ -24,8 +24,10 @@ import {
 } from "lucide-react";
 import { sendChatMessage } from "../../api/chatApi";
 import ChatMarkdownRenderer from "../../components/common/ChatMarkdownRenderer";
+import StudentNavbar from "../../components/student/StudentNavbar.jsx";
 
 const defaultArchivedProjects = {
+
   project_0001: {
     title: "Smart Campus Complaint and Maintenance Tracking System",
     abstract:
@@ -282,34 +284,26 @@ export default function ArchivedProjectDetailPage() {
 
   return (
     <main className="min-h-screen bg-[#f6f8f7] text-[#17201d]">
-      {/* Navigation */}
-      <nav className="bg-white/[0.92] shadow-[0_4px_18px_rgba(23,32,29,0.06)] px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mx-auto flex w-full max-w-7xl items-center gap-3">
-          <a
-            href="/"
-            className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e5f8f4] text-[#0b6b61] transition hover:bg-[#d7f7ed]"
-          >
-            <GraduationCap className="size-5" />
-          </a>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">
-              Student Portal
-            </p>
-            <h2 className="text-lg font-bold text-[#17201d]">Archived Project View</h2>
-          </div>
-        </div>
-      </nav>
+      <StudentNavbar activeTab="archive" />
 
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         {/* Top Header & Breadcrumb */}
         <header className="flex flex-col gap-4 pb-2">
-          <a
-            href="javascript:history.back()"
-            className="inline-flex items-center gap-2 w-fit text-sm font-semibold text-[#0b6b61] hover:underline"
+          <button
+            type="button"
+            onClick={() => {
+              if (window.history.length > 1) {
+                window.history.back();
+              } else {
+                window.location.assign("/student?tab=submit");
+              }
+            }}
+            className="inline-flex items-center gap-2 w-fit text-sm font-bold text-[#0b6b61] hover:underline"
           >
             <ArrowLeft className="size-4" />
-            Back to Comparison
-          </a>
+            Back to Comparison / Proposal
+          </button>
+
 
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-[#e5f8f4] px-3 py-1 text-xs font-semibold text-[#0b6b61]">

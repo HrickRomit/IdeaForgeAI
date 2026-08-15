@@ -19,8 +19,10 @@ import {
 import { searchArchivedProjects } from "../../api/projectsApi";
 import { getArchivedProjects } from "../../api/adminApi";
 import ArchivedProjectDetailModal from "../../components/student/ArchivedProjectDetailModal.jsx";
+import StudentNavbar from "../../components/student/StudentNavbar.jsx";
 
 const archivedProjects = [
+
   {
     id: "project_0001",
     title: "Smart Campus Complaint and Maintenance Tracking System",
@@ -419,6 +421,7 @@ export default function SearchPage() {
 
   return (
     <main className="min-h-screen bg-[#f5f7f4] text-[#18221f]">
+      <StudentNavbar activeTab="archive" />
       <div className="border-b border-[#d9e1dc] bg-white">
         <header className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -441,10 +444,11 @@ export default function SearchPage() {
               href="/student"
               className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-[#cfdad5] bg-white px-4 text-sm font-bold text-[#17201d] transition hover:border-[#15c7a8] hover:bg-[#f7fffc]"
             >
-              Student Portal
+              Student Dashboard
               <ArrowRight className="size-4" aria-hidden="true" />
             </a>
           </div>
+
 
           <form onSubmit={handleSearch} className="grid gap-3 lg:grid-cols-[1fr_auto]">
             <label className="relative block">

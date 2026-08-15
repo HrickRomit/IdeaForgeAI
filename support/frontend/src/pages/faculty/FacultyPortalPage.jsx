@@ -600,9 +600,10 @@ export default function FacultyPortalPage() {
           username: profile.email?.split("@")[0] || profile.faculty_id || `faculty-${profile.id}`,
           department: profile.department_code || profile.department_name || "Unassigned",
         };
-        const liveProposals = (proposalsResponse.data || []).map((proposal) =>
-          mapApiProposal(proposal, liveFaculty.id),
-        );
+        const liveProposals = (proposalsResponse.data || [])
+          .filter((proposal) => proposal.status !== "draft")
+          .map((proposal) => mapApiProposal(proposal, liveFaculty.id));
+
 
         setFacultyInfo(liveFaculty);
         setProposals(liveProposals);

@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { checkProposalSimilarity } from "../../api/proposalsApi";
+import StudentNavbar from "../../components/student/StudentNavbar.jsx";
 
 const panelClass = "rounded-2xl bg-white p-6 shadow-[0_6px_20px_rgba(23,32,29,0.08)]";
 const iconTileClass = "grid size-11 place-items-center rounded-2xl bg-[#e5f8f4] text-[#0b6b61]";
@@ -71,11 +72,9 @@ export default function SimilarityReportPage() {
     };
   }, [title, abstract, problem]);
 
-  // In SimilarityReportPage.jsx -> handleProjectClick
   const handleProjectClick = (match) => {
     try {
       sessionStorage.setItem("selected_archived_project", JSON.stringify(match));
-      // Save student's own proposal draft info!
       sessionStorage.setItem("student_proposal_draft", JSON.stringify({ title, abstract, problem }));
     } catch (e) {
       console.error(e);
@@ -86,49 +85,44 @@ export default function SimilarityReportPage() {
   };
 
   const getScoreColor = (score) => {
-    if (score < 0.35) return "text-[#0b6b61]"; // Green
-    if (score < 0.65) return "text-[#d97706]"; // Orange
-    return "text-[#dc2626]"; // Red
+    if (score < 0.35) return "text-[#0b6b61]";
+    if (score < 0.65) return "text-[#d97706]";
+    return "text-[#dc2626]";
   };
 
   const getBarColor = (score) => {
-    if (score < 0.35) return "bg-[#15c7a8]"; // Green
-    if (score < 0.65) return "bg-[#fbbf24]"; // Orange
-    return "bg-[#ef4444]"; // Red
+    if (score < 0.35) return "bg-[#15c7a8]";
+    if (score < 0.65) return "bg-[#fbbf24]";
+    return "bg-[#ef4444]";
   };
 
   const overallScorePercent = similarityData
     ? Math.round(similarityData.overall_similarity_score * 100)
     : 0;
 
+  const handleBackToDraft = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.assign("/student?tab=submit");
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#f6f8f7] text-[#17201d]">
-      <nav className="bg-white/[0.92] shadow-[0_4px_18px_rgba(23,32,29,0.06)] px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mx-auto flex w-full max-w-7xl items-center gap-3">
-          <a
-            href="/"
-            className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e5f8f4] text-[#0b6b61] transition hover:bg-[#d7f7ed]"
-          >
-            <GraduationCap className="size-5" />
-          </a>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">
-              Student Portal
-            </p>
-            <h2 className="text-lg font-bold text-[#17201d]">Similarity Report</h2>
-          </div>
-        </div>
-      </nav>
+      <StudentNavbar activeTab="submit" />
 
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <header className="flex flex-col gap-6 pb-2">
-          <a
-            href="/student"
-            className="inline-flex items-center gap-2 w-fit text-sm font-semibold text-[#0b6b61] hover:underline"
+          <button
+            type="button"
+            onClick={handleBackToDraft}
+            className="inline-flex items-center gap-2 w-fit text-sm font-bold text-[#0b6b61] hover:underline"
           >
             <ArrowLeft className="size-4" />
-            Back to Draft
-          </a>
+            Back to Proposal Draft Form
+          </button>
+
           <div>
             <h1 className="text-3xl font-bold tracking-normal sm:text-4xl">Compare with Past Projects</h1>
             <p className="mt-2 text-sm text-[#64736f]">

@@ -128,8 +128,11 @@ def list_assigned_proposals(
 
     if review_status is not None:
         statement = statement.where(Proposal.status == review_status)
+    else:
+        statement = statement.where(Proposal.status.in_(VISIBLE_STATUSES))
 
     rows = db.execute(statement).all()
+
 
     return [
         _proposal_list_item(
@@ -174,6 +177,7 @@ def get_assigned_proposal(
         .where(
             Proposal.id == proposal_id,
             Proposal.supervisor_id == current_user.id,
+            Proposal.status.in_(VISIBLE_STATUSES),
         )
     )
 
@@ -299,7 +303,10 @@ def get_faculty_analytics(
             joinedload(Proposal.department),
             selectinload(Proposal.similarity_reports),
         )
-        .where(Proposal.supervisor_id == current_user.id)
+        .where(
+            Proposal.supervisor_id == current_user.id,
+            Proposal.status.in_(VISIBLE_STATUSES),
+        )
     ).all()
 
     statuses = Counter(proposal.status for proposal in proposals)

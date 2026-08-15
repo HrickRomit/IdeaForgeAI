@@ -3,8 +3,10 @@ import {
   AlertCircle,
   AlertTriangle,
   ArrowLeft,
+  BarChart3,
   Bot,
   Building2,
+  Calendar,
   CheckCircle2,
   Clock,
   FileEdit,
@@ -25,21 +27,26 @@ import {
   UserCheck,
   UserCircle2,
   XCircle,
+  Zap,
 } from "lucide-react";
 
 import { getCurrentUser } from "../../api/authApi";
 import {
+  analyzeProposalDifficulty,
   createProposalDraft,
   getMyProposals,
   submitProposal,
   updateProposalDraft,
 } from "../../api/proposalsApi";
+
 import { searchArchivedProjects } from "../../api/projectsApi";
 import { sendChatMessage } from "../../api/chatApi";
 import ArchivedProjectDetailModal from "../../components/student/ArchivedProjectDetailModal.jsx";
 import ChatMarkdownRenderer from "../../components/common/ChatMarkdownRenderer.jsx";
+import StudentNavbar from "../../components/student/StudentNavbar.jsx";
 
 const sampleArchivedProjects = [
+
   {
     id: "project_0001",
     title: "Smart Campus Complaint and Maintenance Tracking System",
@@ -203,11 +210,22 @@ function getErrorMessage(error, fallbackMessage) {
   const detail = error.response.data?.detail;
 
   if (Array.isArray(detail)) {
-    return detail.map((item) => item.msg).join(" ");
+    return detail
+      .map((item) => {
+        const rawField = item.loc && item.loc.length > 0 ? item.loc[item.loc.length - 1] : "";
+        const fieldLabel = rawField
+          ? String(rawField)
+              .replace(/_/g, " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase())
+          : "";
+        return fieldLabel ? `${fieldLabel}: ${item.msg}` : item.msg;
+      })
+      .join(" | ");
   }
 
-  return detail || fallbackMessage;
+  return typeof detail === "string" ? detail : fallbackMessage;
 }
+
 
 function getStoredStudentProfile() {
   return {
@@ -222,7 +240,11 @@ function getStoredStudentProfile() {
 
 export default function StudentPortalPage() {
   const [studentProfile, setStudentProfile] = useState(getStoredStudentProfile);
-  const [activeTab, setActiveTab] = useState("dashboard"); // "dashboard" | "submit" | "archive"
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("tab") || "dashboard";
+  });
+
   const [myProposals, setMyProposals] = useState([]);
   const [isLoadingProposals, setIsLoadingProposals] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All");
@@ -241,6 +263,42 @@ export default function StudentPortalPage() {
   const [saveMessage, setSaveMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
+
+  const [difficultyData, setDifficultyData] = useState(null);
+  const [isAnalyzingDifficulty, setIsAnalyzingDifficulty] = useState(false);
+  const [difficultyError, setDifficultyError] = useState("");
+  const [showDifficultyDetails, setShowDifficultyDetails] = useState(false);
+
+  const handleAnalyzeDifficulty = async (customProposal = null) => {
+    const targetProposal = customProposal || proposal;
+
+    if (!targetProposal.title.trim() || !targetProposal.abstract.trim()) {
+      setDifficultyError("Add a title and abstract to analyze difficulty & duration.");
+      return;
+    }
+
+    setIsAnalyzingDifficulty(true);
+    setDifficultyError("");
+
+    try {
+      const response = await analyzeProposalDifficulty({
+        title: targetProposal.title.trim(),
+        abstract: targetProposal.abstract.trim(),
+        problem_statement: targetProposal.problem.trim() || null,
+        objectives: targetProposal.objectives.trim() || null,
+        methodology: targetProposal.methodology.trim() || null,
+        technology_stack: targetProposal.technologyStack.trim() || null,
+      });
+
+      setDifficultyData(response.data);
+      setShowDifficultyDetails(true);
+    } catch {
+      setDifficultyError("Could not calculate difficulty & duration. Make sure backend is running.");
+    } finally {
+      setIsAnalyzingDifficulty(false);
+    }
+  };
+
 
   const [archiveQuery, setArchiveQuery] = useState("");
   const [archiveResults, setArchiveResults] = useState([]);
@@ -320,6 +378,19 @@ export default function StudentPortalPage() {
     return Math.round((filled / 7) * 100);
   }, [proposal]);
 
+  useEffect(() => {
+    if (
+      completeness === 100 &&
+      !difficultyData &&
+      !isAnalyzingDifficulty &&
+      proposal.title.trim() &&
+      proposal.abstract.trim()
+    ) {
+      handleAnalyzeDifficulty();
+    }
+  }, [completeness]);
+
+
   const stats = useMemo(() => {
     const total = myProposals.length;
     const pending = myProposals.filter((p) => p.status === "submitted").length;
@@ -342,10 +413,22 @@ export default function StudentPortalPage() {
   }, [myProposals, statusFilter]);
 
   const handleProposalChange = (field, value) => {
-    setProposal((current) => ({
-      ...current,
-      [field]: value,
-    }));
+    setProposal((current) => {
+      const nextProposal = {
+        ...current,
+        [field]: value,
+      };
+
+      // Reset difficulty analysis ONLY when starting a new form from 0% done
+      const isFormEmpty = Object.values(nextProposal).every((val) => !val.trim());
+      if (isFormEmpty) {
+        setDifficultyData(null);
+        setDifficultyError("");
+        setShowDifficultyDetails(false);
+      }
+
+      return nextProposal;
+    });
   };
 
   const handleLoadProposalToForm = (p) => {
@@ -359,13 +442,32 @@ export default function StudentPortalPage() {
       facultyInitial: p.faculty_initial || "",
     });
     setDraftId(p.id);
+    setDifficultyData(null);
+    setDifficultyError("");
+    setShowDifficultyDetails(false);
     setActiveTab("submit");
     setSaveMessage(`Loaded "${p.title}" for editing/resubmission.`);
   };
 
+
   const handleSaveDraft = async () => {
-    if (!proposal.title.trim() || !proposal.abstract.trim()) {
-      setSaveMessage("Add a title and abstract before saving.");
+    const titleClean = proposal.title.trim();
+    const abstractClean = proposal.abstract.trim();
+
+    if (!titleClean) {
+      setSaveMessage("Project Title: Title is required before saving.");
+      return;
+    }
+    if (titleClean.length < 3) {
+      setSaveMessage(`Project Title: Title must have at least 3 characters (currently ${titleClean.length}).`);
+      return;
+    }
+    if (!abstractClean) {
+      setSaveMessage("Abstract: Abstract is required before saving.");
+      return;
+    }
+    if (abstractClean.length < 20) {
+      setSaveMessage(`Abstract: Abstract must have at least 20 characters (currently ${abstractClean.length}/20).`);
       return;
     }
 
@@ -373,8 +475,8 @@ export default function StudentPortalPage() {
     setSaveMessage("");
 
     const payload = {
-      title: proposal.title.trim(),
-      abstract: proposal.abstract.trim(),
+      title: titleClean,
+      abstract: abstractClean,
       problem_statement: proposal.problem.trim() || null,
       objectives: proposal.objectives.trim() || null,
       methodology: proposal.methodology.trim() || null,
@@ -398,13 +500,28 @@ export default function StudentPortalPage() {
   };
 
   const handleSubmitProposal = async () => {
-    if (!proposal.title.trim() || !proposal.abstract.trim()) {
-      setSaveMessage("Add a title and abstract before submitting.");
+    const titleClean = proposal.title.trim();
+    const abstractClean = proposal.abstract.trim();
+    const facultyClean = proposal.facultyInitial.trim();
+
+    if (!titleClean) {
+      setSaveMessage("Project Title: Title is required before submitting.");
       return;
     }
-
-    if (!proposal.facultyInitial.trim()) {
-      setSaveMessage("Add the faculty initial before submitting.");
+    if (titleClean.length < 3) {
+      setSaveMessage(`Project Title: Title must have at least 3 characters (currently ${titleClean.length}).`);
+      return;
+    }
+    if (!abstractClean) {
+      setSaveMessage("Abstract: Abstract is required before submitting.");
+      return;
+    }
+    if (abstractClean.length < 20) {
+      setSaveMessage(`Abstract: Abstract must have at least 20 characters for faculty review (currently ${abstractClean.length}/20).`);
+      return;
+    }
+    if (!facultyClean) {
+      setSaveMessage("Faculty Initial: Faculty ID/initial is required before submitting (e.g. FAC-CSE-104).");
       return;
     }
 
@@ -412,13 +529,13 @@ export default function StudentPortalPage() {
     setSaveMessage("");
 
     const payload = {
-      title: proposal.title.trim(),
-      abstract: proposal.abstract.trim(),
+      title: titleClean,
+      abstract: abstractClean,
       problem_statement: proposal.problem.trim() || null,
       objectives: proposal.objectives.trim() || null,
       methodology: proposal.methodology.trim() || null,
       technology_stack: proposal.technologyStack.trim() || null,
-      faculty_initial: proposal.facultyInitial.trim(),
+      faculty_initial: facultyClean,
     };
 
     try {
@@ -538,91 +655,18 @@ export default function StudentPortalPage() {
 
   return (
     <main className="min-h-screen bg-[#f6f8f7] text-[#17201d]">
-      {/* Top Navbar */}
-      <nav className="border-b border-[#d7e2dd] bg-white shadow-[0_4px_18px_rgba(23,32,29,0.06)]">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <div className="flex min-w-0 items-center gap-3">
-            <a
-              href="/"
-              className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e5f8f4] text-[#0b6b61] transition hover:bg-[#d7f7ed]"
-              aria-label="Go to home"
-            >
-              <GraduationCap className="size-5" aria-hidden="true" />
-            </a>
-            <div className="min-w-0">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b6b61]">
-                Student Portal
-              </p>
-              <div className="mt-1 flex min-w-0 items-center gap-2">
-                <UserCircle2 className="size-5 shrink-0 text-[#64736f]" aria-hidden="true" />
-                <h2 className="truncate text-lg font-bold text-[#17201d]">
-                  {studentProfile.full_name}
-                </h2>
-                <span className="rounded-full bg-[#e5f8f4] px-3 py-0.5 text-xs font-bold capitalize text-[#0b6b61]">
-                  {studentProfile.role}
-                </span>
-              </div>
-            </div>
-          </div>
+      <StudentNavbar
+        activeTab={activeTab}
+        proposalCount={stats.total}
+        onTabChange={(tabKey) => {
+          if (tabKey === "archive") {
+            window.location.assign("/student/search");
+          } else {
+            setActiveTab(tabKey);
+          }
+        }}
+      />
 
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            <div className="grid gap-2 sm:grid-cols-3 lg:flex">
-              {studentDetails.map(({ icon: Icon, label }) => (
-                <span
-                  key={label}
-                  className="inline-flex min-h-10 items-center gap-2 rounded-2xl bg-[#f7faf8] px-3.5 text-sm font-semibold text-[#394842] shadow-[0_2px_8px_rgba(23,32,29,0.04)]"
-                >
-                  <Icon className="size-4 shrink-0 text-[#0b6b61]" aria-hidden="true" />
-                  <span className="truncate">{label}</span>
-                </span>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl bg-[#17201d] px-4 text-sm font-bold text-white shadow-[0_4px_14px_rgba(23,32,29,0.16)] transition hover:bg-[#26332f]"
-            >
-              <LogOut className="size-4" aria-hidden="true" />
-              Logout
-            </button>
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="mx-auto flex w-full max-w-7xl gap-2 px-4 sm:px-6 lg:px-8">
-          {[
-            [LayoutDashboard, "Dashboard & My Projects", "dashboard", stats.total],
-            [PlusCircle, "Submit New Proposal", "submit", null],
-            [Search, "Archive Search & AI", "archive", null],
-          ].map(([Icon, label, tabKey, badge]) => (
-            <button
-              key={tabKey}
-              type="button"
-              onClick={() => {
-                if (tabKey === "archive") {
-                  window.location.assign("/student/search");
-                } else {
-                  setActiveTab(tabKey);
-                }
-              }}
-              className={`inline-flex items-center gap-2.5 border-b-2 px-4 py-3 text-sm font-bold transition ${
-                activeTab === tabKey
-                  ? "border-[#15c7a8] text-[#0b6b61]"
-                  : "border-transparent text-[#64736f] hover:border-[#cfdad5] hover:text-[#17201d]"
-              }`}
-            >
-              <Icon className="size-4 text-[#15c7a8]" aria-hidden="true" />
-              <span>{label}</span>
-              {badge !== null && (
-                <span className="rounded-full bg-[#e5f8f4] px-2 py-0.5 text-xs font-bold text-[#0b6b61]">
-                  {badge}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </nav>
 
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         {/* ================= TAB 1: DASHBOARD & MY PROJECTS ================= */}
@@ -672,8 +716,12 @@ export default function StudentPortalPage() {
                       });
                       setDraftId(null);
                       setSaveMessage("");
+                      setDifficultyData(null);
+                      setDifficultyError("");
+                      setShowDifficultyDetails(false);
                       setActiveTab("submit");
                     }}
+
                     className="inline-flex h-10 items-center gap-2 rounded-2xl bg-[#15c7a8] px-4 text-sm font-bold text-[#071817] shadow-[0_4px_14px_rgba(21,199,168,0.2)] transition hover:bg-[#74ead7]"
                   >
                     <PlusCircle className="size-4" aria-hidden="true" />
@@ -720,11 +768,10 @@ export default function StudentPortalPage() {
                       key={filter}
                       type="button"
                       onClick={() => setStatusFilter(filter)}
-                      className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
-                        statusFilter === filter
+                      className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${statusFilter === filter
                           ? "bg-[#17201d] text-white"
                           : "bg-white text-[#64736f] ring-1 ring-[#d7e2dd] hover:bg-[#f2fffb] hover:text-[#17201d]"
-                      }`}
+                        }`}
                     >
                       {filter}
                     </button>
@@ -953,45 +1000,113 @@ export default function StudentPortalPage() {
               </div>
 
               {saveMessage ? (
-                <p className="mt-5 rounded-2xl bg-[#f1f5f3] p-4 text-sm font-semibold text-[#394842]">
-                  {saveMessage}
-                </p>
+                <div
+                  className={`mt-5 flex items-start gap-3 rounded-2xl p-4 text-sm font-semibold shadow-sm transition-all ${
+                    saveMessage.toLowerCase().includes("success") ||
+                    saveMessage.toLowerCase().includes("loaded") ||
+                    saveMessage.toLowerCase().includes("submitted to")
+                      ? "border border-[#a6d6b8] bg-[#eef5df] text-[#12805c]"
+                      : "border border-[#f5b97b] bg-[#fff8eb] text-[#c06f2f]"
+                  }`}
+                >
+                  {saveMessage.toLowerCase().includes("success") ||
+                  saveMessage.toLowerCase().includes("loaded") ||
+                  saveMessage.toLowerCase().includes("submitted to") ? (
+                    <CheckCircle2 className="size-5 shrink-0 text-[#12805c]" />
+                  ) : (
+                    <AlertTriangle className="size-5 shrink-0 text-[#c06f2f]" />
+                  )}
+                  <span className="leading-6">{saveMessage}</span>
+                </div>
               ) : null}
 
               <div className="mt-6 space-y-5">
                 <label className="block">
-                  <span className="text-sm font-semibold text-[#26332f]">Project title</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-[#26332f]">Project title</span>
+                    <span
+                      className={`text-xs font-semibold ${
+                        proposal.title.trim().length > 0 && proposal.title.trim().length < 3
+                          ? "text-[#c06f2f]"
+                          : "text-[#64736f]"
+                      }`}
+                    >
+                      {proposal.title.trim().length} / 3 min chars
+                    </span>
+                  </div>
                   <input
                     value={proposal.title}
                     onChange={(event) => handleProposalChange("title", event.target.value)}
                     placeholder="e.g. Smart Campus Maintenance and Complaint System"
-                    className={`${inputClass} h-12`}
+                    className={`${inputClass} h-12 ${
+                      proposal.title.trim().length > 0 && proposal.title.trim().length < 3
+                        ? "ring-2 ring-[#f5b97b]"
+                        : ""
+                    }`}
                   />
+                  {proposal.title.trim().length > 0 && proposal.title.trim().length < 3 && (
+                    <span className="mt-1 flex items-center gap-1 text-xs font-semibold text-[#c06f2f]">
+                      <AlertCircle className="size-3.5" />
+                      Project title must be at least 3 characters long.
+                    </span>
+                  )}
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-semibold text-[#26332f]">Faculty initial</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-[#26332f]">Faculty initial</span>
+                    {!proposal.facultyInitial.trim() && (
+                      <span className="text-xs font-semibold text-[#c06f2f]">Required for submission</span>
+                    )}
+                  </div>
                   <input
                     value={proposal.facultyInitial}
                     onChange={(event) => handleProposalChange("facultyInitial", event.target.value)}
                     placeholder="FAC-CSE-104"
                     className={`${inputClass} h-12 uppercase`}
                   />
-                  <span className="mt-2 block text-xs leading-5 text-[#64736f]">
+                  <span className="mt-1.5 block text-xs leading-5 text-[#64736f]">
                     Enter the faculty ID/initial for the supervisor this project is under (e.g. FAC-CSE-104).
                   </span>
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-semibold text-[#26332f]">Abstract</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-[#26332f]">Abstract</span>
+                    <span
+                      className={`text-xs font-semibold ${
+                        proposal.abstract.trim().length > 0 && proposal.abstract.trim().length < 20
+                          ? "text-[#b42318]"
+                          : proposal.abstract.trim().length >= 20
+                          ? "text-[#12805c]"
+                          : "text-[#64736f]"
+                      }`}
+                    >
+                      {proposal.abstract.trim().length} / 20 min chars{" "}
+                      {proposal.abstract.trim().length > 0 && proposal.abstract.trim().length < 20
+                        ? "(Need 20+ chars)"
+                        : ""}
+                    </span>
+                  </div>
                   <textarea
                     rows={4}
                     value={proposal.abstract}
                     onChange={(event) => handleProposalChange("abstract", event.target.value)}
-                    placeholder="Concise overview of your proposed project..."
-                    className={`${inputClass} py-3`}
+                    placeholder="Concise overview of your proposed project (at least 20 characters)..."
+                    className={`${inputClass} py-3 ${
+                      proposal.abstract.trim().length > 0 && proposal.abstract.trim().length < 20
+                        ? "ring-2 ring-[#f1a89b]"
+                        : ""
+                    }`}
                   />
+                  {proposal.abstract.trim().length > 0 && proposal.abstract.trim().length < 20 && (
+                    <span className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-[#b42318]">
+                      <AlertCircle className="size-3.5" />
+                      Abstract is too short. It must have at least 20 characters (currently {proposal.abstract.trim().length}/20).
+                    </span>
+                  )}
                 </label>
+
 
                 <label className="block">
                   <span className="text-sm font-semibold text-[#26332f]">Problem statement</span>
@@ -1058,6 +1173,144 @@ export default function StudentPortalPage() {
                 </div>
               </article>
 
+              {/* Difficulty & Duration Analyzer Section BELOW Proposal Readiness */}
+              <article className={panelClass}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="size-5 text-[#0b6b61]" />
+                    <h3 className="font-bold text-[#17201d]">Difficulty & Duration</h3>
+                  </div>
+                </div>
+
+                <p className="mt-1 text-xs text-[#64736f]">
+                  Calculated timeline assuming student works <strong className="text-[#17201d]">1 hour per day</strong>.
+                </p>
+
+                {/* Two small tabs/badges: Difficulty out of 10 and Duration in Days */}
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  {/* Small Tab 1: Difficulty Score out of 10 */}
+                  <div className="rounded-xl border border-[#e5eeea] bg-[#f8faf9] p-3 text-center transition hover:border-[#15c7a8]">
+                    <div className="flex items-center justify-center gap-1 text-xs font-bold text-[#0b6b61]">
+                      <Zap className="size-3.5" />
+                      <span>Difficulty</span>
+                    </div>
+                    <div className="mt-2 text-xl font-bold text-[#17201d]">
+                      {difficultyData ? `${difficultyData.difficulty_score}` : "--"}{" "}
+                      <span className="text-xs font-normal text-[#64736f]">/ 10</span>
+                    </div>
+                    <span
+                      className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${!difficultyData
+                          ? "bg-[#e5eeea] text-[#64736f]"
+                          : difficultyData.complexity_tier === "Beginner"
+                            ? "bg-[#eef5df] text-[#12805c]"
+                            : difficultyData.complexity_tier === "Intermediate"
+                              ? "bg-[#e5f8f4] text-[#0b6b61]"
+                              : difficultyData.complexity_tier === "Advanced"
+                                ? "bg-[#fff4cf] text-[#b8862f]"
+                                : "bg-[#f8ded7] text-[#b42318]"
+                        }`}
+                    >
+                      {difficultyData ? difficultyData.complexity_tier : "Pending"}
+                    </span>
+                  </div>
+
+                  {/* Small Tab 2: Duration in Days (1 hr/day) */}
+                  <div className="rounded-xl border border-[#e5eeea] bg-[#f8faf9] p-3 text-center transition hover:border-[#15c7a8]">
+                    <div className="flex items-center justify-center gap-1 text-xs font-bold text-[#0b6b61]">
+                      <Clock className="size-3.5" />
+                      <span>Duration</span>
+                    </div>
+                    <div className="mt-2 text-xl font-bold text-[#17201d]">
+                      {difficultyData ? `${difficultyData.estimated_duration_days}` : "--"}{" "}
+                      <span className="text-xs font-normal text-[#64736f]">Days</span>
+                    </div>
+                    <span className="mt-1.5 inline-block rounded-full bg-[#e5f8f4] px-2 py-0.5 text-[10px] font-bold text-[#0b6b61]">
+                      @ 1 hr / day
+                    </span>
+                  </div>
+                </div>
+
+                {/* Dynamic Banner & Detailed Rationale */}
+                {isAnalyzingDifficulty ? (
+                  <div className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-[#e5f8f4] p-3 text-xs font-bold text-[#0b6b61]">
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>Analyzing proposal complexity...</span>
+                  </div>
+                ) : !difficultyData ? (
+                  <div className="mt-4 space-y-2">
+                    {completeness === 100 ? (
+                      <p className="text-xs font-semibold text-[#0b6b61]">
+                        Proposal is complete! Click below to compute difficulty & 1 hr/day duration.
+                      </p>
+                    ) : (
+                      <p className="text-xs text-[#64736f]">
+                        Complete proposal fields or click below to analyze written scope.
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleAnalyzeDifficulty()}
+                      className="w-full inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-[#15c7a8] px-4 text-xs font-bold text-[#071817] shadow-sm transition hover:bg-[#74ead7]"
+                    >
+                      <BarChart3 className="size-3.5" />
+                      Analyze Difficulty & Duration
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-4 space-y-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowDifficultyDetails(!showDifficultyDetails)}
+                      className="flex w-full items-center justify-between text-xs font-bold text-[#0b6b61] hover:underline"
+                    >
+                      <span>{showDifficultyDetails ? "Hide AI Rationale ▲" : "View AI Rationale Details ▼"}</span>
+                      <span className="text-[11px] font-normal text-[#64736f]">
+                        ~{difficultyData.estimated_total_hours} total hours
+                      </span>
+                    </button>
+
+                    {showDifficultyDetails && (
+                      <div className="space-y-3 border-t border-[#e5eeea] pt-3 text-xs">
+                        <p className="leading-5 text-[#394842]">{difficultyData.summary}</p>
+
+                        {difficultyData.challenges && difficultyData.challenges.length > 0 && (
+                          <div>
+                            <span className="font-bold text-[#17201d]">Key Technical Challenges:</span>
+                            <ul className="mt-1 space-y-1 pl-3.5 text-[#52625d] list-disc">
+                              {difficultyData.challenges.map((c, i) => (
+                                <li key={i}>{c}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {difficultyData.prerequisites && difficultyData.prerequisites.length > 0 && (
+                          <div>
+                            <span className="font-bold text-[#17201d]">Prerequisites Needed:</span>
+                            <div className="mt-1.5 flex flex-wrap gap-1.5">
+                              {difficultyData.prerequisites.map((p, i) => (
+                                <span
+                                  key={i}
+                                  className="rounded-md bg-[#f1f5f3] px-2 py-0.5 text-[11px] font-semibold text-[#394842]"
+                                >
+                                  {p}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {difficultyError && (
+                  <p className="mt-3 rounded-xl bg-[#f8ded7] p-2.5 text-xs font-semibold text-[#b42318]">
+                    {difficultyError}
+                  </p>
+                )}
+              </article>
+
               <article className={panelClass}>
                 <div className="flex items-center gap-3">
                   <Lightbulb className="size-5 text-[#0b6b61]" />
@@ -1074,6 +1327,7 @@ export default function StudentPortalPage() {
               </article>
             </aside>
           </section>
+
         )}
 
         {/* ================= TAB 3: ARCHIVE SEARCH & AI ================= */}

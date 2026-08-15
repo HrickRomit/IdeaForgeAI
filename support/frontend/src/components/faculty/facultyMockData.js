@@ -162,5 +162,8 @@ export const initialProposals = [
 ];
 
 export function getAssignedProposals(proposals, facultyId) {
-  return proposals.filter((proposal) => proposal.assignedFacultyId === facultyId);
+  return proposals.filter(
+    (proposal) => proposal.assignedFacultyId === facultyId && proposal.status !== "Draft" && proposal.status !== "draft",
+  );
 }
+

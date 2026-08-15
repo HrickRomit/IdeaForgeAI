@@ -34,3 +34,7 @@ export function uploadProposalDocument(proposalId, file) {
 export function checkProposalSimilarity(payload) {
   return axiosClient.post("/proposals/similarity", payload);
 }
+
+export function analyzeProposalDifficulty(payload) {
+  return axiosClient.post("/proposals/analyze-difficulty", payload);
+}
