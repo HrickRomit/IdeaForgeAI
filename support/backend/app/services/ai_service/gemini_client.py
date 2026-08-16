@@ -17,7 +17,7 @@ def get_llm() -> ChatGoogleGenerativeAI:
 
         # We use gemini-2.5-flash for fast and reliable inference
         _llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
+            model="gemini-2.5-flash-lite",
             google_api_key=api_key,
             temperature=0.3 # Low temperature so it doesn't hallucinate
         )
