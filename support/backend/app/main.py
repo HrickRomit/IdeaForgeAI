@@ -15,8 +15,13 @@ app = FastAPI(title=settings.app_name, version=settings.app_version)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[str(origin).rstrip("/") for origin in settings.backend_cors_origins] if isinstance(settings.backend_cors_origins, list) else ["*"],
-    allow_origin_regex=r"^https?://.*$",
+    allow_origins=[
+        "https://idea-forge-ai-seven.vercel.app",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+    ],
+    allow_origin_regex=r"^https://.*\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
