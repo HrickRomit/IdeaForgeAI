@@ -16,7 +16,7 @@ import {
   Sparkles,
   Wrench,
 } from "lucide-react";
-import { searchArchivedProjects } from "../../api/projectsApi";
+import { searchArchivedProjects, getAllArchivedProjects } from "../../api/projectsApi";
 import { getArchivedProjects } from "../../api/adminApi";
 import ArchivedProjectDetailModal from "../../components/student/ArchivedProjectDetailModal.jsx";
 import StudentNavbar from "../../components/student/StudentNavbar.jsx";
@@ -308,42 +308,13 @@ export default function SearchPage() {
   useEffect(() => {
     async function loadBackendArchives() {
       try {
-        const response = await getArchivedProjects();
-        const data = response.data || [];
+        const response = await getAllArchivedProjects();
+        const data = Array.isArray(response) ? response : response?.data || [];
         if (Array.isArray(data) && data.length > 0) {
-          const mapped = data.map((item) => ({
-            id: `archive_${item.id}`,
-            title: item.title,
-            summary: item.abstract,
-            abstract: item.abstract,
-            department: item.department_name || item.department?.name || "Computer Science and Engineering",
-            year: item.academic_year || "2025-2026",
-            semester: "Fall",
-            difficulty: "Intermediate",
-            difficultyScore: 7,
-            supervisor: item.supervisor_name || "Faculty Advisor",
-            domain: "Academic Systems",
-            technologies: Array.isArray(item.technology_stack)
-              ? item.technology_stack
-              : typeof item.technology_stack === "string"
-              ? item.technology_stack.split(",").map((s) => s.trim())
-              : ["Python", "FastAPI", "React"],
-            keywords: Array.isArray(item.keywords)
-              ? item.keywords
-              : typeof item.keywords === "string"
-              ? item.keywords.split(",").map((s) => s.trim())
-              : ["archive", "project"],
-            outcomes: [
-              "Role-based capstone tracking and evaluation",
-              "Automated record cataloging and indexing",
-              "Semantic search and proposal discovery",
-            ],
-            gap: "Future scope notes potential for domain-specific LLM fine-tuning, real-time collaboration, and predictive analytics.",
-          }));
-          setDbArchiveProjects(mapped);
+          setDbArchiveProjects(data);
         }
       } catch {
-        // Fall back gracefully to full sample catalog
+        // Fall back gracefully to sample catalog
       }
     }
     loadBackendArchives();

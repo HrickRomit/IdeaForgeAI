@@ -88,16 +88,26 @@ function mapApiProposalDetail(proposalDetail, facultyId) {
   const latestReview = reviews[reviews.length - 1];
   const facultyComment = latestReview?.comments || "";
 
-  const matches = (proposalDetail.similarity_matches || []).map((match) => ({
-    project: match.project || "Archived Project",
-    percent: Math.round((match.similarity_score || 0) * 100),
-    explanation: match.explanation || "",
-    source:
-      match.explanation ||
-      (match.matched_sections ? JSON.stringify(match.matched_sections) : "No section preview"),
-    submitted:
-      proposalDetail.abstract || proposalDetail.problem_statement || "Submitted proposal text",
-  }));
+  const matches = (proposalDetail.similarity_matches || []).map((match) => {
+    let sourceText = "";
+    if (typeof match.matched_sections === "object" && match.matched_sections !== null) {
+      sourceText = match.matched_sections.snippet || match.matched_sections.matched_text || "";
+    } else if (typeof match.matched_sections === "string") {
+      sourceText = match.matched_sections;
+    }
+
+    return {
+      project: match.project || "Archived Project",
+      percent: Math.round((match.similarity_score || 0) * 100),
+      explanation: match.explanation || "",
+      source:
+        sourceText ||
+        match.explanation ||
+        "Archived project similarity match excerpt.",
+      submitted:
+        proposalDetail.abstract || proposalDetail.problem_statement || "Submitted proposal text",
+    };
+  });
 
   const notifications = reviews.map((r) => {
     const decLabel =

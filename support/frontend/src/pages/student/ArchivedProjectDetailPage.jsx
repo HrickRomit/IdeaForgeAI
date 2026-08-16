@@ -23,6 +23,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { sendChatMessage } from "../../api/chatApi";
+import { getArchivedProjectById } from "../../api/projectsApi";
 import ChatMarkdownRenderer from "../../components/common/ChatMarkdownRenderer";
 import StudentNavbar from "../../components/student/StudentNavbar.jsx";
 
@@ -140,7 +141,7 @@ export default function ArchivedProjectDetailPage() {
       setSimilarityScore(66);
     }
 
-    // 4. Fallback or merge project metadata
+    // 4. Initial fallback or merge project metadata
     const fallback = defaultArchivedProjects[projectId] || defaultArchivedProjects["project_0001"];
 
     if (storedObj) {
@@ -166,6 +167,56 @@ export default function ArchivedProjectDetailPage() {
         ...fallback,
       });
     }
+
+    // 5. Fetch complete rich project.json from backend API
+    getArchivedProjectById(projectId)
+      .then((data) => {
+        if (!data) return;
+        const norm = data._normalized || {};
+        const basic = data.basic_information || {};
+        const academic = data.academic_information || {};
+        const diff = data.difficulty || {};
+        const resArea = data.research_area || {};
+
+        let techList = [];
+        if (Array.isArray(norm.technologies)) techList = norm.technologies;
+        else if (data.technologies && typeof data.technologies === "object") {
+          Object.values(data.technologies).forEach((group) => {
+            if (Array.isArray(group)) {
+              group.forEach((item) => {
+                if (typeof item === "string") techList.push(item);
+                else if (item?.name) techList.push(item.name);
+              });
+            }
+          });
+        }
+
+        setProjectData({
+          archived_project_id: data.project_id || projectId,
+          title: basic.title || data.title || norm.title || fallback.title,
+          abstract: data.abstract || basic.summary || norm.abstract || fallback.abstract,
+          problem_statement: data.problem_statement || norm.problem_statement || fallback.problem_statement,
+          department: academic.department || norm.department || fallback.department,
+          academic_year: academic.academic_year || norm.year || fallback.academic_year,
+          supervisor: (typeof academic.supervisor === "object" ? academic.supervisor?.name : academic.supervisor) || norm.supervisor || fallback.supervisor,
+          difficulty: (typeof diff === "object" ? diff.level : diff) || norm.difficulty || fallback.difficulty,
+          difficultyScore: (typeof diff === "object" ? diff.score : diff) || norm.difficultyScore || 7,
+          research_area: (typeof resArea === "object" ? resArea.primary : resArea) || norm.domain || fallback.research_area,
+          technologies: techList.length > 0 ? [...new Set(techList)] : fallback.technologies,
+          keywords: data.keywords || norm.keywords || fallback.keywords,
+          outcomes: data.expected_outcomes || norm.outcomes || fallback.outcomes,
+          gap: Array.isArray(data.future_scope) ? data.future_scope.join(" ") : data.future_scope || norm.gap || fallback.gap,
+          future_scope: data.future_scope || fallback.gap,
+          limitations: data.limitations || [],
+          scope: data.scope || null,
+          features: data.features || [],
+          modules: data.modules || [],
+          authors: academic.authors || [],
+        });
+      })
+      .catch((err) => {
+        console.warn("Could not load rich project from backend API, using cached data", err);
+      });
   }, []);
 
   const title = projectData?.title || "Archived Project";

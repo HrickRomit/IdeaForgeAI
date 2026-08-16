@@ -22,6 +22,7 @@ from app.schemas.faculty import (
     ReviewResultRead,
     SimilarityMatchRead,
 )
+from app.services.proposal_service import generate_and_save_similarity_reports
 
 router = APIRouter(prefix="/faculty", tags=["Faculty"])
 
@@ -133,16 +134,29 @@ def list_assigned_proposals(
 
     rows = db.execute(statement).all()
 
+    # Automatically compute missing similarity for proposals that have none
+    results = []
+    for row in rows:
+        prop = row[0]
+        score = row.similarity_score
+        if score is None and prop.title:
+            try:
+                reports = generate_and_save_similarity_reports(prop, db)
+                if reports:
+                    score = max((r.similarity_score for r in reports), default=None)
+            except Exception:
+                pass
 
-    return [
-        _proposal_list_item(
-            proposal=row[0],
-            student_name=row.student_name,
-            department_code=row.department_code,
-            similarity_score=row.similarity_score,
+        results.append(
+            _proposal_list_item(
+                proposal=prop,
+                student_name=row.student_name,
+                department_code=row.department_code,
+                similarity_score=score,
+            )
         )
-        for row in rows
-    ]
+
+    return results
 
 
 @router.get("/queue", response_model=list[FacultyProposalListItem])
@@ -150,7 +164,6 @@ def review_queue(
     db: Session = Depends(get_database),
     current_user: User = Depends(require_role("faculty")),
 ) -> list[FacultyProposalListItem]:
-    # This is intentionally only actionable proposals.
     return list_assigned_proposals(
         review_status="submitted",
         db=db,
@@ -184,34 +197,60 @@ def get_assigned_proposal(
     if proposal is None:
         raise HTTPException(status_code=404, detail="Assigned proposal not found")
 
-    matches = [
-        SimilarityMatchRead(
-            archived_project_id=report.archived_project_id,
-            project=(
-                report.archived_project.title
-                if report.archived_project is not None
-                else "Archived project unavailable"
-            ),
-            similarity_score=report.similarity_score,
-            matched_sections=report.matched_sections,
-            explanation=report.explanation,
-        )
+    # If no similarity reports exist yet, compute and save them now
+    if not proposal.similarity_reports:
+        try:
+            generate_and_save_similarity_reports(proposal, db)
+            proposal = db.scalar(
+                select(Proposal)
+                .options(
+                    joinedload(Proposal.student),
+                    joinedload(Proposal.department),
+                    selectinload(Proposal.reviews),
+                    selectinload(Proposal.similarity_reports).joinedload(
+                        SimilarityReport.archived_project
+                    ),
+                )
+                .where(
+                    Proposal.id == proposal_id,
+                    Proposal.supervisor_id == current_user.id,
+                )
+            )
+        except Exception:
+            pass
+
+    matches = []
+    if proposal and proposal.similarity_reports:
         for report in sorted(
             proposal.similarity_reports,
             key=lambda item: item.similarity_score,
             reverse=True,
-        )
-    ]
+        ):
+            proj_title = "Archived Project"
+            if report.archived_project is not None:
+                proj_title = report.archived_project.title
+            elif isinstance(report.matched_sections, dict) and report.matched_sections.get("title"):
+                proj_title = report.matched_sections.get("title")
+
+            matches.append(
+                SimilarityMatchRead(
+                    archived_project_id=report.archived_project_id,
+                    project=proj_title,
+                    similarity_score=report.similarity_score,
+                    matched_sections=report.matched_sections,
+                    explanation=report.explanation,
+                )
+            )
 
     highest_similarity = max(
-        (report.similarity_score for report in proposal.similarity_reports),
+        (report.similarity_score for report in (proposal.similarity_reports if proposal else [])),
         default=None,
     )
 
     return FacultyProposalDetailRead(
         **_proposal_list_item(
             proposal=proposal,
-            student_name=proposal.student.full_name,
+            student_name=proposal.student.full_name if proposal.student else "Student",
             department_code=proposal.department.code if proposal.department else None,
             similarity_score=highest_similarity,
         ).model_dump(),
@@ -224,6 +263,7 @@ def get_assigned_proposal(
             for review in sorted(proposal.reviews, key=lambda item: item.created_at)
         ],
     )
+
 
 
 @router.post(
@@ -309,12 +349,21 @@ def get_faculty_analytics(
         )
     ).all()
 
-    statuses = Counter(proposal.status for proposal in proposals)
-    similarity_scores = [
-        report.similarity_score
-        for proposal in proposals
-        for report in proposal.similarity_reports
-    ]
+    valid_scores = []
+    for proposal in proposals:
+        if not proposal.similarity_reports and proposal.title:
+            try:
+                reports = generate_and_save_similarity_reports(proposal, db)
+                if reports:
+                    max_score = max((r.similarity_score for r in reports), default=None)
+                    if max_score is not None:
+                        valid_scores.append(max_score)
+                    continue
+            except Exception:
+                pass
+        max_score = max((report.similarity_score for report in proposal.similarity_reports), default=None)
+        if max_score is not None:
+            valid_scores.append(max_score)
 
     department_counts: Counter[str] = Counter(
         proposal.department.code if proposal.department else "Unassigned"
@@ -334,8 +383,8 @@ def get_faculty_analytics(
         changes_requested_count=statuses["changes_requested"],
         rejected_count=statuses["rejected"],
         average_similarity_score=(
-            round(sum(similarity_scores) / len(similarity_scores), 4)
-            if similarity_scores
+            round(sum(valid_scores) / len(valid_scores), 4)
+            if valid_scores
             else None
         ),
         by_status=[

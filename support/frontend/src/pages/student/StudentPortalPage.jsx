@@ -39,7 +39,7 @@ import {
   updateProposalDraft,
 } from "../../api/proposalsApi";
 
-import { searchArchivedProjects } from "../../api/projectsApi";
+import { searchArchivedProjects, getAllArchivedProjects } from "../../api/projectsApi";
 import { sendChatMessage } from "../../api/chatApi";
 import ArchivedProjectDetailModal from "../../components/student/ArchivedProjectDetailModal.jsx";
 import ChatMarkdownRenderer from "../../components/common/ChatMarkdownRenderer.jsx";
@@ -358,6 +358,16 @@ export default function StudentPortalPage() {
       });
 
     fetchMyProposals();
+
+    getAllArchivedProjects()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setArchiveResults(data);
+        }
+      })
+      .catch(() => {
+        // Fall back gracefully to sample projects if network issue
+      });
 
     return () => {
       isMounted = false;

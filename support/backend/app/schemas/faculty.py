@@ -33,10 +33,10 @@ class FacultyProposalListItem(BaseModel):
 
 
 class SimilarityMatchRead(BaseModel):
-    archived_project_id: int | None
+    archived_project_id: int | str | None = None
     project: str
     similarity_score: float
-    matched_sections: dict | None = None
+    matched_sections: dict | str | None = None
     explanation: str | None = None
 
 

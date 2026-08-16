@@ -12,6 +12,7 @@ from app.models.user import User
 from app.services.ai_service.difficulty_engine import analyze_project_difficulty_and_duration
 from app.services.ai_service.similarity_engine import check_proposal_similarity
 from app.services.file_service import delete_stored_file, save_proposal_pdf
+from app.services.proposal_service import generate_and_save_similarity_reports
 
 router = APIRouter(prefix="/proposals", tags=["Student Proposals"])
 
@@ -295,6 +296,12 @@ def submit_proposal(
     db.add(proposal)
     db.commit()
     db.refresh(proposal)
+
+    # Generate initial similarity report against archive
+    try:
+        generate_and_save_similarity_reports(proposal, db)
+    except Exception:
+        pass
 
     return _proposal_to_read(proposal)
 
