@@ -12,9 +12,9 @@ from app.services.ai_service.gemini_client import get_llm
 __all__ = ["estimate_project_difficulty", "analyze_project_difficulty_and_duration"]
 
 DIFFICULTY_PROMPT = """
-You are a senior computer science capstone evaluation committee member.
+You are a senior computer science capstone evaluator.
 
-Analyze the following project proposal and estimate its technical complexity and implementation difficulty.
+Analyze the following project proposal and provide a brief, concise technical difficulty assessment.
 
 PROPOSAL:
 Title: {proposal_title}
@@ -22,18 +22,18 @@ Abstract: {proposal_abstract}
 Problem Statement: {proposal_problem}
 Tech Stack: {tech_stack}
 
-Please provide a structured difficulty evaluation formatted as follows:
+Please provide a concise difficulty evaluation (keep it short and to the point):
 
 1. Difficulty Score: X / 10
 2. Complexity Tier: [Beginner / Intermediate / Advanced / Expert]
 3. Estimated Development Time: [e.g., 2-3 months / 4-6 months]
-4. Key Technical Challenges:
-   - Challenge 1: ...
-   - Challenge 2: ...
-5. Prerequisite Knowledge Needed:
+4. Key Technical Challenges (max 2 brief points):
+   - Challenge 1
+   - Challenge 2
+5. Prerequisite Knowledge Needed (comma-separated):
    - Skill 1, Skill 2, Skill 3
 
-Keep the evaluation realistic, fair, and constructive for undergraduate capstone students.
+Keep all points brief and direct.
 """
 
 DIFFICULTY_DURATION_JSON_PROMPT = """
@@ -56,14 +56,14 @@ Return strictly a valid JSON object (and nothing else) adhering to the following
   "estimated_total_hours": 60,
   "estimated_duration_days": 60,
   "daily_work_rate": "1 hour per day",
-  "summary": "Concise summary explaining why this project has this difficulty score and timeline.",
+  "summary": "1-2 short, punchy sentences explaining the score and timeline.",
   "challenges": [
-    "Challenge 1",
-    "Challenge 2"
+    "Short 1-line challenge (max 12 words)",
+    "Short 1-line challenge (max 12 words)"
   ],
   "prerequisites": [
-    "Prerequisite 1",
-    "Prerequisite 2"
+    "Skill or technology name",
+    "Skill or technology name"
   ]
 }}
 
@@ -72,8 +72,10 @@ Rules:
 2. "complexity_tier" must be one of: "Beginner", "Intermediate", "Advanced", "Expert".
 3. "estimated_total_hours" must be a positive integer reflecting standard undergraduate capstone scope (e.g., 30 to 120 hours).
 4. "estimated_duration_days" MUST equal "estimated_total_hours" because the daily work rate is strictly 1 hour per day.
-5. "challenges" and "prerequisites" must be arrays of strings.
-6. Provide only valid JSON. Do not include markdown code block backticks.
+5. "summary": Strictly 1 to 2 short, crisp sentences (max 30 words total).
+6. "challenges": Exactly 2 to 3 concise, single-line items (max 12-15 words each).
+7. "prerequisites": 2 to 3 concise skill/tool names (e.g., "PyTorch & Computer Vision", "FastAPI / PostgreSQL").
+8. Provide only valid JSON. Do not include markdown code block backticks.
 """
 
 COMPLEX_KEYWORDS = [

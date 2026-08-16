@@ -82,6 +82,7 @@ def _normalize_kb_project(raw: dict[str, Any]) -> dict[str, Any]:
     )
     gap_str = " ".join(gap_data) if isinstance(gap_data, list) else str(gap_data)
 
+    clean_raw = {k: v for k, v in raw.items() if k != "_normalized"}
     return {
         "id": raw.get("project_id") or basic.get("slug") or "project_archive",
         "project_id": raw.get("project_id") or basic.get("slug") or "project_archive",
@@ -114,7 +115,7 @@ def _normalize_kb_project(raw: dict[str, Any]) -> dict[str, Any]:
         "estimated_duration": raw.get("estimated_duration") or {},
         "team_size": raw.get("team_size") or {},
         "authors": academic.get("authors") or [],
-        "raw_data": raw,
+        "raw_data": clean_raw,
     }
 
 
@@ -332,7 +333,9 @@ def get_project_details(project_id: str) -> dict[str, Any]:
         )
     # Also attach normalized convenience fields
     normalized = _normalize_kb_project(raw_data)
-    # Merge normalized with full raw structure
-    raw_data["_normalized"] = normalized
-    return raw_data
+    clean_raw = {k: v for k, v in raw_data.items() if k != "_normalized"}
+    return {
+        **clean_raw,
+        "_normalized": normalized,
+    }
 

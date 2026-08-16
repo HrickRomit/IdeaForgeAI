@@ -272,7 +272,14 @@ export default function StudentPortalPage() {
   const handleAnalyzeDifficulty = async (customProposal = null) => {
     const targetProposal = customProposal || proposal;
 
-    if (!targetProposal.title.trim() || !targetProposal.abstract.trim()) {
+    const title = (targetProposal.title || "").trim();
+    const abstract = (targetProposal.abstract || "").trim();
+    const problem = (targetProposal.problem || targetProposal.problem_statement || "").trim();
+    const objectives = (targetProposal.objectives || "").trim();
+    const methodology = (targetProposal.methodology || "").trim();
+    const techStack = (targetProposal.technologyStack || targetProposal.technology_stack || "").trim();
+
+    if (!title || !abstract) {
       setDifficultyError("Add a title and abstract to analyze difficulty & duration.");
       return;
     }
@@ -282,18 +289,18 @@ export default function StudentPortalPage() {
 
     try {
       const response = await analyzeProposalDifficulty({
-        title: targetProposal.title.trim(),
-        abstract: targetProposal.abstract.trim(),
-        problem_statement: targetProposal.problem.trim() || null,
-        objectives: targetProposal.objectives.trim() || null,
-        methodology: targetProposal.methodology.trim() || null,
-        technology_stack: targetProposal.technologyStack.trim() || null,
+        title: title,
+        abstract: abstract,
+        problem_statement: problem || null,
+        objectives: objectives || null,
+        methodology: methodology || null,
+        technology_stack: techStack || null,
       });
 
       setDifficultyData(response.data);
       setShowDifficultyDetails(true);
-    } catch {
-      setDifficultyError("Could not calculate difficulty & duration. Make sure backend is running.");
+    } catch (error) {
+      setDifficultyError(getErrorMessage(error, "Could not calculate difficulty & duration. Make sure backend is running."));
     } finally {
       setIsAnalyzingDifficulty(false);
     }

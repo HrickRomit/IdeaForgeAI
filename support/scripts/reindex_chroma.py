@@ -1,1 +1,0 @@
-"""Chroma reindexing script placeholder."""

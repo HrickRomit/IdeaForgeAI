@@ -1,1 +1,0 @@
-"""Review schema placeholder."""

@@ -15,7 +15,7 @@ def get_llm() -> ChatGoogleGenerativeAI:
         if not api_key:
             raise ValueError("GEMINI_API_KEY is not set in your .env file!")
 
-        # We use gemini-1.5-flash for incredibly fast and cheap inference
+        # We use gemini-2.5-flash for fast and reliable inference
         _llm = ChatGoogleGenerativeAI(
             model="gemini-2.5-flash",
             google_api_key=api_key,

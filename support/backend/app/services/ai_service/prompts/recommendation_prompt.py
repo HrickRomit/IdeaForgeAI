@@ -1,1 +1,0 @@
-"""Recommendation prompt placeholder."""
